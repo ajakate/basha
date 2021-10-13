@@ -1,0 +1,2 @@
+#! /bin/bash
+docker exec -it basha_db_1 psql -U postgres

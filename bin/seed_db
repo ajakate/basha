@@ -1,0 +1,4 @@
+docker exec -it jamtap_db_1 psql -U jamtap_user -d dev -c "delete from tracks"
+docker exec -it jamtap_db_1 psql -U jamtap_user -d dev -c "insert into tracks (name,started_at,finished_at,creator) values('test track 1', now() - interval '2 months', now() - interval '1 month','ajay')"
+docker exec -it jamtap_db_1 psql -U jamtap_user -d dev -c "insert into tracks (name,started_at,finished_at,creator) values('test track 2', now() - interval '2 years', now() - interval '1 year','ajay')"
+docker exec -it jamtap_db_1 psql -U jamtap_user -d dev -c "insert into tracks (name,started_at,creator) values('test track 2', now() - interval '2 years','ajay')"
