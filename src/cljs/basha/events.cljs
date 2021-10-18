@@ -48,6 +48,19 @@
   (fn [_ _]
     {:dispatch [:fetch-docs]}))
 
+(rf/reg-event-fx
+ :signup
+ (fn [_ [_ user]]
+   {:http-xhrio {:method          :post
+                 :uri             "/signup"
+                 :params user
+                 :format          (ajax/json-request-format)
+                 :response-format  (ajax/json-response-format {:keywords? true})
+                ;;  :on-success       [:signup]
+                ;;  :on-failure [:signup]
+                 }}))
+
+
 ;;subscriptions
 
 (rf/reg-sub

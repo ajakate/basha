@@ -40,6 +40,28 @@
   [:section.section>div.container>div.content
    [:img {:src "/img/warning_clojure.png"}]])
 
+(defn signup-page []
+  (r/with-let [draft_user (r/atom nil)
+               draft_pass (r/atom nil)]
+    [:div
+     [:div.field
+      [:label.label "Username"]
+      [:div.control>input.input
+       {:type "text"
+        :placeholder "sk8hkr69"
+        :on-change #(reset! draft_user (.. % -target -value))
+        :value @draft_user}]
+      [:label.label "Password"]
+      [:div.control>input.input
+       {:type "password"
+        :placeholder "test123"
+        :on-change #(reset! draft_pass (.. % -target -value))
+        :value @draft_pass}]]
+     [:div.control>button.button.is-link
+      {:on-click #(rf/dispatch [:signup {:user @draft_user :pass @draft_pass}])
+       :disabled (or (string/blank? @draft_user)
+                         (string/blank? @draft_pass))} "Sign Up"]]))
+
 (defn home-page []
   [:section.section>div.container>div.content
    (when-let [docs @(rf/subscribe [:docs])]
@@ -60,7 +82,9 @@
            :view        #'home-page
            :controllers [{:start (fn [_] (rf/dispatch [:page/init-home]))}]}]
      ["/about" {:name :about
-                :view #'about-page}]]))
+                :view #'about-page}]
+     ["/signup" {:name :signup
+                 :view #'signup-page}]]))
 
 (defn start-router! []
   (rfe/start!

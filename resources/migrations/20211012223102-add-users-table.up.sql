@@ -1,9 +1,6 @@
 CREATE TABLE users
-(id VARCHAR(20) PRIMARY KEY,
- first_name VARCHAR(30),
- last_name VARCHAR(30),
- email VARCHAR(30),
- admin BOOLEAN,
- last_login TIMESTAMP,
- is_active BOOLEAN,
- pass VARCHAR(300));
+(id uuid DEFAULT uuid_generate_v4() NOT NULL,
+ username VARCHAR(30) not null,
+ pass VARCHAR(300) not null,
+ PRIMARY KEY(id)
+);

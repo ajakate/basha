@@ -10,3 +10,5 @@ docker exec -it basha_db_1 psql -U postgres -c "create user basha_user with pass
 docker exec -it basha_db_1 psql -U postgres -c 'grant all privileges on database dev to basha_user'
 docker exec -it basha_db_1 psql -U postgres -c 'grant all privileges on database test to basha_user'
 docker exec -it basha_db_1 psql -U postgres -c 'grant basha_user to postgres'
+docker exec -it basha_db_1 psql -U postgres -d dev -c 'DROP EXTENSION IF EXISTS "uuid-ossp" CASCADE;'
+docker exec -it basha_db_1 psql -U postgres -d dev -c 'CREATE EXTENSION "uuid-ossp";'
