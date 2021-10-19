@@ -52,7 +52,7 @@
  :signup
  (fn [_ [_ user]]
    {:http-xhrio {:method          :post
-                 :uri             "/signup"
+                 :uri             "/api/signup"
                  :params user
                  :format          (ajax/json-request-format)
                  :response-format  (ajax/json-response-format {:keywords? true})
