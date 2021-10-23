@@ -27,6 +27,7 @@
                           (response/ok
                            {:message
                             (str "something happened: " e)}))))}]
+   ; TODO: remove snake casing
    ["/refresh" {:post (fn [{{:keys [user refresh_token]} :body-params}]
                       (try
                         (response/ok
