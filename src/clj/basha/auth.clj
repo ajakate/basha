@@ -25,7 +25,6 @@
    :refresh-token (generate-token {:user username} (t/days 1))}
   )
 
-; TODO: generalize username pass naming
 (defn login [username password]
   (let [user (db/get-user-for-login {:username username})
         authenticated (hashers/check password (:password user))]
