@@ -9,7 +9,7 @@
 (defn service-routes []
   ["/api"
    {:middleware [middleware/wrap-formats]}
-   ["/signup" {:post (fn [{{:keys [user pass]} :body-params session :session}]
+   ["/signup" {:post (fn [{{:keys [user pass]} :body-params}]
                        (try
                          (auth/create-user! user pass)
                          (response/ok
@@ -18,4 +18,12 @@
                          (catch clojure.lang.ExceptionInfo e
                            (response/ok
                             {:message
-                             (str "something happened: " e)}))))}]])
+                             (str "something happened: " e)}))))}]
+   ["/login" {:post (fn [{{:keys [user pass]} :body-params}]
+                      (try
+                        (response/ok
+                         (auth/login user pass))
+                        (catch clojure.lang.ExceptionInfo e
+                          (response/ok
+                           {:message
+                            (str "something happened: " e)}))))}]])

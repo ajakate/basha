@@ -16,6 +16,11 @@ WHERE id = :id
 SELECT * FROM users
 WHERE id = :id
 
+-- :name get-user-for-login :? :1
+-- :doc retrieves a user record given the id
+SELECT username,pass FROM users
+WHERE username = :username
+
 -- :name delete-user! :! :n
 -- :doc deletes a user record given the id
 DELETE FROM users
