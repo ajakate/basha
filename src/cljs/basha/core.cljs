@@ -58,7 +58,7 @@
         :on-change #(reset! draft_pass (.. % -target -value))
         :value @draft_pass}]]
      [:div.control>button.button.is-link
-      {:on-click #(rf/dispatch [:signup {:user @draft_user :pass @draft_pass}])
+      {:on-click #(rf/dispatch [:signup {:username @draft_user :password @draft_pass}])
        :disabled (or (string/blank? @draft_user)
                          (string/blank? @draft_pass))} "Sign Up"]]))
 

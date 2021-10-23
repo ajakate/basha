@@ -9,32 +9,32 @@
 
 ;; (defonce token-secret (select-keys env [:token-secret]))
 
-(defn create-user! [login password]
+(defn create-user! [username password]
   ; TODO: remvoe db/db?
   (jdbc/with-transaction [t-conn db/*db*]
     (db/create-user!* t-conn
-                      {:username    login
-                       :pass (hashers/derive password)})))
+                      {:username    username
+                       :password (hashers/derive password)})))
 
 (defn generate-token [payload time-interval]
   (jwt/sign payload "token-secret"
             {:exp   (t/plus (t/instant) time-interval)}))
 
-(defn new-tokens [login]
-  {:access-token (generate-token {:user login} (t/hours 1))
-   :refresh-token (generate-token {:user login} (t/days 1))}
+(defn new-tokens [username]
+  {:access-token (generate-token {:user username} (t/hours 1))
+   :refresh-token (generate-token {:user username} (t/days 1))}
   )
 
-; TODO: generalize login pass naming
-(defn login [login password]
-  (let [user (db/get-user-for-login {:username login})
-        authenticated (hashers/check password (:pass user))]
+; TODO: generalize username pass naming
+(defn login [username password]
+  (let [user (db/get-user-for-login {:username username})
+        authenticated (hashers/check password (:password user))]
     (if authenticated
-      (new-tokens login)
+      (new-tokens username)
       {})))
 
-(defn refresh [user token]
+(defn refresh [username token]
   (let [unsigned (jwt/unsign token "token-secret")]
-    (if (= (:user unsigned) user)
-      (new-tokens user)
+    (if (= (:user unsigned) username)
+      (new-tokens username)
       {})))

@@ -9,9 +9,9 @@
 (defn service-routes []
   ["/api"
    {:middleware [middleware/wrap-formats]}
-   ["/signup" {:post (fn [{{:keys [user pass]} :body-params}]
+   ["/signup" {:post (fn [{{:keys [username password]} :body-params}]
                        (try
-                         (auth/create-user! user pass)
+                         (auth/create-user! username password)
                          (response/ok
                           {:message
                            "User registration successful. Please log in."})
@@ -19,19 +19,19 @@
                            (response/ok
                             {:message
                              (str "something happened: " e)}))))}]
-   ["/login" {:post (fn [{{:keys [user pass]} :body-params}]
+   ["/login" {:post (fn [{{:keys [username password]} :body-params}]
                       (try
                         (response/ok
-                         (auth/login user pass))
+                         (auth/login username password))
                         (catch clojure.lang.ExceptionInfo e
                           (response/ok
                            {:message
                             (str "something happened: " e)}))))}]
    ; TODO: remove snake casing
-   ["/refresh" {:post (fn [{{:keys [user refresh_token]} :body-params}]
+   ["/refresh" {:post (fn [{{:keys [username refresh_token]} :body-params}]
                       (try
                         (response/ok
-                         (auth/refresh user refresh_token))
+                         (auth/refresh username refresh_token))
                         (catch clojure.lang.ExceptionInfo e
                           (response/ok
                            {:message

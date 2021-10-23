@@ -2,8 +2,8 @@
 -- :name create-user!* :! :n
 -- :doc creates a new user with the provided login and hashed password
 INSERT INTO users
-(username, pass)
-VALUES (:username, :pass)
+(username, password)
+VALUES (:username, :password)
 
 -- :name update-user! :! :n
 -- :doc updates an existing user record
@@ -18,7 +18,7 @@ WHERE id = :id
 
 -- :name get-user-for-login :? :1
 -- :doc retrieves a user record given the id
-SELECT username,pass FROM users
+SELECT username,password FROM users
 WHERE username = :username
 
 -- :name delete-user! :! :n
