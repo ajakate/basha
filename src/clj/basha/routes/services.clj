@@ -27,11 +27,10 @@
                           (response/ok
                            {:message
                             (str "something happened: " e)}))))}]
-   ; TODO: remove snake casing
-   ["/refresh" {:post (fn [{{:keys [username refresh_token]} :body-params}]
+   ["/refresh" {:post (fn [{{:keys [username refresh-token]} :body-params}]
                       (try
                         (response/ok
-                         (auth/refresh username refresh_token))
+                         (auth/refresh username refresh-token))
                         (catch clojure.lang.ExceptionInfo e
                           (response/ok
                            {:message
