@@ -18,10 +18,16 @@ WHERE id = :id
 
 -- :name get-user-for-login :? :1
 -- :doc retrieves a user record given the id
-SELECT username,password FROM users
+SELECT username,password,id FROM users
 WHERE username = :username
 
 -- :name delete-user! :! :n
 -- :doc deletes a user record given the id
 DELETE FROM users
 WHERE id = :id
+
+-- :name create-list!* :! :n
+-- :doc creates a list record
+INSERT INTO lists
+(name, user_id, target_language, source_language)
+VALUES (:name, :user_id, :target_language, :source_language)

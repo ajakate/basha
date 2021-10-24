@@ -11,6 +11,10 @@
    [next.jdbc :as jdbc]
    [mount.core :as mount]))
 
+(defn clear-tables []
+  (jdbc/with-transaction [t-conn *db* {:rollback-only false}]
+    (jdbc/execute! t-conn ["truncate users, lists;"])))
+
 (defn parse-json [body]
   (m/decode formats/instance "application/json" body))
 
@@ -23,11 +27,19 @@
      #'basha.handler/app-routes)
     (migrations/migrate ["migrate"] (select-keys env [:database-url]))
     ;; TODO: refactor this
-    (jdbc/with-transaction [t-conn *db* {:rollback-only false}]
-      (jdbc/execute! t-conn ["truncate users;"]))
+    (clear-tables)
     (f)
-    (jdbc/with-transaction [t-conn *db* {:rollback-only false}]
-      (jdbc/execute! t-conn ["truncate users;"]))))
+    (clear-tables)))
+
+(defn create-user [params]
+  (let [{:keys [username password] :or {username "user" password "pass"}} params
+        _ ((app) (-> (request :post "/api/signup")
+                     (json-body {:username username :password password})))
+        login-response ((app) (-> (request :post "/api/login")
+                                  (json-body {:username username :password password})))
+        access-token (-> login-response :body parse-json :access-token)]
+    {:username username
+     :access-token access-token}))
 
 (deftest test-app
   (testing "main route"
@@ -40,20 +52,18 @@
 
   (testing "signup"
     (let [signup-response ((app) (-> (request :post "/api/signup")
-
                                      (json-body {:username "user" :password "pass"})))
           login-response ((app) (-> (request :post "/api/login")
                                     (json-body {:username "user" :password "pass"})))
-          login-body (-> login-response :body parse-json)
-          refresh-token (:refresh-token login-body)
-          refresh-response ((app) (-> (request :post "/api/refresh")
-                                    (json-body {:username "user" :refresh-token refresh-token})))
-          refresh-body (-> refresh-response :body parse-json)
-          ]
+          login-body (-> login-response :body parse-json)]
       (is (= 200 (:status signup-response)))
       (is (= 200 (:status login-response)))
-      (is (= 200 (:status refresh-response)))
       (is (seq (:access-token login-body)))
-      (is (seq (:refresh-token login-body)))
-      (is (seq (:refresh-token refresh-body)))
-      (is (seq (:access-token refresh-body))))))
+      (is (seq (:refresh-token login-body)))))
+
+  (testing "list-create"
+    ; TODO: add view list test here
+    (let [user (create-user {})
+          list-response ((app) (-> (request :post "/api/lists")
+                                   (json-body {:name "test" :target_language "oidf" :source_language "ksjdf"})
+                                   (header "Authorization" (str "Token " (:access-token user)))))])))

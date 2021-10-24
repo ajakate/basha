@@ -45,7 +45,9 @@
                  [ring/ring-defaults "0.3.3"]
                  [selmer "1.12.44"]
                  [thheller/shadow-cljs "2.15.2" :scope "provided"]
-                 [prismatic/schema "1.1.12"]]
+                 [prismatic/schema "1.1.12"]
+                 ; TODO: implement this
+                 [camel-snake-kebab "0.4.2"]]
 
   :min-lein-version "2.0.0"
   
