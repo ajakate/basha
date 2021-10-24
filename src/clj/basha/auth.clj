@@ -11,6 +11,7 @@
 
 (defn create-user! [username password]
   ; TODO: remvoe db/db?
+  ; TODO: add logic to check for existing user
   (jdbc/with-transaction [t-conn db/*db*]
     (db/create-user!* t-conn
                       {:username    username
