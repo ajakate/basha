@@ -1,5 +1,3 @@
-(ns basha.routes.services)
-
 (ns basha.routes.services
   (:require
    [basha.middleware :as middleware]
@@ -16,4 +14,7 @@
    ["/login" {:post {:parameters {:body {:username s/Str :password s/Str}}
                      :handler handle/login}}]
    ["/refresh" {:post {:parameters {:body {:username s/Str :refresh-token s/Str}}
-                       :handler handle/refresh}}]])
+                       :handler handle/refresh}}]
+;;    ["/lists" {:post {:parameters {:body {:name s/Str}}
+;;                      :handler handle/create-list}}]
+   ])
