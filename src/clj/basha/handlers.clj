@@ -1,32 +1,29 @@
 (ns basha.handlers
   (:require
-   [basha.middleware :as middleware]
    [basha.lists :as list]
    [ring.util.http-response :as response]
    [basha.auth :as auth]))
 
 ; AUTH
 
-; TODO: try catch wrapper
+(def error-types {:conflict response/conflict
+                  :bad-request response/bad-request})
+
+(defmacro with-handle [& exp]
+  `(try
+     (response/ok (do ~@exp))
+     (catch clojure.lang.ExceptionInfo ~'e
+       (((-> ~'e ex-data :type) error-types) {:message (.getMessage ~'e)}))))
+
 (defn signup [{{:keys [username password]} :body-params}]
-  (try
+  (with-handle
     (auth/create-user! username password)
-    (response/ok
-     {:message
-      "User registration successful. Please log in."})
-    (catch clojure.lang.ExceptionInfo e
-      (response/ok
-       {:message
-        (str "something happened: " e)}))))
+    {:message "try logging in"}))
 
 (defn login [{{:keys [username password]} :body-params}]
-  (try
-    (response/ok
-     (auth/login username password))
-    (catch clojure.lang.ExceptionInfo e
-      (response/ok
-       {:message
-        (str "something happened: " e)}))))
+  (with-handle
+    (auth/login username password)))
+
 
 (defn refresh [{{:keys [username refresh-token]} :body-params}]
   (try

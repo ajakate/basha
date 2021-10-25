@@ -25,12 +25,11 @@
       {:status 401 :body {:error "Unauthorized"}})))
 
 (defn create-user! [username password]
-  ; TODO: remvoe db/db?
-  ; TODO: add logic to check for existing user
-  (jdbc/with-transaction [t-conn db/*db*]
-    (db/create-user!* t-conn
-                      {:username    username
-                       :password (hashers/derive password)})))
+  (let [user (db/get-user-for-login {:username username})]
+    (if user
+      (throw (ex-info "User already exists" {:type :conflict}))
+      (db/create-user!* {:username    username
+                         :password (hashers/derive password)}))))
 
 (defn generate-token [payload time-interval]
   (jwt/sign payload "token-secret"
@@ -46,7 +45,7 @@
         authenticated (hashers/check password (:password user))]
     (if authenticated
       (new-tokens (dissoc user :password))
-      {})))
+      (throw (ex-info "Wrong username or password entered" {:type :bad-request})))))
 
 (defn refresh [username token]
   (let [unsigned (jwt/unsign token "token-secret")]
