@@ -13,9 +13,8 @@
                       :handler handle/signup}}]
    ["/login" {:post {:parameters {:body {:username s/Str :password s/Str}}
                      :handler handle/login}}]
-   ["/refresh" {:post {:parameters {:body {:username s/Str :refresh-token s/Str}}
+   ["/refresh" {:post {:middleware [wrap-jwt-authentication auth-middleware]
                        :handler handle/refresh}}]
    ["/lists" {:post {:middleware [wrap-jwt-authentication auth-middleware]
                      :parameters {:body {:name s/Str :source-language s/Str :target-language s/Str}}
-                     :handler handle/create-list}}]
-   ])
+                     :handler handle/create-list}}]])

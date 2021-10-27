@@ -19,14 +19,18 @@
   (m/decode formats/instance "application/json" body))
 
 (use-fixtures
-  :each
+  :once
   (fn [f]
     (mount/start
      #'basha.config/env
      #'basha.db.core/*db*
      #'basha.handler/app-routes)
     (migrations/migrate ["migrate"] (select-keys env [:database-url]))
-    ;; TODO: refactor this
+    (f)))
+
+(use-fixtures
+  :each
+  (fn [f]
     (clear-tables)
     (f)
     (clear-tables)))
@@ -41,44 +45,42 @@
     {:username username
      :access-token access-token}))
 
-; TODO: deleteme
-(deftest deprecated
-    (testing "signup"
-      (let [signup-response ((app) (-> (request :post "/api/signup")
-                                       (json-body {:username "user" :password "pass"})))
-            login-response ((app) (-> (request :post "/api/login")
-                                      (json-body {:username "user" :password "pass"})))
-            login-body (-> login-response :body parse-json)]
-        (is (= 200 (:status signup-response)))
-        (is (= 200 (:status login-response)))
-        (is (seq (:access-token login-body)))
-        (is (seq (:refresh-token login-body))))))
-
 (deftest signup
-    (testing "can't signup with same username"
-      (let [signup-response ((app) (-> (request :post "/api/signup")
-                                       (json-body {:username "user" :password "pass"})))
-            signup2-response ((app) (-> (request :post "/api/signup")
-                                        (json-body {:username "user" :password "pass2"})))]
-        (is (= 200 (:status signup-response)))
-        (is (= 409 (:status signup2-response)))))
-  ; TODO: move this
-  (testing "list-create"
-    ; TODO: add view list test here
-    (let [user (create-user {})
-          list-response ((app) (-> (request :post "/api/lists")
-                                   (json-body {:name "test" :target_language "oidf" :source_language "ksjdf"})
-                                   (header "Authorization" (str "Token " (:access-token user)))))])))
+  (testing "can't signup with same username"
+    (let [signup-response ((app) (-> (request :post "/api/signup")
+                                     (json-body {:username "user" :password "pass"})))
+          signup2-response ((app) (-> (request :post "/api/signup")
+                                      (json-body {:username "user" :password "pass2"})))]
+      (is (= 200 (:status signup-response)))
+      (is (= 409 (:status signup2-response))))))
 
 (deftest login
   (testing "signup"
     (let [_ (create-user {:username "ajay" :password "pass"})
           login-success ((app) (-> (request :post "/api/login")
-                                    (json-body {:username "ajay" :password "pass"})))
+                                   (json-body {:username "ajay" :password "pass"})))
           login-fail ((app) (-> (request :post "/api/login")
-                                   (json-body {:username "ajay" :password "wrong"})))
+                                (json-body {:username "ajay" :password "wrong"})))
           login-body (-> login-success :body parse-json)]
       (is (= 200 (:status login-success)))
       (is (seq (:access-token login-body)))
       (is (seq (:refresh-token login-body)))
       (is (= 400 (:status login-fail))))))
+
+(deftest refresh
+  (testing "should refresh the token"
+    (let [user (create-user {:username "ajay" :password "pass"})
+          refresh-response ((app) (-> (request :post "/api/refresh")
+                                      (header "Authorization" (str "Token " (:access-token user)))))
+          refresh-body (-> refresh-response :body parse-json)]
+      (is (= 200 (:status refresh-response)))
+      (is (seq (:access-token refresh-body)))
+      (is (seq (:refresh-token refresh-body))))))
+
+(deftest lists
+  (testing "create a list"
+    (let [user (create-user {})
+          list-response ((app) (-> (request :post "/api/lists")
+                                   (json-body {:name "test" :target_language "oidf" :source_language "ksjdf"})
+                                   (header "Authorization" (str "Token " (:access-token user)))))]
+      (is (= 200 (:status list-response))))))

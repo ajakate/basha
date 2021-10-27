@@ -47,8 +47,6 @@
       (new-tokens (dissoc user :password))
       (throw (ex-info "Wrong username or password entered" {:type :bad-request})))))
 
-(defn refresh [username token]
-  (let [unsigned (jwt/unsign token "token-secret")]
-    (if (= (:username unsigned) username)
-      (new-tokens username)
-      {})))
+(defn refresh [username]
+  (let [user (db/get-user-for-login {:username username})]
+    (new-tokens (dissoc user :password))))
