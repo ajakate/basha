@@ -36,7 +36,14 @@
     (response/ok
      (list/create! (assoc body-params :user_id (java.util.UUID/fromString id))))))
 
+; SENTENCES
+
 (defn create-sentence [{:keys [body-params identity]}]
   (let [id (:id identity)]
     (response/ok
      (sentence/create! (assoc body-params :creator_id (java.util.UUID/fromString id))))))
+
+(defn upload-audio [{{:keys [file sentence_id]} :params}]
+  ; TODO: implement
+  (response/ok
+   (assoc file :sentence_id sentence_id)))
