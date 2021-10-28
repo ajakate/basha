@@ -31,3 +31,16 @@ WHERE id = :id
 INSERT INTO lists
 (name, user_id, target_language, source_language)
 VALUES (:name, :user_id, :target_language, :source_language)
+
+-- :name create-sentence!* :<! :1
+-- :doc creates a sentence record
+INSERT INTO sentences
+(text, 
+creator_id,
+ --~ (if (seq (:text_roman params)) "text_roman," nil)
+  language)
+VALUES (:text,
+ :creator_id,
+--~ (if (seq (:text_roman params)) ":text_roman," nil)
+  :language)
+RETURNING *;

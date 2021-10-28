@@ -1,6 +1,7 @@
 (ns basha.handlers
   (:require
    [basha.lists :as list]
+   [basha.sentences :as sentence]
    [ring.util.http-response :as response]
    [basha.auth :as auth]))
 
@@ -34,3 +35,8 @@
   (let [id (:id identity)]
     (response/ok
      (list/create! (assoc body-params :user_id (java.util.UUID/fromString id))))))
+
+(defn create-sentence [{:keys [body-params identity]}]
+  (let [id (:id identity)]
+    (response/ok
+     (sentence/create! (assoc body-params :creator_id (java.util.UUID/fromString id))))))

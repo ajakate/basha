@@ -13,7 +13,7 @@
 
 (defn clear-tables []
   (jdbc/with-transaction [t-conn *db* {:rollback-only false}]
-    (jdbc/execute! t-conn ["truncate users, lists;"])))
+    (jdbc/execute! t-conn ["truncate users, lists, sentences;"])))
 
 (defn parse-json [body]
   (m/decode formats/instance "application/json" body))
@@ -84,3 +84,13 @@
                                    (json-body {:name "test" :target_language "oidf" :source_language "ksjdf"})
                                    (header "Authorization" (str "Token " (:access-token user)))))]
       (is (= 200 (:status list-response))))))
+
+(deftest sentences
+  (testing "create a sentence"
+    (let [user (create-user {})
+          sent-response ((app) (-> (request :post "/api/sentences")
+                                   (json-body {:text "Hello" :language "EN"})
+                                   (header "Authorization" (str "Token " (:access-token user)))))
+          sent-body (-> sent-response :body parse-json)]
+      (is (= 200 (:status sent-response)))
+      (is (seq (:id sent-body))))))

@@ -74,3 +74,8 @@
                            (apply str (rest type-name)))]
         (.setObject stmt idx (.createArrayOf conn elem-type (to-array v)))
         (.setObject stmt idx (clj->jsonb-pgobj v))))))
+
+(comment
+  (conman/bind-connection *db* "sql/queries.sql")
+  )
+

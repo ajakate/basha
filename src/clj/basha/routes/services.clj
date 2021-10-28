@@ -16,5 +16,10 @@
    ["/refresh" {:post {:middleware [wrap-jwt-authentication auth-middleware]
                        :handler handle/refresh}}]
    ["/lists" {:post {:middleware [wrap-jwt-authentication auth-middleware]
-                     :parameters {:body {:name s/Str :source-language s/Str :target-language s/Str}}
-                     :handler handle/create-list}}]])
+                     :parameters {:body {:name s/Str :source_language s/Str :target_language s/Str}}
+                     :handler handle/create-list}}]
+   ["/sentences" {:post {:middleware [wrap-jwt-authentication auth-middleware]
+                     :parameters {:body {:text s/Str
+                                         :text_roman s/Str
+                                         :language s/Str}}
+                     :handler handle/create-sentence}}]])
