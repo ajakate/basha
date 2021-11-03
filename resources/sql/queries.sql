@@ -44,3 +44,12 @@ VALUES (:text,
 --~ (if (seq (:text_roman params)) ":text_roman," nil)
   :language)
 RETURNING *;
+
+-- :name create-translation!* :<! :1
+-- :doc creates a translation record
+INSERT INTO translations
+(source_id, 
+target_id)
+VALUES (:source_id,
+ :target_id)
+RETURNING *;

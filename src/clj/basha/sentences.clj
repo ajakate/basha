@@ -9,7 +9,11 @@
 
 ; ADD cljc validation
 (defn create! [params]
-  (db/create-sentence!* params))
+  (let [new-sentence (db/create-sentence!* params)]
+    (if-let [source_id (:sentence_id params)]
+      (db/create-translation!* {:source_id (java.util.UUID/fromString source_id)
+                                :target_id (:id new-sentence)})
+      new-sentence)))
 
 (comment
   

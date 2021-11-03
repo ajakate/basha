@@ -86,11 +86,15 @@
       (is (= 200 (:status list-response))))))
 
 (deftest sentences
-  (testing "create a sentence"
+  (testing "create a sentence and a translation"
     (let [user (create-user {})
           sent-response ((app) (-> (request :post "/api/sentences")
                                    (json-body {:text "Hello" :language "EN"})
                                    (header "Authorization" (str "Token " (:access-token user)))))
-          sent-body (-> sent-response :body parse-json)]
+          sent-id  (-> sent-response :body parse-json :id)
+          trans-response ((app) (-> (request :post "/api/sentences")
+                                    (json-body {:text "Hola" :language "ES" :sentence_id sent-id})
+                                    (header "Authorization" (str "Token " (:access-token user)))))]
       (is (= 200 (:status sent-response)))
-      (is (seq (:id sent-body))))))
+      (is (seq sent-id))
+      (is (= 200 (:status trans-response))))))
