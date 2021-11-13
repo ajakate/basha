@@ -15,6 +15,11 @@ profiles.clj
 /node_modules
 /log
 
+resources/public/files/dev/*
+!resources/public/files/dev/.keep
+resources/public/files/test/*
+!resources/public/files/test/.keep
+
 .vscode
 .shadow-cljs
 .calva

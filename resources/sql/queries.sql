@@ -53,3 +53,16 @@ target_id)
 VALUES (:source_id,
  :target_id)
 RETURNING *;
+
+-- :name update-sentence-audio!* :<! :1
+-- :doc adds 
+INSERT INTO sentences
+(audio_link)
+VALUES (:audio-link)
+WHERE id = :id
+RETURNING *;
+
+-- :name get-sentence-by-id :? :1
+-- :doc retrieves a sentence record given the id
+SELECT * FROM sentences
+WHERE id = :id

@@ -3,12 +3,18 @@
    [basha.lists :as list]
    [basha.sentences :as sentence]
    [ring.util.http-response :as response]
-   [basha.auth :as auth]))
+   [amazonica.aws.s3 :as s3]
+   [basha.auth :as auth]
+   [basha.config :refer [env]]))
 
 ; AUTH
 
 (def error-types {:conflict response/conflict
                   :bad-request response/bad-request})
+
+(defonce cred {:access-key (:aws-access-key-id env)
+           :secret-key (:aws-secret-access-key env)
+           :endpoint   "us-east-1"})
 
 (defmacro with-handle [& exp]
   `(try
@@ -44,6 +50,12 @@
      (sentence/create! (assoc body-params :creator_id (java.util.UUID/fromString id))))))
 
 (defn upload-audio [{{:keys [file sentence_id]} :params}]
-  ; TODO: implement
+  (sentence/upload-audio-for-sentence! sentence_id
+                                      (:tempfile file))
   (response/ok
    (assoc file :sentence_id sentence_id)))
+
+(defn upload-list [{{:keys [file list_id]} :params}]
+  
+  (response/ok
+   (assoc file :sentence_id list_id)))

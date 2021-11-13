@@ -21,11 +21,18 @@
    ["/lists" {:post {:middleware [wrap-jwt-authentication auth-middleware]
                      :parameters {:body {:name s/Str :source_language s/Str :target_language s/Str}}
                      :handler handle/create-list}}]
+   ;; TODO: add auth
+   ["/lists/upload" {:post {:middleware [wrap-params wrap-multipart-params]
+                            :parameters {:multipart
+                                         {:file multipart/temp-file-part
+                                          :list_id string?}}
+                            :handler handle/upload-list}}]
    ["/sentences" {:post {:middleware [wrap-jwt-authentication auth-middleware]
                          :parameters {:body {:text s/Str
                                              :text_roman s/Str
                                              :language s/Str}}
                          :handler handle/create-sentence}}]
+   ;; TODO: add auth
    ["/upload" {:post {:middleware [wrap-params wrap-multipart-params]
                       :parameters {:multipart
                                    {:file multipart/temp-file-part

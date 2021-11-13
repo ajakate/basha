@@ -47,7 +47,8 @@
                  [thheller/shadow-cljs "2.15.2" :scope "provided"]
                  [prismatic/schema "1.1.12"]
                  ; TODO: implement this
-                 [camel-snake-kebab "0.4.2"]]
+                 [camel-snake-kebab "0.4.2"]
+                 [amazonica "0.3.156"]]
 
   :min-lein-version "2.0.0"
   

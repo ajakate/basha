@@ -10,8 +10,9 @@
    [java-time :as t]
    [basha.config :refer [env]]))
 
-;; (defonce token-secret (select-keys env [:token-secret]))
-(def backend (backends/jws {:secret "token-secret"}))
+(defonce token-secret  (:token-secret env))
+
+(def backend (backends/jws {:secret token-secret}))
 
 (defn wrap-jwt-authentication
   [handler]
@@ -32,7 +33,7 @@
                          :password (hashers/derive password)}))))
 
 (defn generate-token [payload time-interval]
-  (jwt/sign payload "token-secret"
+  (jwt/sign payload token-secret
             {:exp   (t/plus (t/instant) time-interval)}))
 
 (defn new-tokens [user]
