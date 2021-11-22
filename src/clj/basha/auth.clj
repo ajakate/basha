@@ -45,7 +45,7 @@
   (let [user (db/get-user-for-login {:username username})
         authenticated (hashers/check password (:password user))]
     (if authenticated
-      (new-tokens (dissoc user :password))
+      (assoc (new-tokens (dissoc user :password)) :username username)
       (throw (ex-info "Wrong username or password entered" {:type :bad-request})))))
 
 (defn refresh [username]

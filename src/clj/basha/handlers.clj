@@ -56,6 +56,5 @@
    (assoc file :sentence_id sentence_id)))
 
 (defn upload-list [{{:keys [file list_id]} :params}]
-  
   (response/ok
    (assoc file :sentence_id list_id)))

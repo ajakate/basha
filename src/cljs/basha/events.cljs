@@ -1,9 +1,20 @@
 (ns basha.events
   (:require
-    [re-frame.core :as rf]
-    [ajax.core :as ajax]
-    [reitit.frontend.easy :as rfe]
-    [reitit.frontend.controllers :as rfc]))
+   [re-frame.core :as rf]
+   [ajax.core :as ajax]
+   [reitit.frontend.easy :as rfe]
+   [reitit.frontend.controllers :as rfc]
+   [akiroz.re-frame.storage :refer [persist-db]]))
+
+(defn persisted-reg-event-db
+  [event-id handler]
+  (rf/reg-event-fx
+   event-id
+   [(persist-db :basha-app :user)]
+   (fn [{:keys [db]} event-vec]
+     {:db (handler db event-vec)})))
+
+(persisted-reg-event-db :init-local-storage (fn [db] db))
 
 ;;dispatchers
 
@@ -56,12 +67,77 @@
                  :params user
                  :format          (ajax/json-request-format)
                  :response-format  (ajax/json-response-format {:keywords? true})
-                ;;  :on-success       [:signup]
-                ;;  :on-failure [:signup]
-                 }}))
+                 :on-success       [:login-redirect]
+                 :on-failure [:set-signup-error]}}))
 
+(rf/reg-event-fx
+ :login
+ (fn [_ [_ user]]
+   {:http-xhrio {:method          :post
+                 :uri             "/api/login"
+                 :params user
+                 :format          (ajax/json-request-format)
+                 :response-format  (ajax/json-response-format {:keywords? true})
+                 :on-success       [:set-login-user]
+                 :on-failure [:set-signup-error]}}))
+
+
+(rf/reg-event-db
+ :swap-login-modal
+ (fn [db [_ val]]
+   (assoc db :login-modal/visible val)))
+
+(rf/reg-event-db
+ :close-login-modal
+ (fn [db [_]]
+   (assoc db :login-modal/visible false :login-modal/signup false :login-modal/errors nil)))
+
+(rf/reg-event-db
+ :set-signup-error
+ (fn [db [_ response]]
+   (assoc db :login-modal/errors (-> response :response :message))))
+
+(rf/reg-event-db
+ :set-signup
+ (fn [db [_ val]]
+   (assoc db :login-modal/signup val :login-modal/errors nil)))
+
+(persisted-reg-event-db
+ :set-login-user
+ (fn [db [_ user]]
+   (assoc db :user user :login-modal/visible false)))
+
+(rf/reg-event-db
+ :login-redirect
+ (fn [db [_]]
+   (assoc db :login-modal/visible true :login-modal/signup false :login-modal/errors nil)))
+
+(persisted-reg-event-db
+ :logout
+ (fn [db [_]]
+   (assoc db :user {})))
 
 ;;subscriptions
+
+(rf/reg-sub
+ :login-modal-visible
+ (fn [db _]
+   (-> db :login-modal/visible)))
+
+(rf/reg-sub
+ :is-signup
+ (fn [db _]
+   (-> db :login-modal/signup)))
+
+(rf/reg-sub
+ :login-errors
+ (fn [db _]
+   (-> db :login-modal/errors)))
+
+(rf/reg-sub
+ :user
+ (fn [db _]
+   (-> db :user)))
 
 (rf/reg-sub
   :common/route
