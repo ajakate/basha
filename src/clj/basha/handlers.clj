@@ -37,10 +37,13 @@
 
 ; LISTS
 
-(defn create-list [{:keys [body-params identity]}]
-  (let [id (:id identity)]
-    (response/ok
-     (list/create! (assoc body-params :user_id (java.util.UUID/fromString id))))))
+(defn create-list [{{:keys [id]} :identity {:keys [file name source_language target_language]} :params}]
+  (list/create!
+   name
+   source_language
+   target_language
+   (:tempfile file) id)
+  (response/ok {:hi (:filename file) :poo id}))
 
 ; SENTENCES
 

@@ -18,8 +18,11 @@
                      :handler handle/login}}]
    ["/refresh" {:post {:middleware [wrap-jwt-authentication auth-middleware]
                        :handler handle/refresh}}]
-   ["/lists" {:post {:middleware [wrap-jwt-authentication auth-middleware]
-                     :parameters {:body {:name s/Str :source_language s/Str :target_language s/Str}}
+   ["/lists" {:post {:middleware [wrap-jwt-authentication auth-middleware wrap-params wrap-multipart-params]
+                     :parameters {:multipart {:file multipart/temp-file-part
+                                              :name s/Str 
+                                              :source_language s/Str
+                                              :target_language s/Str}}
                      :handler handle/create-list}}]
    ;; TODO: add auth
    ["/lists/upload" {:post {:middleware [wrap-params wrap-multipart-params]

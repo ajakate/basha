@@ -81,6 +81,35 @@
                  :on-success       [:set-login-user]
                  :on-failure [:set-signup-error]}}))
 
+(defn generate-form-data [params]
+  (let [form-data (js/FormData.)]
+    (doseq [[k v] params]
+      (.append form-data (name k) v))
+    form-data))
+
+(rf/reg-event-fx
+ :create-list
+ (fn [{:keys [db]} [_ params]]
+   {:http-xhrio {:method          :post
+                 :uri             "/api/lists"
+                 :body (generate-form-data params)
+                 :format          (ajax/json-request-format)
+                 :headers {"Authorization" (str "Token " (-> db :user :access-token))}
+                 :response-format  (ajax/json-response-format {:keywords? true})
+                ;;  :on-success       [:set-login-user]
+                 :on-failure [:set-signup-error]}}))
+
+;; (rf/reg-event-fx
+;;  :refresh
+;;  (fn [{:keys [db]} [_ params]]
+;;    {:http-xhrio {:method          :post
+;;                  :uri             "/api/refresh"
+;;                  :params params
+;;                  :format          (ajax/json-request-format)
+;;                  :headers {"Authorization" (str "Token " (-> db :user :refresh-token))}
+;;                  :response-format  (ajax/json-response-format {:keywords? true})
+;;                  :on-success       [:set-login-user]
+;;                  :on-failure [:set-signup-error]}}))
 
 (rf/reg-event-db
  :swap-login-modal

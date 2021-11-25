@@ -25,10 +25,12 @@
         login-vals {:swap-message "Create an account"
                     :button "Log In"
                     :swap-func [:set-signup true]
+                    :header "Log In"
                     :dispatch :login}
         signup-vals {:swap-message "Log in to an existing account"
                      :button "Sign Up"
                      :swap-func [:set-signup false]
+                     :header "Create an Account"
                      :dispatch :signup}]
     (if signup
       (arg signup-vals)
@@ -43,6 +45,8 @@
      {:class (if is-active "is-active" nil)}
      [:div.modal-background]
      [:div.model-content>div.card
+      [:header.card-header
+       [:p.card-header-title (modal-vals :header)]]
       [:div.card-content
        (r/with-let [draft_user (r/atom nil)
                     draft_pass (r/atom nil)
@@ -62,7 +66,9 @@
                            :placeholder "test123"
                            :on-change #(reset! draft_pass (.. % -target -value))
                            :value @draft_pass}]]
-           [:div.control>a.button.is-info {:on-click #(reset! show_pass (not @show_pass))} (if @show_pass "hide password" "show password")]]
+           [:div.control>a.button.is-info
+            {:on-click #(swap! show_pass not)}
+            [:i.fa {:class (if @show_pass :fa-eye-slash :fa-eye)}]]]
           (if error [:p.has-text-danger.is-italic.mb-3 (str "Error: " error)])
           [:div.control>button.button.is-link
            {:on-click #(rf/dispatch [(modal-vals :dispatch) {:username @draft_user :password @draft_pass}])
@@ -100,10 +106,64 @@
   [:section.section>div.container>div.content
    [:img {:src "/img/warning_clojure.png"}]])
 
-(defn home-page []
+(defn create-list-page []
+  (r/with-let [draft_name (r/atom nil)
+               draft_source (r/atom nil)
+               draft_target (r/atom nil)
+               draft_file (r/atom nil)]
+    [:div.px-6
+     [:p.is-size-2 "Create a new sentence list"]
+     [:div.field
+      [:label.label "Name"]
+      [:div.control>input.input
+       {:type "text"
+        :placeholder "My new sentce list"
+        :on-change #(reset! draft_name (.. % -target -value))
+        :value @draft_name}]]
+     [:div.field
+      [:label.label "Source Language"]
+      [:div.control>div.select
+       [:select {:on-change #(reset! draft_source (.. % -target -value))}
+        [:option "English"]
+        [:option "Marathi"]]]]
+     [:div.field
+      [:label.label "Target Language"]
+      [:div.control>div.select
+       [:select {:on-change #(reset! draft_target (.. % -target -value))}
+        [:option "English"]
+        [:option "Marathi"]]]]
+     [:label.label "Upload a .txt file"]
+     [:div.file.has-name
+      [:label.file-label
+       [:input.file-input {:type "file" :name "list" :on-change #(reset! draft_file (-> % .-target .-files (aget 0)))}]
+       [:span.file-cta
+        [:span.file-icon>i.fa.fa-upload]
+        [:span.file-label "Choose a file"]]
+       [:span.file-name (if @draft_file (.. @draft_file -name) "example.txt")]]]
+     [:br]
+     [:div.control>button.button.is-link
+      {
+      ;;  :on-click #(js/console.log @draft_file)
+       :on-click #(rf/dispatch [:create-list {:name @draft_name :source_language @draft_source :target_language @draft_target :file  @draft_file}])
+       :disabled (or (string/blank? "fd")
+                     (string/blank? "fd"))} "Create List"]
+     ]))
+
+(defn logged-in-home []
+  [:div.has-text-centered
+   [:p.is-size-1 "My Dashboard"]
+   [:a.button.is-primary {:href "/#/lists/new"} "Create a New Sentence List"]])
+
+(defn logged-out-home []
   [:section.section>div.container>div.content
    (when-let [docs @(rf/subscribe [:docs])]
      [:div {:dangerouslySetInnerHTML {:__html (md->html docs)}}])])
+
+(defn home-page []
+  (let [user @(rf/subscribe [:user])]
+    (if (seq user)
+      [logged-in-home]
+      [logged-out-home])))
 
 (defn page []
   (if-let [page @(rf/subscribe [:common/page])]
@@ -121,7 +181,9 @@
           :view        #'home-page
           :controllers [{:start (fn [_] (rf/dispatch [:page/init-home]))}]}]
     ["/about" {:name :about
-               :view #'about-page}]]))
+               :view #'about-page}]
+    ["/lists/new" {:name :create-list
+               :view #'create-list-page}]]))
 
 (defn start-router! []
   (rfe/start!

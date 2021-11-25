@@ -26,24 +26,34 @@ WHERE username = :username
 DELETE FROM users
 WHERE id = :id
 
--- :name create-list!* :! :n
+-- :name create-list!* :! :1
 -- :doc creates a list record
 INSERT INTO lists
 (name, user_id, target_language, source_language)
 VALUES (:name, :user_id, :target_language, :source_language)
+RETURNING id;
 
 -- :name create-sentence!* :<! :1
 -- :doc creates a sentence record
 INSERT INTO sentences
-(text, 
+(
+   --~ (if (seq (:text params)) "text," nil)
 creator_id,
  --~ (if (seq (:text_roman params)) "text_roman," nil)
   language)
-VALUES (:text,
+VALUES (
+   --~ (if (seq (:text params)) ":text," nil)
  :creator_id,
 --~ (if (seq (:text_roman params)) ":text_roman," nil)
   :language)
 RETURNING *;
+
+-- :name create-list-item!* :! :1
+-- :doc Insert list item
+insert into list_items
+(sentence_id,
+list_id)
+VALUES (:sentence_id :list_id)
 
 -- :name create-translation!* :<! :1
 -- :doc creates a translation record

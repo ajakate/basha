@@ -10,7 +10,7 @@
    [java-time :as t]
    [basha.config :refer [env]]))
 
-(defonce token-secret  (:token-secret env))
+(defonce token-secret  "secret")
 
 (def backend (backends/jws {:secret token-secret}))
 
