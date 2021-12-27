@@ -1,5 +1,5 @@
 ; TODO clean this imports
-(ns basha.sentences
+(ns basha.translations
   (:require
    [basha.db.core :as db]
    [camel-snake-kebab.core :as csk]
@@ -9,14 +9,9 @@
    [basha.files :as files]
    [basha.config :refer [env]]))
 
-; TODO: delete this file
-
 (defonce cred {:access-key (:aws-access-key-id env)
                :secret-key (:aws-secret-access-key env)
                :endpoint   "us-east-1"})
-
-;; (defn format-sentence [resp]
-;;   (first resp))
 
 ; ADD cljc validation
 (defn create! [params]
@@ -35,5 +30,8 @@
     (throw (ex-info "no sentence found for audio" {:type :bad-request}))))
 
 ;; TODO: add translation logic
-(defn get [id]
-  (db/get-sentence {:id (java.util.UUID/fromString id)}))
+(defn fetch [id]
+  (db/get-translation {:id (java.util.UUID/fromString id)}))
+
+(defn update [id user-id params]
+  (db/update-translation (assoc params :id (java.util.UUID/fromString id) :translator_id (java.util.UUID/fromString user-id))))

@@ -79,6 +79,57 @@
      [:button.modal-close.is-large
       {:aria-label "close" :on-click #(rf/dispatch [:close-login-modal])} "close"]]))
 
+(defn translate-modal []
+  (let [is-active @(rf/subscribe [:translate-modal-visible])
+        translation @(rf/subscribe [:active-translation])
+        list @(rf/subscribe [:active-list])
+        loading-translation @(rf/subscribe [:loading-translation])]
+    (if loading-translation
+      [:div "loading"]
+      [:div.modal
+       {:class (if is-active "is-active" nil)}
+       [:div.modal-background]
+       [:div.model-content>div.card
+        [:header.card-header
+         [:p.card-header-title "Translate Sentence"]]
+        [:div.card-content
+         (r/with-let [draft_source (r/atom (:source_text translation))
+                    ; TODO: add logic for source romainization
+                      draft_target (r/atom nil)
+                      draft_target_rom (r/atom nil)]
+           [:div
+            [:label.label "Source sentence"]
+            [:div.field
+             [:div.control>input.input
+              {:type "text"
+               :placeholder "sk8hkr69"
+               :on-change #(reset! draft_source (.. % -target -value))
+               :value @draft_source}]]
+            [:label.label "Translation (native script)"]
+            [:div.field
+             [:div.control [:input.input
+                            {:type "text"
+                             :placeholder "type your native translation here"
+                             :on-change #(reset! draft_target (.. % -target -value))
+                             :value @draft_target}]]]
+            [:label.label "Translation (roman script)"]
+            [:div.field
+             [:div.control [:input.input
+                            {:type "text"
+                             :placeholder "type your roman translation here"
+                             :on-change #(reset! draft_target_rom (.. % -target -value))
+                             :value @draft_target_rom}]]]
+            [:div.control>button.button.is-link
+             {:on-click #(rf/dispatch [:edit-translation {:target_text_roman @draft_target_rom
+                                                          :target_text @draft_target
+                                                          :source_text @draft_source
+                                                          :id (:id translation)}])
+              ; TODO: fix disabled here
+              :disabled (or (string/blank? "sdf")
+                            (string/blank? "sdf"))} "Submit"]])]]
+       [:button.modal-close.is-large
+        {:aria-label "close" :on-click #(rf/dispatch [:close-translate-modal])} "close"]])))
+
 (defn navbar []
   ;; TODO: fix logic seq user nil
   (r/with-let [expanded? (r/atom false)]
@@ -106,6 +157,7 @@
   [:section.section>div.container>div.content
    [:img {:src "/img/warning_clojure.png"}]])
 
+;; TODO: disallow nils in select
 (defn create-list-page []
   (r/with-let [draft_name (r/atom nil)
                draft_source (r/atom nil)
@@ -142,17 +194,57 @@
        [:span.file-name (if @draft_file (.. @draft_file -name) "example.txt")]]]
      [:br]
      [:div.control>button.button.is-link
-      {
-      ;;  :on-click #(js/console.log @draft_file)
-       :on-click #(rf/dispatch [:create-list {:name @draft_name :source_language @draft_source :target_language @draft_target :file  @draft_file}])
+      {:on-click #(rf/dispatch [:create-list {:name @draft_name :source_language @draft_source :target_language @draft_target :file  @draft_file}])
        :disabled (or (string/blank? "fd")
-                     (string/blank? "fd"))} "Create List"]
-     ]))
+                     (string/blank? "fd"))} "Create List"]]))
+
+(defn view-list []
+  (let [list @(rf/subscribe [:active-list])]
+    (if list
+      [:div
+       [:h1 (:name list)]
+       [:h2 (str "creator: " (:creator list))]
+       [:table.table.is-bordered.is-narrow.is-striped.is-hoverable
+        [:thead [:tr
+                 [:th (:source_language list)]
+                 [:th (:target_language list)]]]
+        [:tbody
+         (for [s (:translations list)]
+           ^{:key (:id s)}
+           [:tr
+            [:td (:source_text s)]
+            [:td (:target_text s)]
+            [:td [:a.button.is-info {:on-click #(rf/dispatch [:open-translate-modal (:id s)])} "edit"]]])]]])))
+
+(defn my-lists []
+  (let [lists @(rf/subscribe [:list-summary])]
+    (if (seq lists)
+      
+      [:table.table.is-bordered.is-narrow.is-striped.is-hoverable
+       [:thead [:tr 
+                [:th "name"]
+                [:th "owner"] 
+                [:th "source language"]
+                [:th "target language"]
+                [:th "sentence count"]
+                ]]
+       [:tbody
+        (for [list lists]
+          ^{:key (:id list)}
+          [:tr
+           [:td (:name list)]
+           [:td (:creator list)]
+           [:td (:source_language list)]
+           [:td (:target_language list)]
+           [:td (:list_count list)]
+           [:td [:a.button.is-info {:href (str "/#/lists/edit/" (:id list))} "edit"]]])]]
+      [:h1 "You don't have any lists!"])))
 
 (defn logged-in-home []
   [:div.has-text-centered
    [:p.is-size-1 "My Dashboard"]
-   [:a.button.is-primary {:href "/#/lists/new"} "Create a New Sentence List"]])
+   [:a.button.is-primary {:href "/#/lists/new"} "Create a New Sentence List"]
+   [my-lists]])
 
 (defn logged-out-home []
   [:section.section>div.container>div.content
@@ -170,7 +262,8 @@
     [:div
      [navbar]
      [page]
-     [login-modal]]))
+     [login-modal]
+     [translate-modal]]))
 
 (defn navigate! [match _]
   (rf/dispatch [:common/navigate match]))
@@ -183,7 +276,13 @@
     ["/about" {:name :about
                :view #'about-page}]
     ["/lists/new" {:name :create-list
-               :view #'create-list-page}]]))
+               :view #'create-list-page}]
+    ["/lists/edit/:id" {:name :view-lsit
+                    :view #'view-list
+                    :controllers [{:parameters {:path [:id]}
+                                   :start (fn [{{:keys [id]} :path}]
+                                            ;; (rf/dispatch [:set-track-loading true])
+                                            (rf/dispatch [:fetch-list id]))}]}]]))
 
 (defn start-router! []
   (rfe/start!

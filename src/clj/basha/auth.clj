@@ -10,6 +10,7 @@
    [java-time :as t]
    [basha.config :refer [env]]))
 
+; TODO: fix this
 (defonce token-secret  "secret")
 
 (def backend (backends/jws {:secret token-secret}))
@@ -36,10 +37,10 @@
   (jwt/sign payload token-secret
             {:exp   (t/plus (t/instant) time-interval)}))
 
+; TODO: change this back
 (defn new-tokens [user]
-  {:access-token (generate-token user (t/hours 1))
-   :refresh-token (generate-token user (t/days 1))}
-  )
+  {:access-token (generate-token user (t/hours 100))
+   :refresh-token (generate-token user (t/days 100))})
 
 (defn login [username password]
   (let [user (db/get-user-for-login {:username username})

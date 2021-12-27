@@ -56,7 +56,9 @@
 
 (rf/reg-event-fx
   :page/init-home
-  (fn [_ _]
+  (fn [{:keys [db]} _]
+    (if (seq (:user db))
+      (rf/dispatch [:fetch-list-summary]))
     {:dispatch [:fetch-docs]}))
 
 (rf/reg-event-fx
@@ -99,6 +101,53 @@
                 ;;  :on-success       [:set-login-user]
                  :on-failure [:set-signup-error]}}))
 
+(rf/reg-event-fx
+ ; TODO: redirect
+ :edit-translation
+ (fn [{:keys [db]} [_ params]]
+   (let [id (:id params)
+         body (dissoc params :id)]
+     {:http-xhrio {:method          :post
+                   :uri             (str "/api/translations/" id)
+                   :body (generate-form-data body)
+                   :format          (ajax/json-request-format)
+                   :headers {"Authorization" (str "Token " (-> db :user :access-token))}
+                   :response-format  (ajax/json-response-format {:keywords? true})
+                ;;  :on-success       [:set-login-user]
+                   :on-failure [:set-signup-error]}})))
+
+(rf/reg-event-fx
+ :fetch-list-summary
+ (fn [{:keys [db]} [_ _]]
+   {:http-xhrio {:method          :get
+                 :uri             "/api/lists"
+                 :headers {"Authorization" (str "Token " (-> db :user :access-token))}
+                 :response-format  (ajax/json-response-format {:keywords? true})
+                 :on-success       [:set-list-summary]
+                 :on-failure [:set-list-summary]}}))
+
+(rf/reg-event-fx
+ :fetch-translation
+ (fn [{:keys [db]} [_ id]]
+   {:http-xhrio {:method          :get
+                 :uri             (str "/api/translations/" id)
+                 :headers {"Authorization" (str "Token " (-> db :user :access-token))}
+                 :response-format  (ajax/json-response-format {:keywords? true})
+                 :on-success       [:set-active-translation]
+                ;;  :on-failure [:set-list-summary]
+                 }}))
+
+(rf/reg-event-fx
+ :fetch-list
+ (fn [{:keys [db]} [_ id]]
+   {:http-xhrio {:method          :get
+                 :uri             (str "/api/lists/" id)
+                 :headers {"Authorization" (str "Token " (-> db :user :access-token))}
+                 :response-format  (ajax/json-response-format {:keywords? true})
+                 :on-success       [:set-active-list]
+                ;;  :on-failure [:set-list-summary]
+                 }}))
+
 ;; (rf/reg-event-fx
 ;;  :refresh
 ;;  (fn [{:keys [db]} [_ params]]
@@ -111,6 +160,22 @@
 ;;                  :on-success       [:set-login-user]
 ;;                  :on-failure [:set-signup-error]}}))
 
+; TODO: IMPLEMENT THIS FOR REDIRECT
+;; (rf/reg-event-fx
+;;  :set-track-url
+;;  (fn [_ [_ track]]
+;;    (rfe/push-state :view-track {:id (:id track)})))
+
+(rf/reg-event-db
+ :set-list-summary
+ (fn [db [_ response]]
+   (assoc db :list-summary response)))
+
+(rf/reg-event-db
+ :set-active-list
+ (fn [db [_ response]]
+   (assoc db :active-list response)))
+
 (rf/reg-event-db
  :swap-login-modal
  (fn [db [_ val]]
@@ -121,10 +186,26 @@
  (fn [db [_]]
    (assoc db :login-modal/visible false :login-modal/signup false :login-modal/errors nil)))
 
+(rf/reg-event-fx
+ :open-translate-modal
+ (fn [{:keys [db]} [_ id]]
+   {:db (assoc db :translate-modal/visible true :loading-translation true)
+    :dispatch [:fetch-translation id]}))
+
+(rf/reg-event-db
+ :close-translate-modal
+ (fn [db [_]]
+   (assoc db :translate-modal/visible false :loading-translation false :active-translation nil)))
+
+(rf/reg-event-db
+ :set-active-translation
+ (fn [db [_ response]]
+   (assoc db :active-translation response :loading-translation false)))
+
 (rf/reg-event-db
  :set-signup-error
  (fn [db [_ response]]
-   (assoc db :login-modal/errors (-> response :response :message))))
+   (assoc db :list-summary response)))
 
 (rf/reg-event-db
  :set-signup
@@ -149,9 +230,34 @@
 ;;subscriptions
 
 (rf/reg-sub
+ :active-list
+ (fn [db _]
+   (-> db :active-list))) 
+
+(rf/reg-sub
+ :loading-translation
+ (fn [db _]
+   (-> db :loading-translation)))
+
+(rf/reg-sub
+ :active-translation
+ (fn [db _]
+   (-> db :active-translation)))
+
+(rf/reg-sub
+ :list-summary
+ (fn [db _]
+   (-> db :list-summary)))
+
+(rf/reg-sub
  :login-modal-visible
  (fn [db _]
    (-> db :login-modal/visible)))
+
+(rf/reg-sub
+ :translate-modal-visible
+ (fn [db _]
+   (-> db :translate-modal/visible)))
 
 (rf/reg-sub
  :is-signup

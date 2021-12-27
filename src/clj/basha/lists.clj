@@ -8,27 +8,45 @@
    [basha.config :refer [env]]
    [cprop.source :as source]))
 
-(defn format-sentences [sentences creator language]
-  (map (fn [s] [s creator language]) sentences))
-
-(defn create-sentences [sentences user source conn]
+(defn create-translations [sentences list_id conn]
   (map (fn [s]
-         (:id (db/create-sentence!* conn {:text s :creator_id user :language source})))
+         (:id (db/create-translation!* conn {:source_text s :list_id list_id})))
        sentences))
 
-(defn create-list-items [sentence_ids list_id]
-                   (map (fn [s]
-                          (db/create-list-item!* {:sentence_id s :list_id list_id}))
-                        sentence_ids))
+(defn format-list [resp]
+  (let [name (-> resp first :name)
+        source_language (-> resp first :source_language)
+        target_language (-> resp first :target_language)
+        creator (-> resp first :creator)]
+    (println resp)
+    {:id (-> resp first :list_id)
+     :name name
+     :source_language source_language
+     :target_language target_language
+     :creator creator
+     :translations (for [r resp]
+                     {:id (:translation_id r)
+                      :source_text (:source_text r)
+                      :target_text (:target_text r)
+                      :target_text_roman (:target_text_roman r)})}))
 
 ; ADD cljc validation
 (defn create! [name source target file user_id]
   (jdbc/with-transaction [t-conn db/*db*]
     (let [sentences (-> file slurp clojure.string/split-lines)
-          list_id (db/create-list!* t-conn
-                                    {:name name
-                                     :source_language source
-                                     :target_language target
-                                     :user_id (java.util.UUID/fromString user_id)})
-          sentence_ids (create-sentences sentences (java.util.UUID/fromString user_id) source t-conn)]
-      (create-list-items sentence_ids list_id))))
+          list_id (db/create-list!*
+                   t-conn
+                   {:name name
+                    :source_language source
+                    :target_language target
+                    :user_id (java.util.UUID/fromString user_id)})
+          sentence_ids (create-translations sentences (:id list_id) t-conn)]
+      ;; TODO: WHY DO I NEED THIS PRINTLN HERE?
+      (println sentence_ids)
+      {:id list_id})))
+
+(defn get-summary [id]
+  (db/get-list-summary {:id (java.util.UUID/fromString id)}))
+
+(defn get [id]
+  (format-list (db/get-list {:id (java.util.UUID/fromString id)})))

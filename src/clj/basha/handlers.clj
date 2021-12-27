@@ -2,6 +2,7 @@
   (:require
    [basha.lists :as list]
    [basha.sentences :as sentence]
+   [basha.translations :as translation]
    [ring.util.http-response :as response]
    [amazonica.aws.s3 :as s3]
    [basha.auth :as auth]
@@ -45,12 +46,27 @@
    (:tempfile file) id)
   (response/ok {:hi (:filename file) :poo id}))
 
+(defn get-lists [{{:keys [id]} :identity}]
+  (with-handle (list/get-summary id)))
+
+(defn get-list [{{:keys [id]} :path-params}]
+  (with-handle (list/get id)))
+
+(defn get-translation [{{:keys [id]} :path-params}]
+  (with-handle (translation/fetch id)))
+
+(defn edit-translation [{{:keys [id]} :identity body-params :params path-params :path-params}]
+  (let [t-id (:id path-params)]
+    (with-handle (translation/update t-id id body-params))))
+
 ; SENTENCES
 
-(defn create-sentence [{:keys [body-params identity]}]
+; TODO: now delete these!!!!
+(defn create-sentence [{:keys [params identity]}]
+  (println params)
   (let [id (:id identity)]
     (response/ok
-     (sentence/create! (assoc body-params :creator_id (java.util.UUID/fromString id))))))
+     (sentence/create! (assoc params :creator_id (java.util.UUID/fromString id))))))
 
 (defn upload-audio [{{:keys [file sentence_id]} :params}]
   (sentence/upload-audio-for-sentence! sentence_id
