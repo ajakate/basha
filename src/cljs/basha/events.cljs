@@ -98,11 +98,11 @@
                  :format          (ajax/json-request-format)
                  :headers {"Authorization" (str "Token " (-> db :user :access-token))}
                  :response-format  (ajax/json-response-format {:keywords? true})
-                ;;  :on-success       [:set-login-user]
-                 :on-failure [:set-signup-error]}}))
+                 :on-success       [:redirect-home]
+                 :on-failure [:set-create-list-error]}}))
 
 (rf/reg-event-fx
- ; TODO: redirect
+ ; TODO: now redirect
  :edit-translation
  (fn [{:keys [db]} [_ params]]
    (let [id (:id params)
@@ -166,10 +166,25 @@
 ;;  (fn [_ [_ track]]
 ;;    (rfe/push-state :view-track {:id (:id track)})))
 
+(rf/reg-event-fx
+ :redirect-home
+ (fn [_ [_]]
+   (rfe/push-state :home)))
+
 (rf/reg-event-db
  :set-list-summary
  (fn [db [_ response]]
    (assoc db :list-summary response)))
+
+(rf/reg-event-db
+ :set-create-list-error
+ (fn [db [_ response]]
+   (assoc db :create-list-error (-> response :response :message))))
+
+(rf/reg-event-db
+ :clear-create-list-error
+ (fn [db [_]]
+   (assoc db :create-list-error nil)))
 
 (rf/reg-event-db
  :set-active-list
@@ -228,6 +243,11 @@
    (assoc db :user {})))
 
 ;;subscriptions
+
+(rf/reg-sub
+ :create-list-error
+ (fn [db _]
+   (-> db :create-list-error)))
 
 (rf/reg-sub
  :active-list

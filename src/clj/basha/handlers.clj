@@ -20,7 +20,9 @@
   `(try
      (response/ok (do ~@exp))
      (catch clojure.lang.ExceptionInfo ~'e
-       (((-> ~'e ex-data :type) error-types) {:message (.getMessage ~'e)}))))
+       (((-> ~'e ex-data :type) error-types) {:message (.getMessage ~'e)}))
+     (catch Exception ~'e
+       (response/internal-server-error {:message (.getMessage ~'e)}))))
 
 (defn signup [{{:keys [username password]} :body-params}]
   (with-handle
@@ -38,12 +40,11 @@
 ; LISTS
 
 (defn create-list [{{:keys [id]} :identity {:keys [file name source_language target_language]} :params}]
-  (list/create!
-   name
-   source_language
-   target_language
-   (:tempfile file) id)
-  (response/ok {:hi (:filename file) :poo id}))
+  (with-handle (list/create!
+                name
+                source_language
+                target_language
+                (:tempfile file) id)))
 
 (defn get-lists [{{:keys [id]} :identity}]
   (with-handle (list/get-summary id)))

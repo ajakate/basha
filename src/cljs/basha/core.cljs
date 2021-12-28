@@ -157,46 +157,54 @@
   [:section.section>div.container>div.content
    [:img {:src "/img/warning_clojure.png"}]])
 
-;; TODO: disallow nils in select
 (defn create-list-page []
   (r/with-let [draft_name (r/atom nil)
                draft_source (r/atom nil)
                draft_target (r/atom nil)
                draft_file (r/atom nil)]
-    [:div.px-6
-     [:p.is-size-2 "Create a new sentence list"]
-     [:div.field
-      [:label.label "Name"]
-      [:div.control>input.input
-       {:type "text"
-        :placeholder "My new sentce list"
-        :on-change #(reset! draft_name (.. % -target -value))
-        :value @draft_name}]]
-     [:div.field
-      [:label.label "Source Language"]
-      [:div.control>div.select
-       [:select {:on-change #(reset! draft_source (.. % -target -value))}
-        [:option "English"]
-        [:option "Marathi"]]]]
-     [:div.field
-      [:label.label "Target Language"]
-      [:div.control>div.select
-       [:select {:on-change #(reset! draft_target (.. % -target -value))}
-        [:option "English"]
-        [:option "Marathi"]]]]
-     [:label.label "Upload a .txt file"]
-     [:div.file.has-name
-      [:label.file-label
-       [:input.file-input {:type "file" :name "list" :on-change #(reset! draft_file (-> % .-target .-files (aget 0)))}]
-       [:span.file-cta
-        [:span.file-icon>i.fa.fa-upload]
-        [:span.file-label "Choose a file"]]
-       [:span.file-name (if @draft_file (.. @draft_file -name) "example.txt")]]]
-     [:br]
-     [:div.control>button.button.is-link
-      {:on-click #(rf/dispatch [:create-list {:name @draft_name :source_language @draft_source :target_language @draft_target :file  @draft_file}])
-       :disabled (or (string/blank? "fd")
-                     (string/blank? "fd"))} "Create List"]]))
+    (let [error @(rf/subscribe [:create-list-error])]
+      [:div.px-6
+       [:p.is-size-2 "Create a new sentence list"]
+       [:div.field
+        [:label.label "Name"]
+        [:div.control>input.input
+         {:type "text"
+          :placeholder "My new sentence list"
+          :on-change #(reset! draft_name (.. % -target -value))
+          :value @draft_name}]]
+       [:div.field
+        [:label.label "Source Language"]
+        [:div.control>div.select
+         [:select {:on-change #(reset! draft_source (.. % -target -value))}
+          [:option "Select"]
+          [:option "English"]
+          [:option "Marathi"]]]]
+       [:div.field
+        [:label.label "Target Language"]
+        [:div.control>div.select
+         [:select {:on-change #(reset! draft_target (.. % -target -value))}
+          [:option "Select"]
+          [:option "English"]
+          [:option "Marathi"]]]]
+       [:label.label "Upload a .txt file"]
+       [:div.file.has-name
+        [:label.file-label
+         [:input.file-input {:type "file" :name "list" :on-change #(reset! draft_file (-> % .-target .-files (aget 0)))}]
+         [:span.file-cta
+          [:span.file-icon>i.fa.fa-upload]
+          [:span.file-label "Choose a file"]]
+         [:span.file-name (if @draft_file (.. @draft_file -name) [:i "No file selected"])]]]
+       [:br]
+       [:div.control>button.button.is-link
+        {:on-click #(rf/dispatch [:create-list {:name @draft_name
+                                                :source_language @draft_source
+                                                :target_language @draft_target
+                                                :file  @draft_file}])
+         :disabled (or (string/blank? @draft_name)
+                       (string/blank? @draft_source)
+                       (string/blank? @draft_target)
+                       (nil? @draft_file))} "Create List"]
+       [:p.has-text-danger.is-italic.mb-3 (str error)]])))
 
 (defn view-list []
   (let [list @(rf/subscribe [:active-list])]
@@ -276,7 +284,8 @@
     ["/about" {:name :about
                :view #'about-page}]
     ["/lists/new" {:name :create-list
-               :view #'create-list-page}]
+                   :view #'create-list-page
+                   :controllers [{:start (fn [] (rf/dispatch [:clear-create-list-error]))}]}]
     ["/lists/edit/:id" {:name :view-lsit
                     :view #'view-list
                     :controllers [{:parameters {:path [:id]}
