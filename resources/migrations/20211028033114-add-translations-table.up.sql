@@ -6,5 +6,6 @@ CREATE TABLE translations
  audio_link VARCHAR(300),
  list_id uuid not null,
  translator_id uuid,
+ created_at timestamp DEFAULT NOW() NOT NULL,
  PRIMARY KEY(id)
 );
