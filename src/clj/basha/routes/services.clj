@@ -28,20 +28,14 @@
                      :handler handle/get-lists}}]
    ["/lists/:id" {:get {:middleware [wrap-jwt-authentication auth-middleware]
                     :handler handle/get-list}}]
-   ; TODO: now remove this
-   ["/sentences" {:post {:middleware [wrap-jwt-authentication auth-middleware]
-                         :parameters {:body {:text s/Str
-                                             :text_roman s/Str
-                                             :language s/Str
-                                             :source_id s/Str}}
-                         :handler handle/create-sentence}}]
    ["/translations/:id" {:get {:middleware [wrap-jwt-authentication auth-middleware]
                          :handler handle/get-translation}
                          :post {:middleware [wrap-jwt-authentication auth-middleware wrap-params wrap-multipart-params]
                                 :handler handle/edit-translation}}]
    ;; TODO: add auth
-   ["/upload" {:post {:middleware [wrap-params wrap-multipart-params]
-                      :parameters {:multipart
-                                   {:file multipart/temp-file-part
-                                    :sentence_id string?}}
-                      :handler handle/upload-audio}}]])
+  ;;  ["/upload" {:post {:middleware [wrap-params wrap-multipart-params]
+  ;;                     :parameters {:multipart
+  ;;                                  {:file multipart/temp-file-part
+  ;;                                   :sentence_id string?}}
+  ;;                     :handler handle/upload-audio}}]
+   ])

@@ -124,7 +124,7 @@
                                                           :target_text @draft_target
                                                           :source_text @draft_source
                                                           :id (:id translation)}])
-              ; TODO: fix disabled here
+              ; TODO: now fix disabled here
               :disabled (or (string/blank? "sdf")
                             (string/blank? "sdf"))} "Submit"]])]]
        [:button.modal-close.is-large

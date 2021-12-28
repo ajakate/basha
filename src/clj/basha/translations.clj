@@ -29,7 +29,6 @@
       (db/update-sentence-audio!* {:audio-link audio-id :id (:id sentence)}))
     (throw (ex-info "no sentence found for audio" {:type :bad-request}))))
 
-;; TODO: add translation logic
 (defn fetch [id]
   (db/get-translation {:id (java.util.UUID/fromString id)}))
 

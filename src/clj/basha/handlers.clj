@@ -1,7 +1,6 @@
 (ns basha.handlers
   (:require
    [basha.lists :as list]
-   [basha.sentences :as sentence]
    [basha.translations :as translation]
    [ring.util.http-response :as response]
    [amazonica.aws.s3 :as s3]
@@ -59,21 +58,9 @@
   (let [t-id (:id path-params)]
     (with-handle (translation/update t-id id body-params))))
 
-; SENTENCES
 
-; TODO: now delete these!!!!
-(defn create-sentence [{:keys [params identity]}]
-  (println params)
-  (let [id (:id identity)]
-    (response/ok
-     (sentence/create! (assoc params :creator_id (java.util.UUID/fromString id))))))
-
-(defn upload-audio [{{:keys [file sentence_id]} :params}]
-  (sentence/upload-audio-for-sentence! sentence_id
-                                      (:tempfile file))
-  (response/ok
-   (assoc file :sentence_id sentence_id)))
-
-(defn upload-list [{{:keys [file list_id]} :params}]
-  (response/ok
-   (assoc file :sentence_id list_id)))
+;; (defn upload-audio [{{:keys [file sentence_id]} :params}]
+;;   (sentence/upload-audio-for-sentence! sentence_id
+;;                                       (:tempfile file))
+;;   (response/ok
+;;    (assoc file :sentence_id sentence_id)))
