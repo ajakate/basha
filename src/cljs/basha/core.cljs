@@ -95,8 +95,8 @@
         [:div.card-content
          (r/with-let [draft_source (r/atom (:source_text translation))
                     ; TODO: add logic for source romainization
-                      draft_target (r/atom nil)
-                      draft_target_rom (r/atom nil)]
+                      draft_target (r/atom (:target_text translation))
+                      draft_target_rom (r/atom (:target_text_roman translation))]
            [:div
             [:label.label "Source sentence"]
             [:div.field
@@ -123,7 +123,8 @@
              {:on-click #(rf/dispatch [:edit-translation {:target_text_roman @draft_target_rom
                                                           :target_text @draft_target
                                                           :source_text @draft_source
-                                                          :id (:id translation)}])
+                                                          :id (:id translation)
+                                                          :list_id (:id list)}])
               ; TODO: now fix disabled here
               :disabled (or (string/blank? "sdf")
                             (string/blank? "sdf"))} "Submit"]])]]
@@ -215,13 +216,15 @@
        [:table.table.is-bordered.is-narrow.is-striped.is-hoverable
         [:thead [:tr
                  [:th (:source_language list)]
-                 [:th (:target_language list)]]]
+                 [:th (:target_language list)]
+                 [:th "Translated By"]]]
         [:tbody
          (for [s (:translations list)]
            ^{:key (:id s)}
            [:tr
             [:td (:source_text s)]
-            [:td (:target_text s)]
+            [:td [:div (:target_text s) [:br] (:target_text_roman s)]]
+            [:td (:translator s)]
             [:td [:a.button.is-info {:on-click #(rf/dispatch [:open-translate-modal (:id s)])} "edit"]]])]]])))
 
 (defn my-lists []
@@ -229,13 +232,13 @@
     (if (seq lists)
       
       [:table.table.is-bordered.is-narrow.is-striped.is-hoverable
-       [:thead [:tr 
+       [:thead [:tr
                 [:th "name"]
-                [:th "owner"] 
+                [:th "owner"]
                 [:th "source language"]
                 [:th "target language"]
-                [:th "sentence count"]
-                ]]
+                [:th "total count"]
+                [:th "open translations"]]]
        [:tbody
         (for [list lists]
           ^{:key (:id list)}
@@ -245,6 +248,7 @@
            [:td (:source_language list)]
            [:td (:target_language list)]
            [:td (:list_count list)]
+           [:td (:open_count list)]
            [:td [:a.button.is-info {:href (str "/#/lists/edit/" (:id list))} "edit"]]])]]
       [:h1 "You don't have any lists!"])))
 
@@ -285,13 +289,13 @@
                :view #'about-page}]
     ["/lists/new" {:name :create-list
                    :view #'create-list-page
-                   :controllers [{:start (fn [] (rf/dispatch [:clear-create-list-error]))}]}]
-    ["/lists/edit/:id" {:name :view-lsit
+                   :controllers [{:start (fn []
+                                           (rf/dispatch [:clear-create-list-error]))}]}]
+    ["/lists/edit/:id" {:name :view-list
                     :view #'view-list
                     :controllers [{:parameters {:path [:id]}
                                    :start (fn [{{:keys [id]} :path}]
-                                            ;; (rf/dispatch [:set-track-loading true])
-                                            (rf/dispatch [:fetch-list id]))}]}]]))
+                                            (rf/dispatch [:load-list-page id]))}]}]]))
 
 (defn start-router! []
   (rfe/start!

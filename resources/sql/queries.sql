@@ -24,7 +24,8 @@ l.name,
 l.source_language,
 l.target_language,
 (select u.username from users u where u.id=l.user_id) creator,
-count(t.id) list_count
+count(t.id) list_count,
+count(t.id) filter (where translator_id is null) open_count
 from lists l
 join translations t on t.list_id=l.id
 where l.user_id=:id
@@ -32,10 +33,15 @@ group by l.id;
 
 -- :name get-list :? :*
 -- :doc fetches list
-select *, t.id as translation_id, l.id as list_id, u.username as creator from translations t
-join lists l on l.id=t.list_id
-join users u on l.user_id=u.id
-where l.id = :id;
+  select *, t.id as translation_id,
+  l.id as list_id,
+  u.username as creator,
+  (select username from users where t.translator_id = users.id) translator
+   from translations t
+  join lists l on l.id=t.list_id
+  join users u on l.user_id=u.id
+  where l.id = :id
+  order by target_text_roman is null desc, target_text is null desc, t.list_index asc;
 
 -- :name get-sentence :? :*
 -- :doc fetches sentence
@@ -47,12 +53,12 @@ where s.id = :id;
 select * from translations t
 where t.id = :id;
 
--- :name update-translation :! :*
+-- :name update-translation :! :1
 -- :doc updates translation
 update translations
 set source_text = :source_text,
-target_text = :target_text,
-target_text_roman = :target_text_roman,
+--~ (if (seq (:target_text params)) "target_text = :target_text," "target_text = null,")
+--~ (if (seq (:target_text_roman params)) "target_text_roman = :target_text_roman," "target_text_roman = null,")
 translator_id = :translator_id
 where id = :id
 RETURNING *;
@@ -75,10 +81,12 @@ RETURNING *;
 -- :name create-translation!* :<! :1
 -- :doc creates a translation record
 INSERT INTO translations
-(source_text, 
-list_id)
+(source_text,
+list_id,
+list_index)
 VALUES (:source_text,
- :list_id)
+ :list_id,
+ :list_index)
 RETURNING *;
 
 -- :name update-sentence-audio!* :<! :1

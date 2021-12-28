@@ -13,14 +13,6 @@
                :secret-key (:aws-secret-access-key env)
                :endpoint   "us-east-1"})
 
-; ADD cljc validation
-(defn create! [params]
-  (println params)
-  (let [new-sentence (db/create-sentence!* params)]
-    (if-let [source_id (:source_id params)]
-      (db/create-translation!* {:source_id (java.util.UUID/fromString source_id)
-                                :target_id (:id new-sentence)})
-      new-sentence)))
 
 (defn upload-audio-for-sentence! [sentence_id file]
   (if-let [sentence (db/get-sentence-by-id {:id sentence_id})]

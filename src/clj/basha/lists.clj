@@ -9,8 +9,8 @@
    [cprop.source :as source]))
 
 (defn create-translations [sentences list_id conn]
-  (map (fn [s]
-         (:id (db/create-translation!* conn {:source_text s :list_id list_id})))
+  (map-indexed (fn [idx s]
+         (:id (db/create-translation!* conn {:source_text s :list_id list_id :list_index idx})))
        sentences))
 
 (defn format-list [resp]
@@ -28,7 +28,8 @@
                      {:id (:translation_id r)
                       :source_text (:source_text r)
                       :target_text (:target_text r)
-                      :target_text_roman (:target_text_roman r)})}))
+                      :target_text_roman (:target_text_roman r)
+                      :translator (:translator r)})}))
 
 ; ADD cljc validation
 (defn create! [name source target file user_id]

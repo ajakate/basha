@@ -83,9 +83,17 @@
                  :on-success       [:set-login-user]
                  :on-failure [:set-signup-error]}}))
 
+(defn filter-empty [params]
+  (into {} (filter (fn [kv]
+                     (let [v (second kv)]
+                       (and
+                        (some? v)
+                        (not= v "")))) params)))
+
 (defn generate-form-data [params]
-  (let [form-data (js/FormData.)]
-    (doseq [[k v] params]
+  (let [form-data (js/FormData.)
+        clean-params (filter-empty params)]
+    (doseq [[k v] clean-params]
       (.append form-data (name k) v))
     form-data))
 
@@ -102,18 +110,18 @@
                  :on-failure [:set-create-list-error]}}))
 
 (rf/reg-event-fx
- ; TODO: now redirect
  :edit-translation
  (fn [{:keys [db]} [_ params]]
    (let [id (:id params)
-         body (dissoc params :id)]
+         body (dissoc params :id :list_id)
+         list_id (:list_id params)]
      {:http-xhrio {:method          :post
                    :uri             (str "/api/translations/" id)
                    :body (generate-form-data body)
                    :format          (ajax/json-request-format)
                    :headers {"Authorization" (str "Token " (-> db :user :access-token))}
                    :response-format  (ajax/json-response-format {:keywords? true})
-                ;;  :on-success       [:set-login-user]
+                   :on-success       [:reset-list-page list_id]
                    :on-failure [:set-signup-error]}})))
 
 (rf/reg-event-fx
@@ -171,6 +179,30 @@
  (fn [_ [_]]
    (rfe/push-state :home)))
 
+(rf/reg-event-fx
+ :load-list-page
+ (fn [{:keys [db]} [_ id]]
+   {:db (assoc db :loading-list true)
+    :dispatch [:fetch-list id]}))
+
+(rf/reg-event-fx
+ :reset-list-page
+ (fn [{:keys [db]} [_ list_id _]]
+   {:db (assoc db :translate-modal/visible false)
+    :dispatch [:load-list-page list_id]}))
+
+(rf/reg-event-fx
+ :open-translate-modal
+ (fn [{:keys [db]} [_ id]]
+   {:db (assoc db :translate-modal/visible true :loading-translation true)
+    :dispatch [:fetch-translation id]}))
+
+;; TODO: keep this for now
+(rf/reg-event-db
+ :debug
+ (fn [db [_ obj]]
+   (assoc db :debug obj)))
+
 (rf/reg-event-db
  :set-list-summary
  (fn [db [_ response]]
@@ -189,7 +221,7 @@
 (rf/reg-event-db
  :set-active-list
  (fn [db [_ response]]
-   (assoc db :active-list response)))
+   (assoc db :active-list response :loading-list false)))
 
 (rf/reg-event-db
  :swap-login-modal
