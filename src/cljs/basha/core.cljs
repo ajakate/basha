@@ -79,11 +79,35 @@
      [:button.modal-close.is-large
       {:aria-label "close" :on-click #(rf/dispatch [:close-login-modal])} "close"]]))
 
+(defn recording-state-component [state]
+  (let [state (or state :init)
+        temp-recording @(rf/subscribe [:temp-recording])
+        components {:init [:div.control>button.button.is-primary
+                           {:on-click #(rf/dispatch [:arm-recording])} "Record Audio"]
+                    :armed [:div.control
+                            [:button.button.p-2.m-1.is-primary
+                             {:on-click #(rf/dispatch [:start-recording])} "Start Recording"]
+                            [:button.button.p-2.m-1.is-danger
+                             {:disabled true} "Stop"]
+                            [:button.button.p-2.m-1
+                             {:on-click #(rf/dispatch [:cancel-recording])} "Cancel"]]
+                    :recording [:div.control
+                                [:button.button.p-2.m-1.is-danger
+                                 {:on-click #(rf/dispatch [:stop-recording])} "Finish Recording"]
+                                [:button.button.p-2.m-1
+                                 {:on-click #(rf/dispatch [:cancel-recording])} "Cancel"]]
+                    :stopped [:div.control
+                              [:audio {:controls "controls" :src temp-recording}]
+                              [:button.button.p-2.m-1
+                               {:on-click #(rf/dispatch [:cancel-recording])} "Cancel"]]}]
+    (state components)))
+
 (defn translate-modal []
   (let [is-active @(rf/subscribe [:translate-modal-visible])
         translation @(rf/subscribe [:active-translation])
         list @(rf/subscribe [:active-list])
-        loading-translation @(rf/subscribe [:loading-translation])]
+        loading-translation @(rf/subscribe [:loading-translation])
+        recording-state @(rf/subscribe [:recording-state])]
     (if loading-translation
       [:div "loading"]
       [:div.modal
@@ -105,6 +129,13 @@
                :placeholder "sk8hkr69"
                :on-change #(reset! draft_source (.. % -target -value))
                :value @draft_source}]]
+
+            [:label.label "Translated Audio"]
+           [recording-state-component recording-state]
+
+
+
+
             [:label.label "Translation (native script)"]
             [:div.field
              [:div.control [:input.input
@@ -125,9 +156,7 @@
                                                           :source_text @draft_source
                                                           :id (:id translation)
                                                           :list_id (:id list)}])
-              ; TODO: now fix disabled here
-              :disabled (or (string/blank? "sdf")
-                            (string/blank? "sdf"))} "Submit"]])]]
+              :disabled (= recording-state :recording)} "Submit"]])]]
        [:button.modal-close.is-large
         {:aria-label "close" :on-click #(rf/dispatch [:close-translate-modal])} "close"]])))
 
@@ -154,56 +183,9 @@
                    {:on-click #(rf/dispatch [:logout])}
                    "Logout"])]]])))
 
-(defn allit []
-  (if (.. js/navigator -mediaDevices -getUserMedia)
-    (do
-      (.log js/console "getUserMedia supported.")
-      (def record (.querySelector js/document ".record"))
-      (def stopper (.querySelector js/document ".stop"))
-      (def soundClips (.querySelector js/document ".sound-clips"))
-      (->
-       (-> (.getUserMedia (.-mediaDevices js/navigator) #js {:audio true}))
-       (.then
-        (fn [stream]
-          (let [mediaRecorder (new js/MediaRecorder stream)]
-            (set!
-             (.-onclick record)
-             (fn [] (.start mediaRecorder) (.log js/console "begin")))
-            (def chunks #js [])
-            (set!
-             (.-ondataavailable mediaRecorder)
-             (fn [e] (.push chunks (.-data e))))
-            (set!
-             (.-onclick stopper)
-             (fn [] (.stop mediaRecorder) (.log js/console "end")))
-            (set!
-             (.-onstop mediaRecorder)
-             (fn [e]
-               (.log js/console "recorder stopped")
-               (def blob
-                 (new js/Blob chunks #js {:type "audio/ogg; codecs=opus"}))
-               (set! chunks #js [])
-               (def audioURL (.createObjectURL (.-URL js/window) blob))
-               (.log js/console "done blob")
-               (.log js/console audioURL))))))
-       (.catch
-        (fn [err]
-          (.log
-           js/console
-           (str "The following getUserMedia error occurred: " err))))))
-    (.log js/console "getUserMedia not supported on your browser!")))
-
-
 (defn about-page []
   [:section.section>div.container>div.content
-   [:img {:src "/img/warning_clojure.png"}]
-   [:button {:on-click
-             #(allit)
-             }
-    "init"]
-   [:button.record  "start recording"]
-   [:button.stop  "stop recording"]
-   ])
+   [:img {:src "/img/warning_clojure.png"}]])
 
 (defn create-list-page []
   (r/with-let [draft_name (r/atom nil)

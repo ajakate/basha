@@ -4,6 +4,7 @@
    [ajax.core :as ajax]
    [reitit.frontend.easy :as rfe]
    [reitit.frontend.controllers :as rfc]
+   [basha.audio :as baudio]
    [akiroz.re-frame.storage :refer [persist-db]]))
 
 (defn persisted-reg-event-db
@@ -192,10 +193,48 @@
     :dispatch [:load-list-page list_id]}))
 
 (rf/reg-event-fx
- :open-translate-modal
- (fn [{:keys [db]} [_ id]]
-   {:db (assoc db :translate-modal/visible true :loading-translation true)
-    :dispatch [:fetch-translation id]}))
+ :init-media-recorder
+ (fn [_ [_]]
+   (baudio/init-audio)))
+
+(rf/reg-event-fx
+ :start-media-recorder
+ (fn [_ [_]]
+   (baudio/start-audio)))
+
+(rf/reg-event-fx
+ :stop-media-recorder
+ (fn [_ [_]]
+   (baudio/stop-audio)))
+
+(rf/reg-event-db
+ :set-temp-recording
+ (fn [db [_ blob]]
+   (assoc db :temp-recording blob)))
+
+(rf/reg-event-fx
+ :arm-recording
+ (fn [{:keys [db]} [_]]
+   {:db (assoc db :recording-state :armed)
+    :dispatch [:init-media-recorder]}))
+
+(rf/reg-event-fx
+ :start-recording
+ (fn [{:keys [db]} [_]]
+   {:db (assoc db :recording-state :recording)
+    :dispatch [:start-media-recorder]}))
+
+(rf/reg-event-fx
+ :stop-recording
+ (fn [{:keys [db]} [_]]
+   {:db (assoc db :recording-state :stopped)
+    :dispatch [:stop-media-recorder]}))
+
+(rf/reg-event-fx
+ :cancel-recording
+ (fn [{:keys [db]} [_]]
+   {:db (assoc db :recording-state :init :temp-recording nil)
+    :dispatch [:stop-media-recorder]}))
 
 ;; TODO: keep this for now
 (rf/reg-event-db
@@ -236,13 +275,19 @@
 (rf/reg-event-fx
  :open-translate-modal
  (fn [{:keys [db]} [_ id]]
-   {:db (assoc db :translate-modal/visible true :loading-translation true)
+   {:db (assoc db :translate-modal/visible true :loading-translation true :recording-state :init)
     :dispatch [:fetch-translation id]}))
 
 (rf/reg-event-db
  :close-translate-modal
  (fn [db [_]]
    (assoc db :translate-modal/visible false :loading-translation false :active-translation nil)))
+
+(rf/reg-event-fx
+ :close-translate-modal
+ (fn [{:keys [db]} [_ id]]
+   {:db (assoc db :translate-modal/visible false :loading-translation false :active-translation nil)
+    :dispatch [:cancel-recording]}))
 
 (rf/reg-event-db
  :set-active-translation
@@ -275,6 +320,16 @@
    (assoc db :user {})))
 
 ;;subscriptions
+
+(rf/reg-sub
+ :temp-recording
+ (fn [db _]
+   (-> db :temp-recording)))
+
+(rf/reg-sub
+ :recording-state
+ (fn [db _]
+   (-> db :recording-state)))
 
 (rf/reg-sub
  :create-list-error
