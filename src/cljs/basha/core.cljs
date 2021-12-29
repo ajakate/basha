@@ -154,9 +154,56 @@
                    {:on-click #(rf/dispatch [:logout])}
                    "Logout"])]]])))
 
+(defn allit []
+  (if (.. js/navigator -mediaDevices -getUserMedia)
+    (do
+      (.log js/console "getUserMedia supported.")
+      (def record (.querySelector js/document ".record"))
+      (def stopper (.querySelector js/document ".stop"))
+      (def soundClips (.querySelector js/document ".sound-clips"))
+      (->
+       (-> (.getUserMedia (.-mediaDevices js/navigator) #js {:audio true}))
+       (.then
+        (fn [stream]
+          (let [mediaRecorder (new js/MediaRecorder stream)]
+            (set!
+             (.-onclick record)
+             (fn [] (.start mediaRecorder) (.log js/console "begin")))
+            (def chunks #js [])
+            (set!
+             (.-ondataavailable mediaRecorder)
+             (fn [e] (.push chunks (.-data e))))
+            (set!
+             (.-onclick stopper)
+             (fn [] (.stop mediaRecorder) (.log js/console "end")))
+            (set!
+             (.-onstop mediaRecorder)
+             (fn [e]
+               (.log js/console "recorder stopped")
+               (def blob
+                 (new js/Blob chunks #js {:type "audio/ogg; codecs=opus"}))
+               (set! chunks #js [])
+               (def audioURL (.createObjectURL (.-URL js/window) blob))
+               (.log js/console "done blob")
+               (.log js/console audioURL))))))
+       (.catch
+        (fn [err]
+          (.log
+           js/console
+           (str "The following getUserMedia error occurred: " err))))))
+    (.log js/console "getUserMedia not supported on your browser!")))
+
+
 (defn about-page []
   [:section.section>div.container>div.content
-   [:img {:src "/img/warning_clojure.png"}]])
+   [:img {:src "/img/warning_clojure.png"}]
+   [:button {:on-click
+             #(allit)
+             }
+    "init"]
+   [:button.record  "start recording"]
+   [:button.stop  "stop recording"]
+   ])
 
 (defn create-list-page []
   (r/with-let [draft_name (r/atom nil)
