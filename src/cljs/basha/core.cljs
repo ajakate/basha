@@ -79,9 +79,8 @@
      [:button.modal-close.is-large
       {:aria-label "close" :on-click #(rf/dispatch [:close-login-modal])} "close"]]))
 
-(defn recording-state-component [state]
+(defn recording-state-component [state temp-recording]
   (let [state (or state :init)
-        temp-recording @(rf/subscribe [:temp-recording])
         components {:init [:div.control>button.button.is-primary
                            {:on-click #(rf/dispatch [:arm-recording])} "Record Audio"]
                     :armed [:div.control
@@ -97,7 +96,7 @@
                                 [:button.button.p-2.m-1
                                  {:on-click #(rf/dispatch [:cancel-recording])} "Cancel"]]
                     :stopped [:div.control
-                              [:audio {:controls "controls" :src temp-recording}]
+                              [:audio {:controls "controls" :src (:url temp-recording)}]
                               [:button.button.p-2.m-1
                                {:on-click #(rf/dispatch [:cancel-recording])} "Cancel"]]}]
     (state components)))
@@ -107,7 +106,8 @@
         translation @(rf/subscribe [:active-translation])
         list @(rf/subscribe [:active-list])
         loading-translation @(rf/subscribe [:loading-translation])
-        recording-state @(rf/subscribe [:recording-state])]
+        recording-state @(rf/subscribe [:recording-state])
+        temp-recording @(rf/subscribe [:temp-recording])]
     (if loading-translation
       [:div "loading"]
       [:div.modal
@@ -131,10 +131,7 @@
                :value @draft_source}]]
 
             [:label.label "Translated Audio"]
-           [recording-state-component recording-state]
-
-
-
+            [recording-state-component recording-state temp-recording]
 
             [:label.label "Translation (native script)"]
             [:div.field
@@ -155,7 +152,8 @@
                                                           :target_text @draft_target
                                                           :source_text @draft_source
                                                           :id (:id translation)
-                                                          :list_id (:id list)}])
+                                                          :list_id (:id list)
+                                                          :audio (:data temp-recording)}])
               :disabled (= recording-state :recording)} "Submit"]])]]
        [:button.modal-close.is-large
         {:aria-label "close" :on-click #(rf/dispatch [:close-translate-modal])} "close"]])))

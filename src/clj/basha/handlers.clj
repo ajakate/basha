@@ -21,8 +21,11 @@
      (response/ok (do ~@exp))
      (catch clojure.lang.ExceptionInfo ~'e
        (((-> ~'e ex-data :type) error-types) {:message (.getMessage ~'e)}))
-     (catch Exception ~'e
-       (response/internal-server-error {:message (.getMessage ~'e)}))))
+     ;; TODO: add this back when done?
+    ;;  (catch Exception ~'e
+    ;;    (response/internal-server-error {:message (.getMessage ~'e)}))
+
+     ))
 
 (defn signup [{{:keys [username password]} :body-params}]
   (with-handle

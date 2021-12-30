@@ -8,5 +8,6 @@ CREATE TABLE translations
  translator_id uuid,
  created_at timestamp DEFAULT NOW() NOT NULL,
  list_index integer,
+ audio bytea,
  PRIMARY KEY(id)
 );

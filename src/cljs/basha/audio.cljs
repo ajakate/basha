@@ -6,6 +6,9 @@
 
 (def stopper (.querySelector js/document ".record-stop"))
 
+(defn set-audio-data [url data]
+  (rf/dispatch [:set-temp-recording {:url url :data data}]))
+
 (defn init-audio []
   (if (.. js/navigator -mediaDevices -getUserMedia)
     (do
@@ -33,7 +36,14 @@
                  (new js/Blob chunks #js {:type "audio/ogg; codecs=opus"}))
                (set! chunks #js [])
                (let [audioURL (.createObjectURL (.-URL js/window) blob)]
-                 (rf/dispatch [:set-temp-recording audioURL])
+                 (->
+                  (js/fetch audioURL)
+                  (.then (fn [r] (.blob r)))
+                  (.then
+                   (fn [blobFile]
+                     ;; TODO: does the file name mean anything here?
+                     (let [f (new js/File #js [blobFile] "fileName" #js {:type "audio/ogg"})]
+                       (set-audio-data audioURL f)))))
                  (.log js/console "done blob")
                  (.log js/console audioURL)))))))
        (.catch

@@ -7,12 +7,18 @@
    [amazonica.aws.s3 :as s3]
    [basha.auth :as auth]
    [basha.files :as files]
+   [clojure.java.io :as io]
    [basha.config :refer [env]]))
+
+(defn file2bytes [path]
+  (with-open [in (io/input-stream path)
+              out (java.io.ByteArrayOutputStream.)]
+    (io/copy in out)
+    (.toByteArray out)))
 
 (defonce cred {:access-key (:aws-access-key-id env)
                :secret-key (:aws-secret-access-key env)
                :endpoint   "us-east-1"})
-
 
 (defn upload-audio-for-sentence! [sentence_id file]
   (if-let [sentence (db/get-sentence-by-id {:id sentence_id})]
@@ -25,4 +31,9 @@
   (db/get-translation {:id (java.util.UUID/fromString id)}))
 
 (defn update [id user-id params]
-  (db/update-translation (assoc params :id (java.util.UUID/fromString id) :translator_id (java.util.UUID/fromString user-id))))
+  (let [audio (-> params :audio :tempfile)
+        params (dissoc params :audio)]
+    (db/update-translation (assoc params
+                                  :id (java.util.UUID/fromString id)
+                                  :translator_id (java.util.UUID/fromString user-id)
+                                  :audio (if audio (file2bytes audio) nil)))))
