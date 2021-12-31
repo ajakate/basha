@@ -131,6 +131,7 @@
                :value @draft_source}]]
 
             [:label.label "Translated Audio"]
+            [:audio {:controls "controls" :src (str "data:audio/mpeg;base64," (:audio translation))}]
             [recording-state-component recording-state temp-recording]
 
             [:label.label "Translation (native script)"]
