@@ -17,6 +17,18 @@
 
 (persisted-reg-event-db :init-local-storage (fn [db] db))
 
+(defn position [x coll & {:keys [from-end all] :or {from-end false all false}}]
+  (let [all-idxs (keep-indexed (fn [idx val] (when (= val x) idx)) coll)]
+    (cond
+      (true? from-end) (last all-idxs)
+      (true? all)      all-idxs
+      :else            (first all-idxs))))
+
+(defn next-id-in-list [list id]
+  (let [ids (map #(:id %) (:translations list))
+        i (position id ids)]
+    (second (nthnext ids i))))
+
 ;;dispatchers
 
 (rf/reg-event-db
@@ -114,15 +126,16 @@
  :edit-translation
  (fn [{:keys [db]} [_ params]]
    (let [id (:id params)
-         body (dissoc params :id :list_id)
-         list_id (:list_id params)]
+         body (dissoc params :id :list_id :goto-next :next_id)
+         list_id (:list_id params)
+         next-id (:next_id params)]
      {:http-xhrio {:method          :post
                    :uri             (str "/api/translations/" id)
                    :body (generate-form-data body)
                    :format          (ajax/json-request-format)
                    :headers {"Authorization" (str "Token " (-> db :user :access-token))}
                    :response-format  (ajax/json-response-format {:keywords? true})
-                   :on-success       [:reset-list-page list_id]
+                   :on-success       (if next-id [:open-translate-modal next-id] [:reset-list-page list_id])
                    :on-failure [:set-signup-error]}})))
 
 (rf/reg-event-fx
@@ -292,7 +305,10 @@
 (rf/reg-event-db
  :set-active-translation
  (fn [db [_ response]]
-   (assoc db :active-translation response :loading-translation false)))
+   (let [id (:id response)
+         list (:active-list db)
+         next-id (next-id-in-list list id)]
+     (assoc db :active-translation (assoc response :next_id next-id) :loading-translation false))))
 
 (rf/reg-event-db
  :set-signup-error

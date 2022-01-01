@@ -131,7 +131,12 @@
                :value @draft_source}]]
 
             [:label.label "Translated Audio"]
-            [:audio {:controls "controls" :src (str "data:audio/mpeg;base64," (:audio translation))}]
+            (if-let [audio (:audio translation)]
+              [:div.card>div.card-content
+               [:label.label "Existing Audio"]
+               [:audio {:controls "controls" :src (str "data:audio/ogg;base64," audio)}]]
+              nil)
+
             [recording-state-component recording-state temp-recording]
 
             [:label.label "Translation (native script)"]
@@ -155,7 +160,18 @@
                                                           :id (:id translation)
                                                           :list_id (:id list)
                                                           :audio (:data temp-recording)}])
-              :disabled (= recording-state :recording)} "Submit"]])]]
+              :disabled (= recording-state :recording)} "Save"]
+            (if-let [next_id (:next_id translation)]
+              [:div.control>button.button.is-link
+               {:on-click #(rf/dispatch [:edit-translation {:target_text_roman @draft_target_rom
+                                                            :target_text @draft_target
+                                                            :source_text @draft_source
+                                                            :id (:id translation)
+                                                            :list_id (:id list)
+                                                            :audio (:data temp-recording)
+                                                            :goto-next true
+                                                            :next_id next_id}])
+                :disabled (= recording-state :recording)} "Save & Next"])])]]
        [:button.modal-close.is-large
         {:aria-label "close" :on-click #(rf/dispatch [:close-translate-modal])} "close"]])))
 
@@ -239,8 +255,8 @@
   (let [list @(rf/subscribe [:active-list])]
     (if list
       [:div
-       [:h1 (:name list)]
-       [:h2 (str "creator: " (:creator list))]
+       [:h1.title.m-3 (:name list)]
+       [:h2.subtitle.m-3 (str "Created by: " (:creator list))]
        [:table.table.is-bordered.is-narrow.is-striped.is-hoverable
         [:thead [:tr
                  [:th (:source_language list)]
