@@ -82,7 +82,7 @@
                  :params user
                  :format          (ajax/json-request-format)
                  :response-format  (ajax/json-response-format {:keywords? true})
-                 :on-success       [:login-redirect]
+                 :on-success       [:set-login]
                  :on-failure [:set-signup-error]}}))
 
 (rf/reg-event-fx
@@ -356,11 +356,6 @@
  :set-login
  (fn [{:keys [db]} [_ user]]
    {:fx [[:dispatch [:set-login-user user]] [:dispatch [:redirect-home]]]}))
-
-(rf/reg-event-db
- :login-redirect
- (fn [db [_]]
-   (assoc db :login-modal/visible true :login-modal/signup false :login-modal/errors nil)))
 
 (persisted-reg-event-db
  :clear-login-user

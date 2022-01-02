@@ -30,7 +30,7 @@
 (defn signup [{{:keys [username password]} :body-params}]
   (with-handle
     (auth/create-user! username password)
-    {:message "try logging in"}))
+    (auth/login username password)))
 
 (defn login [{{:keys [username password]} :body-params}]
   (with-handle
