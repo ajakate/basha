@@ -20,22 +20,17 @@
                        :handler handle/refresh}}]
    ["/lists" {:post {:middleware [wrap-jwt-authentication auth-middleware wrap-params wrap-multipart-params]
                      :parameters {:multipart {:file multipart/temp-file-part
-                                              :name s/Str 
+                                              :name s/Str
                                               :source_language s/Str
                                               :target_language s/Str}}
                      :handler handle/create-list}
               :get {:middleware [wrap-jwt-authentication auth-middleware]
-                     :handler handle/get-lists}}]
+                    :handler handle/get-lists}}]
    ["/lists/:id" {:get {:middleware [wrap-jwt-authentication auth-middleware]
-                    :handler handle/get-list}}]
+                        :handler handle/get-list}}]
    ["/translations/:id" {:get {:middleware [wrap-jwt-authentication auth-middleware]
-                         :handler handle/get-translation}
+                               :handler handle/get-translation}
                          :post {:middleware [wrap-jwt-authentication auth-middleware wrap-params wrap-multipart-params]
                                 :handler handle/edit-translation}}]
-   ;; TODO: add auth
-  ;;  ["/upload" {:post {:middleware [wrap-params wrap-multipart-params]
-  ;;                     :parameters {:multipart
-  ;;                                  {:file multipart/temp-file-part
-  ;;                                   :sentence_id string?}}
-  ;;                     :handler handle/upload-audio}}]
-   ])
+   ["/assignees/:id" {:post {:middleware [wrap-jwt-authentication auth-middleware]
+                             :handler handle/update-users}}]])

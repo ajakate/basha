@@ -93,7 +93,7 @@
                  :params user
                  :format          (ajax/json-request-format)
                  :response-format  (ajax/json-response-format {:keywords? true})
-                 :on-success       [:set-login-user]
+                 :on-success       [:set-login]
                  :on-failure [:set-signup-error]}}))
 
 (defn filter-empty [params]
@@ -170,6 +170,18 @@
                 ;;  :on-failure [:set-list-summary]
                  }}))
 
+(rf/reg-event-fx
+ :edit-users
+ (fn [{:keys [db]} [_ params]]
+   {:http-xhrio {:method          :post
+                 :uri             (str "/api/assignees/" (:list_id params))
+                 :params {:users (:users params)}
+                 :format          (ajax/json-request-format)
+                 :headers {"Authorization" (str "Token " (-> db :user :access-token))}
+                 :response-format  (ajax/json-response-format {:keywords? true})
+                 :on-success       [:reset-list-page (:list_id params)]
+                 :on-failure [:set-create-list-error]}}))
+
 ;; (rf/reg-event-fx
 ;;  :refresh
 ;;  (fn [{:keys [db]} [_ params]]
@@ -189,9 +201,14 @@
 ;;    (rfe/push-state :view-track {:id (:id track)})))
 
 (rf/reg-event-fx
- :redirect-home
+ :set-home-state
  (fn [_ [_]]
    (rfe/push-state :home)))
+
+(rf/reg-event-fx
+ :redirect-home
+ (fn [{:keys [_]} [_]]
+   {:fx [[:dispatch [:set-home-state]] [:dispatch [:page/init-home]]]}))
 
 (rf/reg-event-fx
  :load-list-page
@@ -202,7 +219,7 @@
 (rf/reg-event-fx
  :reset-list-page
  (fn [{:keys [db]} [_ list_id _]]
-   {:db (assoc db :translate-modal/visible false)
+   {:db (assoc db :translate-modal/visible false :users-modal-visible false)
     :dispatch [:load-list-page list_id]}))
 
 (rf/reg-event-fx
@@ -320,10 +337,25 @@
  (fn [db [_ val]]
    (assoc db :login-modal/signup val :login-modal/errors nil)))
 
+(rf/reg-event-db
+ :open-users-modal
+ (fn [db [_]]
+   (assoc db :users-modal-visible true)))
+
+(rf/reg-event-db
+ :close-users-modal
+ (fn [db [_]]
+   (assoc db :users-modal-visible false)))
+
 (persisted-reg-event-db
  :set-login-user
  (fn [db [_ user]]
    (assoc db :user user :login-modal/visible false)))
+
+(rf/reg-event-fx
+ :set-login
+ (fn [{:keys [db]} [_ user]]
+   {:fx [[:dispatch [:set-login-user user]] [:dispatch [:redirect-home]]]}))
 
 (rf/reg-event-db
  :login-redirect
@@ -331,11 +363,27 @@
    (assoc db :login-modal/visible true :login-modal/signup false :login-modal/errors nil)))
 
 (persisted-reg-event-db
- :logout
+ :clear-login-user
  (fn [db [_]]
    (assoc db :user {})))
 
+; TODO: clear stuff here?
+(rf/reg-event-fx
+ :logout
+ (fn [{:keys [db]} [_]]
+   {:fx [[:dispatch [:clear-login-user]] [:dispatch [:redirect-home]]]}))
+
 ;;subscriptions
+
+(rf/reg-sub
+ :users-modal-visible
+ (fn [db _]
+   (-> db :users-modal-visible)))
+
+(rf/reg-sub
+ :users
+ (fn [db _]
+   (-> db :users)))
 
 (rf/reg-sub
  :temp-recording

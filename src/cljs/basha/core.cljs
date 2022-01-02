@@ -20,6 +20,33 @@
     :class (when (= page @(rf/subscribe [:common/page-id])) :is-active)}
    title])
 
+(defn assign-modal []
+  (let [is-active @(rf/subscribe [:users-modal-visible])
+        list @(rf/subscribe [:active-list])]
+    (when is-active
+      (r/with-let [draft_users (r/atom (:users list))]
+        [:div.modal
+         {:class (if is-active "is-active" nil)}
+         [:div.modal-background]
+         [:div.model-content>div.card
+          [:header.card-header
+           [:p.card-header-title "Edit sharing"]]
+          [:div.card-content
+           [:div
+            [:div.field
+             [:label.label "Assignees"]
+             [:div.control>input.input
+              {:type "text"
+               :placeholder "sk8hkr69"
+               :on-change #(reset! draft_users (.. % -target -value))
+               :value @draft_users}]]
+            [:div.control>button.button.is-link
+             {:on-click #(rf/dispatch [:edit-users {:users (string/split @draft_users #",") :list_id (:id list)}])} "Submit"]
+            [:div.control>button.button
+             {:on-click #(rf/dispatch [:close-users-modal])} "Cancel"]]]]
+         [:button.modal-close.is-large
+          {:aria-label "close" :on-click #(rf/dispatch [:close-users-modal])} "close"]]))))
+
 (defn modal-vals [arg]
   (let [signup @(rf/subscribe [:is-signup])
         login-vals {:swap-message "Create an account"
@@ -252,13 +279,21 @@
        [:p.has-text-danger.is-italic.mb-3 (str error)]])))
 
 (defn view-list []
-  (let [list @(rf/subscribe [:active-list])]
-    (if list
+  (let [list @(rf/subscribe [:active-list])
+        user @(rf/subscribe [:user])]
+    (when list
       [:div
-       [:h1.title.m-3 (:name list)]
-       [:h2.subtitle.m-3 (str "Created by: " (:creator list))]
+       [:h1.title.is-1.m-3 (:name list)]
+       [:h2.subtitle.is-3.m-3 (str "Created by: " (:creator list))]
+       [:h2.subtitle.is-5.m-3 (str "Shared with: "
+                                   (if (empty? (:users list))
+                                     "No one"
+                                     (:users list)))]
+       (when (= (:username user) (:creator list))
+         [:a.button.is-info {:on-click #(rf/dispatch [:open-users-modal])} "Edit Sharing"])
        [:table.table.is-bordered.is-narrow.is-striped.is-hoverable
         [:thead [:tr
+                 [:th "ID"]
                  [:th (:source_language list)]
                  [:th (:target_language list)]
                  [:th "Translated By"]]]
@@ -266,6 +301,7 @@
          (for [s (:translations list)]
            ^{:key (:id s)}
            [:tr
+            [:td (:list_index s)]
             [:td (:source_text s)]
             [:td [:div (:target_text s) [:br] (:target_text_roman s)]]
             [:td (:translator s)]
@@ -314,12 +350,13 @@
       [logged-out-home])))
 
 (defn page []
-  (if-let [page @(rf/subscribe [:common/page])]
+  (when-let [page @(rf/subscribe [:common/page])]
     [:div
      [navbar]
      [page]
      [login-modal]
-     [translate-modal]]))
+     [translate-modal]
+     [assign-modal]]))
 
 (defn navigate! [match _]
   (rf/dispatch [:common/navigate match]))

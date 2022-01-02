@@ -28,7 +28,8 @@ count(t.id) list_count,
 count(t.id) filter (where translator_id is null) open_count
 from lists l
 join translations t on t.list_id=l.id
-where l.user_id=:id
+full outer join list_users li on li.list_id=l.id
+where l.user_id=:id or li.user_id=:id
 group by l.id;
 
 -- :name get-list :? :*
@@ -36,7 +37,11 @@ group by l.id;
   select *, t.id as translation_id,
   l.id as list_id,
   u.username as creator,
-  (select username from users where t.translator_id = users.id) translator
+  (select username from users where t.translator_id = users.id) translator,
+  (select string_agg(uu.username, ',')
+   from users uu
+   join list_users lluu on lluu.user_id=uu.id
+   where lluu.list_id = :id) users
    from translations t
   join lists l on l.id=t.list_id
   join users u on l.user_id=u.id
@@ -101,4 +106,20 @@ RETURNING *;
 -- :name get-sentence-by-id :? :1
 -- :doc retrieves a sentence record given the id
 SELECT * FROM sentences
-WHERE id = :id
+WHERE id = :id;
+
+-- :name get-users-by-username :? :*
+-- :doc retrieves users by username
+SELECT id,username FROM users u
+WHERE u.username in (:v*:users)
+
+-- :name delete-list-users :! :n
+-- :doc retrieves users by username
+delete from list_users
+where list_id = :list_id;
+
+-- :name create-list-users :! :n
+-- :doc retrieves users by username
+insert into list_users
+(user_id, list_id)
+values :t*:users;

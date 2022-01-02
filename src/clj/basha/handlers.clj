@@ -53,7 +53,7 @@
   (with-handle (list/get-summary id)))
 
 (defn get-list [{{:keys [id]} :path-params}]
-  (with-handle (list/get id)))
+  (with-handle (list/fetch id)))
 
 (defn get-translation [{{:keys [id]} :path-params}]
   (with-handle (translation/fetch id)))
@@ -62,9 +62,9 @@
   (let [t-id (:id path-params)]
     (with-handle (translation/update t-id id body-params))))
 
-
-;; (defn upload-audio [{{:keys [file sentence_id]} :params}]
-;;   (sentence/upload-audio-for-sentence! sentence_id
-;;                                       (:tempfile file))
-;;   (response/ok
-;;    (assoc file :sentence_id sentence_id)))
+; TODO: why does with-handle not work here?
+(defn update-users [{{:keys [id]} :path-params body-params :params}]
+  (let [resp (list/update-users id (:users body-params))]
+    (if (:error resp)
+      (response/bad-request resp)
+      (response/ok resp))))
