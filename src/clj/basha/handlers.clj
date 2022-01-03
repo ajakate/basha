@@ -68,3 +68,6 @@
     (if (:error resp)
       (response/bad-request resp)
       (response/ok resp))))
+
+(defn delete-audio [{{:keys [id]} :path-params}]
+  (with-handle (translation/delete-audio id)))

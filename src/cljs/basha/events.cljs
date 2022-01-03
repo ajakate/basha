@@ -123,6 +123,18 @@
                  :on-failure [:set-create-list-error]}}))
 
 (rf/reg-event-fx
+ :delete-audio
+ (fn [{:keys [db]} [_ id]]
+   {:http-xhrio {:method          :post
+                 :uri             (str "/api/delete_audio/" id)
+                ;;  :body (generate-form-data params)
+                 :format          (ajax/json-request-format)
+                 :headers {"Authorization" (str "Token " (-> db :user :access-token))}
+                 :response-format  (ajax/json-response-format {:keywords? true})
+                 :on-success       [:reload-translation]
+                 :on-failure [:set-create-list-error]}}))
+
+(rf/reg-event-fx
  :edit-translation
  (fn [{:keys [db]} [_ params]]
    (let [id (:id params)
@@ -215,6 +227,11 @@
  (fn [{:keys [db]} [_ id]]
    {:db (assoc db :loading-list true)
     :dispatch [:fetch-list id]}))
+
+(rf/reg-event-db
+ :reload-translation
+ (fn [db [_]]
+   (assoc-in db [:active-translation :audio] nil)))
 
 (rf/reg-event-fx
  :reset-list-page

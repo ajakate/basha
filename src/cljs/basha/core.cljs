@@ -179,7 +179,7 @@
                 [:div.column
                  [:audio {:controls "controls" :src (str "data:audio/ogg;base64," audio)}]]
                 [:div.column>button.button.is-danger
-                 {:on-click #(rf/dispatch [:arm-recording])} "Delete Audio"]]])
+                 {:on-click #(rf/dispatch [:delete-audio (:id translation)])} "Delete Audio"]]])
             [:div.box.p-3
              [:label.label "Record New Audio"]
              [recording-state-component recording-state temp-recording]]

@@ -37,3 +37,6 @@
                                   :id (java.util.UUID/fromString id)
                                   :translator_id (java.util.UUID/fromString user-id)
                                   :audio (if audio (file2bytes audio) nil)))))
+
+(defn delete-audio [id]
+  (db/delete-audio-for-translation {:id (java.util.UUID/fromString id)}))

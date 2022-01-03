@@ -123,3 +123,10 @@ where list_id = :list_id;
 insert into list_users
 (user_id, list_id)
 values :t*:users;
+
+-- :name delete-audio-for-translation :! :1
+-- :doc updates translation removes audio
+update translations
+set audio = null
+where id = :id
+RETURNING *;

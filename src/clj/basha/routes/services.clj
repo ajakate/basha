@@ -33,4 +33,6 @@
                          :post {:middleware [wrap-jwt-authentication auth-middleware wrap-params wrap-multipart-params]
                                 :handler handle/edit-translation}}]
    ["/assignees/:id" {:post {:middleware [wrap-jwt-authentication auth-middleware]
-                             :handler handle/update-users}}]])
+                             :handler handle/update-users}}]
+   ["/delete_audio/:id" {:post {:middleware [wrap-jwt-authentication auth-middleware]
+                                :handler handle/delete-audio}}]])
