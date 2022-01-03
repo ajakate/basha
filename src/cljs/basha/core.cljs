@@ -321,7 +321,8 @@
                     [:th "ID"]
                     [:th (:source_language list)]
                     [:th (:target_language list)]
-                    [:th "Translated By"]]]
+                    [:th "Translated By"]
+                    [:th "Audio?"]]]
            [:tbody
             (for [s (:translations list)]
               ^{:key (:id s)}
@@ -330,6 +331,9 @@
                [:td (:source_text s)]
                [:td [:div (:target_text s) [:br] (:target_text_roman s)]]
                [:td (:translator s)]
+               [:td (if (:has_audio s)
+                      [:span.icon.has-text-success>i.fa.fa-check]
+                      [:span.icon.has-text-danger>i.fa.fa-ban])]
                [:td [:a.button.is-info {:on-click #(rf/dispatch [:open-translate-modal (:id s)])} "edit"]]])]]]]]])))
 
 (defn my-lists []

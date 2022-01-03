@@ -31,7 +31,8 @@
                       :target_text (:target_text r)
                       :target_text_roman (:target_text_roman r)
                       :translator (:translator r)
-                      :list_index (:list_index r)})}))
+                      :list_index (:list_index r)
+                      :has_audio (:has_audio r)})}))
 
 ; ADD cljc validation
 (defn create! [name source target file user_id]

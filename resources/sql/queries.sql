@@ -41,7 +41,8 @@ group by l.id;
   (select string_agg(uu.username, ',')
    from users uu
    join list_users lluu on lluu.user_id=uu.id
-   where lluu.list_id = :id) users
+   where lluu.list_id = :id) users,
+   (t.audio is not null) has_audio
    from translations t
   join lists l on l.id=t.list_id
   join users u on l.user_id=u.id
