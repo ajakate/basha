@@ -330,7 +330,7 @@
 (rf/reg-event-db
  :set-signup-error
  (fn [db [_ response]]
-   (assoc db :list-summary response)))
+   (assoc db :login-modal/errors (-> response :response :message))))
 
 (rf/reg-event-db
  :set-signup

@@ -40,10 +40,11 @@
                :placeholder "sk8hkr69"
                :on-change #(reset! draft_users (.. % -target -value))
                :value @draft_users}]]
-            [:div.control>button.button.is-link
-             {:on-click #(rf/dispatch [:edit-users {:users (string/split @draft_users #",") :list_id (:id list)}])} "Submit"]
-            [:div.control>button.button
-             {:on-click #(rf/dispatch [:close-users-modal])} "Cancel"]]]]
+            [:div.columns
+             [:div.column.control>button.button.is-link
+              {:on-click #(rf/dispatch [:edit-users {:users (string/split @draft_users #",") :list_id (:id list)}])} "Submit"]
+             [:div.column.control>button.button
+              {:on-click #(rf/dispatch [:close-users-modal])} "Cancel"]]]]]
          [:button.modal-close.is-large
           {:aria-label "close" :on-click #(rf/dispatch [:close-users-modal])} "close"]]))))
 
@@ -106,26 +107,39 @@
      [:button.modal-close.is-large
       {:aria-label "close" :on-click #(rf/dispatch [:close-login-modal])} "close"]]))
 
-(defn recording-state-component [state temp-recording]
+(defn recording-state-component [state temp]
   (let [state (or state :init)
-        components {:init [:div.control>button.button.is-primary
-                           {:on-click #(rf/dispatch [:arm-recording])} "Record Audio"]
-                    :armed [:div.control
-                            [:button.button.p-2.m-1.is-primary
-                             {:on-click #(rf/dispatch [:start-recording])} "Start Recording"]
-                            [:button.button.p-2.m-1.is-danger
-                             {:disabled true} "Stop"]
-                            [:button.button.p-2.m-1
-                             {:on-click #(rf/dispatch [:cancel-recording])} "Cancel"]]
-                    :recording [:div.control
-                                [:button.button.p-2.m-1.is-danger
-                                 {:on-click #(rf/dispatch [:stop-recording])} "Finish Recording"]
-                                [:button.button.p-2.m-1
-                                 {:on-click #(rf/dispatch [:cancel-recording])} "Cancel"]]
-                    :stopped [:div.control
-                              [:audio {:controls "controls" :src (:url temp-recording)}]
-                              [:button.button.p-2.m-1
-                               {:on-click #(rf/dispatch [:cancel-recording])} "Cancel"]]}]
+        components {:init [:nav.level
+                           [:div.level-left]
+                           [:div.level-right
+                            [:div.column>button.button.p-2.m-1.is-primary.level-item
+                             {:on-click #(rf/dispatch [:arm-recording])} "Record New Audio"]]]
+                    :armed [:nav.level
+                            [:div.level-left
+                             [:div.level-item "Get ready to start speaking ->"]]
+                            [:div.level-right
+                             [:button.button.p-2.m-1.is-primary.level-item
+                              {:on-click #(rf/dispatch [:start-recording])} "Start Recording"]
+                             [:button.button.p-2.m-1.level-item
+                              {:on-click #(rf/dispatch [:cancel-recording])} "Cancel"]]]
+                    :recording [:nav.level
+                                [:div.level-left 
+                                 [:progress.progress.is-danger.level-item]]
+                                [:div.level-right
+                                 [:button.button.p-2.m-1.is-danger.level-item
+                                  {:on-click #(rf/dispatch [:stop-recording])} "Finish Recording"]
+                                 [:button.button.p-2.m-1.level-item
+                                  {:on-click #(rf/dispatch [:cancel-recording])} "Cancel"]]]
+                    :stopped [:div
+                              [:nav.level
+                               [:div.level-left
+                                [:audio.level-item {:controls "controls" :src (:url temp)}]]
+                               [:div.level-right
+                                [:button.button.p-2.m-1.level-item
+                                 {:on-click #(rf/dispatch [:cancel-recording])} "Cancel"]]]
+                              [:p "You can submit this new audio by hitting the 'Save' button below."]
+                              [:p "If you'd rather keep the existing audio (if it's there) hit 'Cancel' above."]]
+                    }]
     (state components)))
 
 (defn translate-modal []
@@ -134,7 +148,8 @@
         list @(rf/subscribe [:active-list])
         loading-translation @(rf/subscribe [:loading-translation])
         recording-state @(rf/subscribe [:recording-state])
-        temp-recording @(rf/subscribe [:temp-recording])]
+        temp-recording @(rf/subscribe [:temp-recording])
+        next-id (:next_id translation)]
     (if loading-translation
       [:div "loading"]
       [:div.modal
@@ -156,16 +171,18 @@
                :placeholder "sk8hkr69"
                :on-change #(reset! draft_source (.. % -target -value))
                :value @draft_source}]]
-
             [:label.label "Translated Audio"]
-            (if-let [audio (:audio translation)]
-              [:div.card>div.card-content
+            (when-let [audio (:audio translation)]
+              [:div.box.p-3
                [:label.label "Existing Audio"]
-               [:audio {:controls "controls" :src (str "data:audio/ogg;base64," audio)}]]
-              nil)
-
-            [recording-state-component recording-state temp-recording]
-
+               [:div.columns
+                [:div.column
+                 [:audio {:controls "controls" :src (str "data:audio/ogg;base64," audio)}]]
+                [:div.column>button.button.is-danger
+                 {:on-click #(rf/dispatch [:arm-recording])} "Delete Audio"]]])
+            [:div.box.p-3
+             [:label.label "Record New Audio"]
+             [recording-state-component recording-state temp-recording]]
             [:label.label "Translation (native script)"]
             [:div.field
              [:div.control [:input.input
@@ -180,25 +197,27 @@
                              :placeholder "type your roman translation here"
                              :on-change #(reset! draft_target_rom (.. % -target -value))
                              :value @draft_target_rom}]]]
-            [:div.control>button.button.is-link
-             {:on-click #(rf/dispatch [:edit-translation {:target_text_roman @draft_target_rom
-                                                          :target_text @draft_target
-                                                          :source_text @draft_source
-                                                          :id (:id translation)
-                                                          :list_id (:id list)
-                                                          :audio (:data temp-recording)}])
-              :disabled (= recording-state :recording)} "Save"]
-            (if-let [next_id (:next_id translation)]
-              [:div.control>button.button.is-link
-               {:on-click #(rf/dispatch [:edit-translation {:target_text_roman @draft_target_rom
-                                                            :target_text @draft_target
-                                                            :source_text @draft_source
-                                                            :id (:id translation)
-                                                            :list_id (:id list)
-                                                            :audio (:data temp-recording)
-                                                            :goto-next true
-                                                            :next_id next_id}])
-                :disabled (= recording-state :recording)} "Save & Next"])])]]
+            [:div.columns
+             [:div.column.has-text-centered.control>button.button.is-link
+              {:on-click #(rf/dispatch [:edit-translation {:target_text_roman @draft_target_rom
+                                                           :target_text @draft_target
+                                                           :source_text @draft_source
+                                                           :id (:id translation)
+                                                           :list_id (:id list)
+                                                           :audio (:data temp-recording)
+                                                           :goto-next true
+                                                           :next_id next-id}])
+               :disabled (= recording-state :recording)
+               :style (if (:next_id translation) nil {:visibility :hidden})} "Save & Next"]
+             [:div.column.has-text-centered.control>button.button.is-link
+              {:on-click #(rf/dispatch [:edit-translation {:target_text_roman @draft_target_rom
+                                                           :target_text @draft_target
+                                                           :source_text @draft_source
+                                                           :id (:id translation)
+                                                           :list_id (:id list)
+                                                           :audio (:data temp-recording)}])
+               :disabled (= recording-state :recording)} "Save & Exit"]
+             [:div.column.has-text-centered.control>button.button {:on-click #(rf/dispatch [:close-translate-modal])} "Cancel"]]])]]
        [:button.modal-close.is-large
         {:aria-label "close" :on-click #(rf/dispatch [:close-translate-modal])} "close"]])))
 
@@ -282,60 +301,70 @@
   (let [list @(rf/subscribe [:active-list])
         user @(rf/subscribe [:user])]
     (when list
-      [:div
-       [:h1.title.is-1.m-3 (:name list)]
-       [:h2.subtitle.is-3.m-3 (str "Created by: " (:creator list))]
-       [:h2.subtitle.is-5.m-3 (str "Shared with: "
-                                   (if (empty? (:users list))
-                                     "No one"
-                                     (:users list)))]
-       (when (= (:username user) (:creator list))
-         [:a.button.is-info {:on-click #(rf/dispatch [:open-users-modal])} "Edit Sharing"])
-       [:table.table.is-bordered.is-narrow.is-striped.is-hoverable
-        [:thead [:tr
-                 [:th "ID"]
-                 [:th (:source_language list)]
-                 [:th (:target_language list)]
-                 [:th "Translated By"]]]
-        [:tbody
-         (for [s (:translations list)]
-           ^{:key (:id s)}
-           [:tr
-            [:td (:list_index s)]
-            [:td (:source_text s)]
-            [:td [:div (:target_text s) [:br] (:target_text_roman s)]]
-            [:td (:translator s)]
-            [:td [:a.button.is-info {:on-click #(rf/dispatch [:open-translate-modal (:id s)])} "edit"]]])]]])))
+      [:div.has-text-centered
+       [:p.is-size-2 (:name list)]
+       [:p.is-size-4 (str "Created by: " (:creator list))]
+       [:div.columns.m-2
+        [:div.column]
+        [:div.column>p.is-size-4 (str "Shared with: "
+                                      (if (empty? (:users list))
+                                        "No one"
+                                        (:users list)))]
+        (when (= (:username user) (:creator list))
+          [:div.column>a.button.is-info {:on-click #(rf/dispatch [:open-users-modal])} "Edit Sharing"])
+        [:div.column]]
+       [:section.section.p-1.m-1
+        [:div.columns.is-centered
+         [:div.column.is-narrow
+          [:table.table.is-bordered.is-narrow.is-striped.is-hoverable
+           [:thead [:tr
+                    [:th "ID"]
+                    [:th (:source_language list)]
+                    [:th (:target_language list)]
+                    [:th "Translated By"]]]
+           [:tbody
+            (for [s (:translations list)]
+              ^{:key (:id s)}
+              [:tr
+               [:td (:list_index s)]
+               [:td (:source_text s)]
+               [:td [:div (:target_text s) [:br] (:target_text_roman s)]]
+               [:td (:translator s)]
+               [:td [:a.button.is-info {:on-click #(rf/dispatch [:open-translate-modal (:id s)])} "edit"]]])]]]]]])))
 
 (defn my-lists []
   (let [lists @(rf/subscribe [:list-summary])]
     (if (seq lists)
-      
-      [:table.table.is-bordered.is-narrow.is-striped.is-hoverable
-       [:thead [:tr
-                [:th "name"]
-                [:th "owner"]
-                [:th "source language"]
-                [:th "target language"]
-                [:th "total count"]
-                [:th "open translations"]]]
-       [:tbody
-        (for [list lists]
-          ^{:key (:id list)}
-          [:tr
-           [:td (:name list)]
-           [:td (:creator list)]
-           [:td (:source_language list)]
-           [:td (:target_language list)]
-           [:td (:list_count list)]
-           [:td (:open_count list)]
-           [:td [:a.button.is-info {:href (str "/#/lists/edit/" (:id list))} "edit"]]])]]
+      [:div.p-2.m-2
+       [:h1.title.is-4 "My Sentence Lists"]
+       [:section.section.p-1.m-1
+        [:div.columns.is-centered
+         [:div.column.is-narrow
+          [:table.table.is-bordered.is-narrow.is-striped.is-hoverable
+           [:thead [:tr
+                    [:th "name"]
+                    [:th "owner"]
+                    [:th "source language"]
+                    [:th "target language"]
+                    [:th "total count"]
+                    [:th "open translations"]]]
+           [:tbody
+            (for [list lists]
+              ^{:key (:id list)}
+              [:tr
+               [:td (:name list)]
+               [:td (:creator list)]
+               [:td (:source_language list)]
+               [:td (:target_language list)]
+               [:td (:list_count list)]
+               [:td (:open_count list)]
+               [:td [:a.button.is-info {:href (str "/#/lists/edit/" (:id list))} "edit"]]])]]]]]]
       [:h1 "You don't have any lists!"])))
 
 (defn logged-in-home []
   [:div.has-text-centered
    [:p.is-size-1 "My Dashboard"]
-   [:a.button.is-primary {:href "/#/lists/new"} "Create a New Sentence List"]
+   [:a.button.is-primary.m-3 {:href "/#/lists/new"} "Create a New Sentence List"]
    [my-lists]])
 
 (defn logged-out-home []
