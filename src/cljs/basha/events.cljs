@@ -1,11 +1,39 @@
 (ns basha.events
   (:require
    [re-frame.core :as rf]
+   [re-frame.core :refer [debug path]]
    [ajax.core :as ajax]
    [reitit.frontend.easy :as rfe]
    [reitit.frontend.controllers :as rfc]
    [basha.audio :as baudio]
    [akiroz.re-frame.storage :refer [persist-db]]))
+
+(def with-auth
+  (re-frame.core/->interceptor
+   :id      :with-auth
+   :after (fn [context]
+            (let [original (-> context :coeffects :event)
+                  success (-> context :effects :http-xhrio :on-success)
+                  failure (-> context :effects :http-xhrio :on-failure)
+                  with-success (assoc-in context [:effects :http-xhrio :on-success] [:with-success success])]
+              (assoc-in with-success [:effects :http-xhrio :on-failure] [:with-failure original failure])))))
+
+(rf/reg-event-fx
+ :with-success
+ (fn [{:keys [db]} [_ to-dispatch resp]]
+   {:db (assoc db :retry-count 0)
+    :fx [[:dispatch (conj to-dispatch resp)]]}))
+
+(rf/reg-event-fx
+ :with-failure
+ (fn [{:keys [db]} [_ original failure resp]]
+   (let [retries (:retry-count db)
+         status (:status resp)]
+     (if (= status 401)
+       (if (> 2 retries)
+         {:fx [[:dispatch [:inc-retry-count]] [:dispatch [:refresh]] [:dispatch original]]}
+         {:fx [[:dispatch :logout]]})
+       {:fx [[:dispatch (conj failure resp)]]}))))
 
 (defn persisted-reg-event-db
   [event-id handler]
@@ -112,6 +140,7 @@
 
 (rf/reg-event-fx
  :create-list
+ [with-auth]
  (fn [{:keys [db]} [_ params]]
    {:http-xhrio {:method          :post
                  :uri             "/api/lists"
@@ -124,6 +153,7 @@
 
 (rf/reg-event-fx
  :delete-audio
+ [with-auth]
  (fn [{:keys [db]} [_ id]]
    {:http-xhrio {:method          :post
                  :uri             (str "/api/delete_audio/" id)
@@ -136,6 +166,7 @@
 
 (rf/reg-event-fx
  :edit-translation
+ [with-auth]
  (fn [{:keys [db]} [_ params]]
    (let [id (:id params)
          body (dissoc params :id :list_id :goto-next :next_id)
@@ -148,10 +179,12 @@
                    :headers {"Authorization" (str "Token " (-> db :user :access-token))}
                    :response-format  (ajax/json-response-format {:keywords? true})
                    :on-success       (if next-id [:open-translate-modal next-id] [:reset-list-page list_id])
-                   :on-failure [:set-signup-error]}})))
+                  ;;  :on-failure [:set-signup-error]
+                   }})))
 
 (rf/reg-event-fx
  :fetch-list-summary
+ [with-auth]
  (fn [{:keys [db]} [_ _]]
    {:http-xhrio {:method          :get
                  :uri             "/api/lists"
@@ -162,17 +195,19 @@
 
 (rf/reg-event-fx
  :fetch-translation
+ [with-auth]
  (fn [{:keys [db]} [_ id]]
    {:http-xhrio {:method          :get
                  :uri             (str "/api/translations/" id)
                  :headers {"Authorization" (str "Token " (-> db :user :access-token))}
                  :response-format  (ajax/json-response-format {:keywords? true})
                  :on-success       [:set-active-translation]
-                ;;  :on-failure [:set-list-summary]
+                 :on-failure [:set-signup-error]
                  }}))
 
 (rf/reg-event-fx
  :fetch-list
+ [with-auth]
  (fn [{:keys [db]} [_ id]]
    {:http-xhrio {:method          :get
                  :uri             (str "/api/lists/" id)
@@ -184,6 +219,7 @@
 
 (rf/reg-event-fx
  :edit-users
+ [with-auth]
  (fn [{:keys [db]} [_ params]]
    {:http-xhrio {:method          :post
                  :uri             (str "/api/assignees/" (:list_id params))
@@ -194,25 +230,23 @@
                  :on-success       [:reset-list-page (:list_id params)]
                  :on-failure [:set-users-error]}}))
 
-;; (rf/reg-event-fx
-;;  :refresh
-;;  (fn [{:keys [db]} [_ dispatch params]]
-;;    (let [success-dispatch (: params)])
-;;    {:http-xhrio {:method          :post
-;;                  :uri             "/api/refresh"
-;;                  :params params
-;;                  :format          (ajax/json-request-format)
-;;                  :headers {"Authorization" (str "Token " (-> db :user :refresh-token))}
-;;                  :response-format  (ajax/json-response-format {:keywords? true})
-;;                  :on-success       [:set-login-user]
-;;                  :on-failure [:set-signup-error]}}))
+(rf/reg-event-fx
+ :refresh
+ [with-auth]
+ (fn [{:keys [db]} [_]]
+   {:http-xhrio {:method          :post
+                 :uri             "/api/refresh"
+                 :format          (ajax/json-request-format)
+                 :headers {"Authorization" (str "Token " (-> db :user :refresh-token))}
+                 :response-format  (ajax/json-response-format {:keywords? true})
+                 :on-success       [:set-login-user]
+                 :on-failure [:set-signup-error]}}))
 
 ; TODO: IMPLEMENT THIS FOR REDIRECT
 ;; (rf/reg-event-fx
 ;;  :set-track-url
 ;;  (fn [_ [_ track]]
 ;;    (rfe/push-state :view-track {:id (:id track)})))
-
 
 (rf/reg-event-db
  :set-users-error
@@ -295,6 +329,12 @@
  :debug
  (fn [db [_ obj]]
    (assoc db :debug obj)))
+
+;; TODO: idk about this
+(rf/reg-event-db
+ :debugf
+ (fn [db [_ obj]]
+   (assoc db :debugf obj)))
 
 (rf/reg-event-db
  :set-list-summary
@@ -380,7 +420,8 @@
 (rf/reg-event-fx
  :set-login
  (fn [{:keys [db]} [_ user]]
-   {:fx [[:dispatch [:close-login-modal]] [:dispatch [:set-login-user user]] [:dispatch [:redirect-home]]]}))
+   {:db (assoc db :retry-count 0)
+    :fx [[:dispatch [:close-login-modal]] [:dispatch [:set-login-user user]] [:dispatch [:redirect-home]]]}))
 
 (persisted-reg-event-db
  :clear-login-user
@@ -391,7 +432,13 @@
 (rf/reg-event-fx
  :logout
  (fn [{:keys [db]} [_]]
-   {:fx [[:dispatch [:clear-login-user]] [:dispatch [:redirect-home]]]}))
+   {:db (assoc db :retry-count 0)
+    :fx [[:dispatch [:clear-login-user]] [:dispatch [:redirect-home]]]}))
+
+(rf/reg-event-db
+ :inc-retry-count
+ (fn [db [_]]
+   (assoc db :retry-count (+ 1 (:retry-count db)))))
 
 ;;subscriptions
 
