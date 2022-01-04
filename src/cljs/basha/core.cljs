@@ -22,7 +22,8 @@
 
 (defn assign-modal []
   (let [is-active @(rf/subscribe [:users-modal-visible])
-        list @(rf/subscribe [:active-list])]
+        list @(rf/subscribe [:active-list])
+        error @(rf/subscribe [:users-error])]
     (when is-active
       (r/with-let [draft_users (r/atom (:users list))]
         [:div.modal
@@ -40,6 +41,7 @@
                :placeholder "sk8hkr69"
                :on-change #(reset! draft_users (.. % -target -value))
                :value @draft_users}]]
+            (when error [:p.has-text-danger.is-italic.mb-3 (str "Error: " error)])
             [:div.columns
              [:div.column.control>button.button.is-link
               {:on-click #(rf/dispatch [:edit-users {:users (string/split @draft_users #",") :list_id (:id list)}])} "Submit"]
@@ -97,7 +99,7 @@
            [:div.control>a.button.is-info
             {:on-click #(swap! show_pass not)}
             [:i.fa {:class (if @show_pass :fa-eye-slash :fa-eye)}]]]
-          (if error [:p.has-text-danger.is-italic.mb-3 (str "Error: " error)])
+          (when error [:p.has-text-danger.is-italic.mb-3 (str "Error: " error)])
           [:div.control>button.button.is-link
            {:on-click #(rf/dispatch [(modal-vals :dispatch) {:username @draft_user :password @draft_pass}])
             :disabled (or (string/blank? @draft_user)
@@ -187,14 +189,14 @@
             [:div.field
              [:div.control [:input.input
                             {:type "text"
-                             :placeholder "type your native translation here"
+                             :placeholder "मार्टिन फॉलर "
                              :on-change #(reset! draft_target (.. % -target -value))
                              :value @draft_target}]]]
             [:label.label "Translation (roman script)"]
             [:div.field
              [:div.control [:input.input
                             {:type "text"
-                             :placeholder "type your roman translation here"
+                             :placeholder "Kasa kay mandali"
                              :on-change #(reset! draft_target_rom (.. % -target -value))
                              :value @draft_target_rom}]]]
             [:div.columns

@@ -3,6 +3,7 @@
   (:require
    [basha.db.core :as db]
    [next.jdbc :as jdbc]
+   [clojure.string :as str]
    [camel-snake-kebab.core :as csk]
    [java-time :as t]
    [basha.config :refer [env]]
@@ -73,7 +74,7 @@
         new-ids (set (map #(:id %) new))
         errors (list-errors users new-names)]
     (if (seq errors)
-      {:error (str "way " errors)}
+      {:error {:message (str "The following users could not be found: " (str/join ", " errors))}}
       (jdbc/with-transaction
         [t-conn db/*db*]
         (db/delete-list-users t-conn {:list_id id})

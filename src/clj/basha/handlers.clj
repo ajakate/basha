@@ -65,8 +65,8 @@
 ; TODO: why does with-handle not work here?
 (defn update-users [{{:keys [id]} :path-params body-params :params}]
   (let [resp (list/update-users id (:users body-params))]
-    (if (:error resp)
-      (response/bad-request resp)
+    (if-let [error (:error resp)]
+      (response/bad-request error)
       (response/ok resp))))
 
 (defn delete-audio [{{:keys [id]} :path-params}]

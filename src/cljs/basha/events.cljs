@@ -29,6 +29,20 @@
         i (position id ids)]
     (second (nthnext ids i))))
 
+(defn filter-empty [params]
+  (into {} (filter (fn [kv]
+                     (let [v (second kv)]
+                       (and
+                        (some? v)
+                        (not= v "")))) params)))
+
+(defn generate-form-data [params]
+  (let [form-data (js/FormData.)
+        clean-params (filter-empty params)]
+    (doseq [[k v] clean-params]
+      (.append form-data (name k) v))
+    form-data))
+
 ;;dispatchers
 
 (rf/reg-event-db
@@ -95,20 +109,6 @@
                  :response-format  (ajax/json-response-format {:keywords? true})
                  :on-success       [:set-login]
                  :on-failure [:set-signup-error]}}))
-
-(defn filter-empty [params]
-  (into {} (filter (fn [kv]
-                     (let [v (second kv)]
-                       (and
-                        (some? v)
-                        (not= v "")))) params)))
-
-(defn generate-form-data [params]
-  (let [form-data (js/FormData.)
-        clean-params (filter-empty params)]
-    (doseq [[k v] clean-params]
-      (.append form-data (name k) v))
-    form-data))
 
 (rf/reg-event-fx
  :create-list
@@ -192,11 +192,12 @@
                  :headers {"Authorization" (str "Token " (-> db :user :access-token))}
                  :response-format  (ajax/json-response-format {:keywords? true})
                  :on-success       [:reset-list-page (:list_id params)]
-                 :on-failure [:set-create-list-error]}}))
+                 :on-failure [:set-users-error]}}))
 
 ;; (rf/reg-event-fx
 ;;  :refresh
-;;  (fn [{:keys [db]} [_ params]]
+;;  (fn [{:keys [db]} [_ dispatch params]]
+;;    (let [success-dispatch (: params)])
 ;;    {:http-xhrio {:method          :post
 ;;                  :uri             "/api/refresh"
 ;;                  :params params
@@ -211,6 +212,12 @@
 ;;  :set-track-url
 ;;  (fn [_ [_ track]]
 ;;    (rfe/push-state :view-track {:id (:id track)})))
+
+
+(rf/reg-event-db
+ :set-users-error
+ (fn [db [_ resp]]
+   (assoc db :users-error (-> resp :response :message))))
 
 (rf/reg-event-fx
  :set-home-state
@@ -236,7 +243,7 @@
 (rf/reg-event-fx
  :reset-list-page
  (fn [{:keys [db]} [_ list_id _]]
-   {:db (assoc db :translate-modal/visible false :users-modal-visible false)
+   {:db (assoc db :translate-modal/visible false :users-modal-visible false :users-error nil)
     :dispatch [:load-list-page list_id]}))
 
 (rf/reg-event-fx
@@ -330,11 +337,12 @@
  (fn [db [_]]
    (assoc db :translate-modal/visible false :loading-translation false :active-translation nil)))
 
+; ADD THE REFRESH ON MODAL CLOSE
 (rf/reg-event-fx
  :close-translate-modal
  (fn [{:keys [db]} [_ id]]
    {:db (assoc db :translate-modal/visible false :loading-translation false :active-translation nil)
-    :dispatch [:cancel-recording]}))
+    :fx  [[:dispatch [:cancel-recording]] [:dispatch [:load-list-page (-> db :active-list :id)]]]}))
 
 (rf/reg-event-db
  :set-active-translation
@@ -362,7 +370,7 @@
 (rf/reg-event-db
  :close-users-modal
  (fn [db [_]]
-   (assoc db :users-modal-visible false)))
+   (assoc db :users-modal-visible false :users-error nil)))
 
 (persisted-reg-event-db
  :set-login-user
@@ -372,7 +380,7 @@
 (rf/reg-event-fx
  :set-login
  (fn [{:keys [db]} [_ user]]
-   {:fx [[:dispatch [:set-login-user user]] [:dispatch [:redirect-home]]]}))
+   {:fx [[:dispatch [:close-login-modal]] [:dispatch [:set-login-user user]] [:dispatch [:redirect-home]]]}))
 
 (persisted-reg-event-db
  :clear-login-user
@@ -386,6 +394,11 @@
    {:fx [[:dispatch [:clear-login-user]] [:dispatch [:redirect-home]]]}))
 
 ;;subscriptions
+
+(rf/reg-sub
+ :users-error
+ (fn [db _]
+   (-> db :users-error)))
 
 (rf/reg-sub
  :users-modal-visible
