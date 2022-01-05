@@ -220,12 +220,13 @@
 (defn navbar []
   ;; TODO: fix logic seq user nil
   (r/with-let [expanded? (r/atom false)]
-    (let [user @(rf/subscribe [:user])]
+    (let [user @(rf/subscribe [:user])
+          user-exists (seq user)]
       [:nav.navbar.is-info>div.container
        [:div.navbar-brand
-        [:a.navbar-item {:style (if (seq user) {:font-weight :bold :pointer-events :none} {:font-weight :bold})
+        [:a.navbar-item {:style (if user-exists {:font-weight :bold :pointer-events :none} {:font-weight :bold})
                          :on-click #(rf/dispatch [:swap-login-modal true])}
-         (if (empty? user) "log in" (str "Hi, " (:username user) "!"))]
+         (if user-exists (str "Hi, " (:username user) "!") "log in")]
         [:span.navbar-burger.burger
          {:data-target :nav-menu
           :on-click #(swap! expanded? not)
@@ -234,11 +235,11 @@
        [:div#nav-menu.navbar-menu
         {:class (when @expanded? :is-active)}
         [:div.navbar-start
-         [nav-link "#/" "Home" :home]
+         [nav-link "#/" (if user-exists "My Dashboard" "Home") :home]
          [nav-link "#/about" "About" :about]
-         (when (seq user) [:a.navbar-item
-                   {:on-click #(rf/dispatch [:logout])}
-                   "Logout"])]]])))
+         (when user-exists [:a.navbar-item
+                 {:on-click #(rf/dispatch [:logout])}
+                 "Logout"])]]])))
 
 (defn about-page []
   [:section.section>div.container>div.content
