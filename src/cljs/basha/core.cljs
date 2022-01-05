@@ -4,15 +4,12 @@
    [reagent.dom :as rdom]
    [reagent.core :as r]
    [re-frame.core :as rf]
-   [goog.events :as events]
-   [goog.history.EventType :as HistoryEventType]
    [markdown.core :refer [md->html]]
    [basha.ajax :as ajax]
    [basha.events]
    [reitit.core :as reitit]
    [reitit.frontend.easy :as rfe]
-   [clojure.string :as string])
-  (:import goog.History))
+   [clojure.string :as string]))
 
 (defn nav-link [uri title page]
   [:a.navbar-item
@@ -69,7 +66,6 @@
 ;; TODO: add confirm logic, add error presenting
 (defn login-modal []
   (let [is-active @(rf/subscribe [:login-modal-visible])
-        is-signup @(rf/subscribe [:is-signup])
         error @(rf/subscribe [:login-errors])]
     [:div.modal
      {:class (if is-active "is-active" nil)}
@@ -242,7 +238,7 @@
         [:div.navbar-start
          [nav-link "#/" "Home" :home]
          [nav-link "#/about" "About" :about]
-         (if (seq user) [:a.navbar-item
+         (when (seq user) [:a.navbar-item
                    {:on-click #(rf/dispatch [:logout])}
                    "Logout"])]]])))
 

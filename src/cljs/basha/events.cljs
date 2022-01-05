@@ -1,7 +1,6 @@
 (ns basha.events
   (:require
    [re-frame.core :as rf]
-   [re-frame.core :refer [debug path]]
    [ajax.core :as ajax]
    [reitit.frontend.easy :as rfe]
    [reitit.frontend.controllers :as rfc]
@@ -21,7 +20,7 @@
 
 (rf/reg-event-fx
  :with-failure
- (fn [{:keys [db]} [_ original failure resp]]
+ (fn [_ [_ original failure resp]]
    (if (= (:status resp) 401)
      {:fx [[:dispatch [:refresh original]]]}
      {:fx [[:dispatch (conj failure resp)]]})))
@@ -132,7 +131,7 @@
 (rf/reg-event-fx
  :create-list
  [with-auth]
- (fn [{:keys [db]} [_ params]]
+ (fn [_ [_ params]]
    {:http-xhrio {:method          :post
                  :uri             "/api/lists"
                  :body (generate-form-data params)
@@ -144,7 +143,7 @@
 (rf/reg-event-fx
  :delete-audio
  [with-auth]
- (fn [{:keys [db]} [_ id]]
+ (fn [_ [_ id]]
    {:http-xhrio {:method          :post
                  :uri             (str "/api/delete_audio/" id)
                  :format          (ajax/json-request-format)
@@ -154,7 +153,7 @@
 (rf/reg-event-fx
  :edit-translation
  [with-auth]
- (fn [{:keys [db]} [_ params]]
+ (fn [_ [_ params]]
    (let [id (:id params)
          body (dissoc params :id :list_id :goto-next :next_id)
          list_id (:list_id params)
@@ -169,7 +168,7 @@
 (rf/reg-event-fx
  :fetch-list-summary
  [with-auth]
- (fn [{:keys [db]} [_ _]]
+ (fn [_ [_ _]]
    {:http-xhrio {:method          :get
                  :uri             "/api/lists"
                  :response-format  (ajax/json-response-format {:keywords? true})
@@ -179,7 +178,7 @@
 (rf/reg-event-fx
  :fetch-translation
  [with-auth]
- (fn [{:keys [db]} [_ id]]
+ (fn [_ [_ id]]
    {:http-xhrio {:method          :get
                  :uri             (str "/api/translations/" id)
                  :response-format  (ajax/json-response-format {:keywords? true})
@@ -189,7 +188,7 @@
 (rf/reg-event-fx
  :fetch-list
  [with-auth]
- (fn [{:keys [db]} [_ id]]
+ (fn [_ [_ id]]
    {:http-xhrio {:method          :get
                  :uri             (str "/api/lists/" id)
                  :response-format  (ajax/json-response-format {:keywords? true})
@@ -198,7 +197,7 @@
 (rf/reg-event-fx
  :edit-users
  [with-auth]
- (fn [{:keys [db]} [_ params]]
+ (fn [_ [_ params]]
    {:http-xhrio {:method          :post
                  :uri             (str "/api/assignees/" (:list_id params))
                  :params {:users (:users params)}
@@ -228,7 +227,7 @@
 
 (rf/reg-event-fx
  :refresh-success
- (fn [{:keys [db]} [_ original resp]]
+ (fn [_ [_ original resp]]
    {:fx [[:dispatch [:set-login-user resp]] [:dispatch original]]}))
 
 (rf/reg-event-db
@@ -313,12 +312,6 @@
  (fn [db [_ obj]]
    (assoc db :debug obj)))
 
-;; TODO: idk about this
-(rf/reg-event-db
- :debugf
- (fn [db [_ obj]]
-   (assoc db :debugf obj)))
-
 (rf/reg-event-db
  :set-list-summary
  (fn [db [_ response]]
@@ -363,7 +356,7 @@
 ; ADD THE REFRESH ON MODAL CLOSE
 (rf/reg-event-fx
  :close-translate-modal
- (fn [{:keys [db]} [_ id]]
+ (fn [{:keys [db]} _]
    {:db (assoc db :translate-modal/visible false :loading-translation false :active-translation nil)
     :fx  [[:dispatch [:cancel-recording]] [:dispatch [:load-list-page (-> db :active-list :id)]]]}))
 
@@ -402,7 +395,7 @@
 
 (rf/reg-event-fx
  :set-login
- (fn [{:keys [db]} [_ user]]
+ (fn [_ [_ user]]
    {:fx [[:dispatch [:close-login-modal]] [:dispatch [:set-login-user user]] [:dispatch [:redirect-home]]]}))
 
 (persisted-reg-event-db
@@ -413,9 +406,8 @@
 ; TODO: clear stuff here?
 (rf/reg-event-fx
  :logout
- (fn [{:keys [db]} [_]]
+ (fn [_ [_]]
    {:fx [[:dispatch [:clear-login-user]] [:dispatch [:redirect-home]]]}))
-
 
 ;;subscriptions
 
