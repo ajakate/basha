@@ -12,17 +12,12 @@
   (re-frame.core/->interceptor
    :id      :with-auth
    :after (fn [context]
-            (let [original (-> context :coeffects :event)
-                  success (-> context :effects :http-xhrio :on-success)
+            (rf/dispatch [:debug context])
+            (let [token (-> context :coeffects :db :user :access-token)
+                  original (-> context :coeffects :event)
                   failure (-> context :effects :http-xhrio :on-failure)
-                  with-success (assoc-in context [:effects :http-xhrio :on-success] [:with-success success])]
-              (assoc-in with-success [:effects :http-xhrio :on-failure] [:with-failure original failure])))))
-
-(rf/reg-event-fx
- :with-success
- (fn [{:keys [db]} [_ to-dispatch resp]]
-   {:db (assoc db :retry-count 0)
-    :fx [[:dispatch (conj to-dispatch resp)]]}))
+                  with-fail (assoc-in context [:effects :http-xhrio :on-failure] [:with-failure original failure])]
+              (assoc-in with-fail [:effects :http-xhrio :headers] {"Authorization" (str "Token " token)})))))
 
 (rf/reg-event-fx
  :with-failure
@@ -106,11 +101,11 @@
     (assoc db :common/error error)))
 
 (rf/reg-event-fx
-  :page/init-home
-  (fn [{:keys [db]} _]
-    (if (seq (:user db))
-      (rf/dispatch [:fetch-list-summary]))
-    {:dispatch [:fetch-docs]}))
+ :page/init-home
+ (fn [{:keys [db]} _]
+   (if (seq (:user db))
+     {:dispatch [:fetch-list-summary]}
+     {:dispatch [:fetch-docs]})))
 
 (rf/reg-event-fx
  :signup
@@ -142,7 +137,6 @@
                  :uri             "/api/lists"
                  :body (generate-form-data params)
                  :format          (ajax/json-request-format)
-                 :headers {"Authorization" (str "Token " (-> db :user :access-token))}
                  :response-format  (ajax/json-response-format {:keywords? true})
                  :on-success       [:redirect-home]
                  :on-failure [:set-create-list-error]}}))
@@ -153,12 +147,9 @@
  (fn [{:keys [db]} [_ id]]
    {:http-xhrio {:method          :post
                  :uri             (str "/api/delete_audio/" id)
-                ;;  :body (generate-form-data params)
                  :format          (ajax/json-request-format)
-                 :headers {"Authorization" (str "Token " (-> db :user :access-token))}
                  :response-format  (ajax/json-response-format {:keywords? true})
-                 :on-success       [:reload-translation]
-                 :on-failure [:set-create-list-error]}}))
+                 :on-success       [:reload-translation]}}))
 
 (rf/reg-event-fx
  :edit-translation
@@ -172,11 +163,8 @@
                    :uri             (str "/api/translations/" id)
                    :body (generate-form-data body)
                    :format          (ajax/json-request-format)
-                   :headers {"Authorization" (str "Token " (-> db :user :access-token))}
                    :response-format  (ajax/json-response-format {:keywords? true})
-                   :on-success       (if next-id [:open-translate-modal next-id] [:reset-list-page list_id])
-                  ;;  :on-failure [:set-signup-error]
-                   }})))
+                   :on-success       (if next-id [:open-translate-modal next-id] [:reset-list-page list_id])}})))
 
 (rf/reg-event-fx
  :fetch-list-summary
@@ -184,7 +172,6 @@
  (fn [{:keys [db]} [_ _]]
    {:http-xhrio {:method          :get
                  :uri             "/api/lists"
-                 :headers {"Authorization" (str "Token " (-> db :user :access-token))}
                  :response-format  (ajax/json-response-format {:keywords? true})
                  :on-success       [:set-list-summary]
                  :on-failure [:set-list-summary]}}))
@@ -195,11 +182,9 @@
  (fn [{:keys [db]} [_ id]]
    {:http-xhrio {:method          :get
                  :uri             (str "/api/translations/" id)
-                 :headers {"Authorization" (str "Token " (-> db :user :access-token))}
                  :response-format  (ajax/json-response-format {:keywords? true})
                  :on-success       [:set-active-translation]
-                 :on-failure [:set-signup-error]
-                 }}))
+                 :on-failure [:set-signup-error]}}))
 
 (rf/reg-event-fx
  :fetch-list
@@ -207,11 +192,8 @@
  (fn [{:keys [db]} [_ id]]
    {:http-xhrio {:method          :get
                  :uri             (str "/api/lists/" id)
-                 :headers {"Authorization" (str "Token " (-> db :user :access-token))}
                  :response-format  (ajax/json-response-format {:keywords? true})
-                 :on-success       [:set-active-list]
-                ;;  :on-failure [:set-list-summary]
-                 }}))
+                 :on-success       [:set-active-list]}}))
 
 (rf/reg-event-fx
  :edit-users
@@ -221,7 +203,6 @@
                  :uri             (str "/api/assignees/" (:list_id params))
                  :params {:users (:users params)}
                  :format          (ajax/json-request-format)
-                 :headers {"Authorization" (str "Token " (-> db :user :access-token))}
                  :response-format  (ajax/json-response-format {:keywords? true})
                  :on-success       [:reset-list-page (:list_id params)]
                  :on-failure [:set-users-error]}}))
@@ -422,8 +403,7 @@
 (rf/reg-event-fx
  :set-login
  (fn [{:keys [db]} [_ user]]
-   {:db (assoc db :retry-count 0)
-    :fx [[:dispatch [:close-login-modal]] [:dispatch [:set-login-user user]] [:dispatch [:redirect-home]]]}))
+   {:fx [[:dispatch [:close-login-modal]] [:dispatch [:set-login-user user]] [:dispatch [:redirect-home]]]}))
 
 (persisted-reg-event-db
  :clear-login-user
@@ -434,13 +414,8 @@
 (rf/reg-event-fx
  :logout
  (fn [{:keys [db]} [_]]
-   {:db (assoc db :retry-count 0)
-    :fx [[:dispatch [:clear-login-user]] [:dispatch [:redirect-home]]]}))
+   {:fx [[:dispatch [:clear-login-user]] [:dispatch [:redirect-home]]]}))
 
-(rf/reg-event-db
- :inc-retry-count
- (fn [db [_]]
-   (assoc db :retry-count (+ 1 (:retry-count db)))))
 
 ;;subscriptions
 
