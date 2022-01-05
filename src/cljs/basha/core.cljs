@@ -63,7 +63,6 @@
       (arg signup-vals)
       (arg login-vals))))
 
-;; TODO: add confirm logic, add error presenting
 (defn login-modal []
   (let [is-active @(rf/subscribe [:login-modal-visible])
         error @(rf/subscribe [:login-errors])]
@@ -158,7 +157,6 @@
          [:p.card-header-title "Translate Sentence"]]
         [:div.card-content
          (r/with-let [draft_source (r/atom (:source_text translation))
-                    ; TODO: add logic for source romainization
                       draft_target (r/atom (:target_text translation))
                       draft_target_rom (r/atom (:target_text_roman translation))]
            [:div
@@ -317,18 +315,18 @@
           [:table.table.is-bordered.is-narrow.is-striped.is-hoverable
            [:thead [:tr
                     [:th "ID"]
+                    [:th "Translated By"]
                     [:th (:source_language list)]
                     [:th (:target_language list)]
-                    [:th "Translated By"]
                     [:th "Audio?"]]]
            [:tbody
             (for [s (:translations list)]
               ^{:key (:id s)}
               [:tr
                [:td (:list_index s)]
+               [:td (:translator s)]
                [:td (:source_text s)]
                [:td [:div (:target_text s) [:br] (:target_text_roman s)]]
-               [:td (:translator s)]
                [:td (if (:has_audio s)
                       [:span.icon.has-text-success>i.fa.fa-check]
                       [:span.icon.has-text-danger>i.fa.fa-ban])]
@@ -346,6 +344,7 @@
            [:thead [:tr
                     [:th "name"]
                     [:th "owner"]
+                    [:th "shared with"]
                     [:th "source language"]
                     [:th "target language"]
                     [:th "total count"]
@@ -356,6 +355,7 @@
               [:tr
                [:td (:name list)]
                [:td (:creator list)]
+               [:td (:users list)]
                [:td (:source_language list)]
                [:td (:target_language list)]
                [:td (:list_count list)]

@@ -37,10 +37,9 @@
   (jwt/sign payload token-secret
             {:exp   (t/plus (t/instant) time-interval)}))
 
-; TODO: now change this back
 (defn new-tokens [user]
-  {:access-token (generate-token user (t/seconds 5))
-   :refresh-token (generate-token user (t/days 100))})
+  {:access-token (generate-token user (t/hours 2))
+   :refresh-token (generate-token user (t/days 5))})
 
 (defn login [username password]
   (let [user (db/get-user-for-login {:username username})

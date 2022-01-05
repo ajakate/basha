@@ -215,15 +215,7 @@
                  :headers {"Authorization" (str "Token " (-> db :user :refresh-token))}
                  :response-format  (ajax/json-response-format {:keywords? true})
                  :on-success       [:refresh-success original]
-                 ;; TODO: LOGIN HERE?
-                 :on-failure [:set-signup-error]
-                 }}))
-
-; TODO: IMPLEMENT THIS FOR REDIRECT
-;; (rf/reg-event-fx
-;;  :set-track-url
-;;  (fn [_ [_ track]]
-;;    (rfe/push-state :view-track {:id (:id track)})))
+                 :on-failure [:logout]}}))
 
 (rf/reg-event-fx
  :refresh-success
@@ -403,11 +395,11 @@
  (fn [db [_]]
    (assoc db :user {})))
 
-; TODO: clear stuff here?
 (rf/reg-event-fx
  :logout
  (fn [_ [_]]
-   {:fx [[:dispatch [:clear-login-user]] [:dispatch [:redirect-home]]]}))
+   {:db {}
+    :fx [[:dispatch [:clear-login-user]] [:dispatch [:redirect-home]]]}))
 
 ;;subscriptions
 

@@ -25,7 +25,11 @@ l.source_language,
 l.target_language,
 (select u.username from users u where u.id=l.user_id) creator,
 count(t.id) list_count,
-count(t.id) filter (where translator_id is null) open_count
+count(t.id) filter (where (audio is null) or (target_text_roman is null)) open_count,
+(select string_agg(uu.username, ',')
+   from users uu
+   join list_users lluu on lluu.user_id=uu.id
+   where lluu.list_id=l.id) users
 from lists l
 join translations t on t.list_id=l.id
 full outer join list_users li on li.list_id=l.id
