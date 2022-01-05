@@ -27,13 +27,9 @@
 (rf/reg-event-fx
  :with-failure
  (fn [{:keys [db]} [_ original failure resp]]
-   (let [retries (:retry-count db)
-         status (:status resp)]
-     (if (= status 401)
-       (if (> 2 retries)
-         {:fx [[:dispatch [:inc-retry-count]] [:dispatch [:refresh]] [:dispatch original]]}
-         {:fx [[:dispatch :logout]]})
-       {:fx [[:dispatch (conj failure resp)]]}))))
+   (if (= (:status resp) 401)
+     {:fx [[:dispatch [:refresh original]]]}
+     {:fx [[:dispatch (conj failure resp)]]})))
 
 (defn persisted-reg-event-db
   [event-id handler]
@@ -232,21 +228,27 @@
 
 (rf/reg-event-fx
  :refresh
- [with-auth]
- (fn [{:keys [db]} [_]]
+ (fn [{:keys [db]} [_ original]]
    {:http-xhrio {:method          :post
                  :uri             "/api/refresh"
                  :format          (ajax/json-request-format)
                  :headers {"Authorization" (str "Token " (-> db :user :refresh-token))}
                  :response-format  (ajax/json-response-format {:keywords? true})
-                 :on-success       [:set-login-user]
-                 :on-failure [:set-signup-error]}}))
+                 :on-success       [:refresh-success original]
+                 ;; TODO: LOGIN HERE?
+                 :on-failure [:set-signup-error]
+                 }}))
 
 ; TODO: IMPLEMENT THIS FOR REDIRECT
 ;; (rf/reg-event-fx
 ;;  :set-track-url
 ;;  (fn [_ [_ track]]
 ;;    (rfe/push-state :view-track {:id (:id track)})))
+
+(rf/reg-event-fx
+ :refresh-success
+ (fn [{:keys [db]} [_ original resp]]
+   {:fx [[:dispatch [:set-login-user resp]] [:dispatch original]]}))
 
 (rf/reg-event-db
  :set-users-error
