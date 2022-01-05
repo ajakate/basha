@@ -100,14 +100,6 @@ VALUES (:source_text,
  :list_index)
 RETURNING *;
 
--- :name update-sentence-audio!* :<! :1
--- :doc adds 
-INSERT INTO sentences
-(audio_link)
-VALUES (:audio-link)
-WHERE id = :id
-RETURNING *;
-
 -- :name get-sentence-by-id :? :1
 -- :doc retrieves a sentence record given the id
 SELECT * FROM sentences

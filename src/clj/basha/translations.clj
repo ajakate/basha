@@ -20,12 +20,13 @@
                :secret-key (:aws-secret-access-key env)
                :endpoint   "us-east-1"})
 
-(defn upload-audio-for-sentence! [sentence_id file]
-  (if-let [sentence (db/get-sentence-by-id {:id sentence_id})]
-    (let [audio-id (.toString (java.util.UUID/randomUUID))]
-      (files/save-file (str audio-id ".mp3") file)
-      (db/update-sentence-audio!* {:audio-link audio-id :id (:id sentence)}))
-    (throw (ex-info "no sentence found for audio" {:type :bad-request}))))
+;TODO: now delete me!
+;; (defn upload-audio-for-sentence! [sentence_id file]
+;;   (if-let [sentence (db/get-sentence-by-id {:id sentence_id})]
+;;     (let [audio-id (.toString (java.util.UUID/randomUUID))]
+;;       (files/save-file (str audio-id ".mp3") file)
+;;       (db/update-sentence-audio!* {:audio-link audio-id :id (:id sentence)}))
+;;     (throw (ex-info "no sentence found for audio" {:type :bad-request}))))
 
 (defn fetch [id]
   (db/get-translation {:id (java.util.UUID/fromString id)}))

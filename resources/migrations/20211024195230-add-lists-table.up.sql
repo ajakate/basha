@@ -7,3 +7,9 @@ CREATE TABLE lists
  created_at timestamp DEFAULT NOW() NOT NULL,
  PRIMARY KEY(id)
 );
+--;;
+CREATE UNIQUE INDEX l_id ON lists(id);
+--;;
+CREATE INDEX l_user_id ON lists(user_id);
+--;;
+CREATE INDEX l_created_at ON lists(created_at);

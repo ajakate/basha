@@ -5,3 +5,7 @@ CREATE TABLE list_users
  created_at timestamp DEFAULT NOW() NOT NULL,
  PRIMARY KEY(id)
 );
+--;;
+CREATE INDEX lu_list_id ON list_users(list_id);
+--;;
+CREATE INDEX lu_user_id ON list_users(user_id);

@@ -5,3 +5,7 @@ CREATE TABLE users
  created_at timestamp DEFAULT NOW() NOT NULL,
  PRIMARY KEY(id)
 );
+--;;
+CREATE UNIQUE INDEX u_id ON users(id);
+--;;
+CREATE UNIQUE INDEX u_username ON users(username);
