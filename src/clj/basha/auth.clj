@@ -2,7 +2,6 @@
   (:require
    [buddy.auth :refer [authenticated?]]
    [buddy.hashers :as hashers]
-   [next.jdbc :as jdbc]
    [buddy.auth.backends :as backends]
    [buddy.auth.middleware :refer [wrap-authentication]]
    [basha.db.core :as db]

@@ -302,10 +302,11 @@
        [:p.is-size-4 (str "Created by: " (:creator list))]
        [:div.columns.m-2
         [:div.column]
-        [:div.column>p.is-size-4 (str "Shared with: "
-                                      (if (empty? (:users list))
-                                        "No one"
-                                        (:users list)))]
+        [:div.column
+         [:p.is-size-6 "Shared with:"]
+         (if (empty? (:users list))
+           [:p.is-size-5.is-italic "No one"]
+           [:p.is-size-5 (:users list)])]
         (when (= (:username user) (:creator list))
           [:div.column>a.button.is-info {:on-click #(rf/dispatch [:open-users-modal])} "Edit Sharing"])
         [:div.column]]

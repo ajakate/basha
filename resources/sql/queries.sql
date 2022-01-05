@@ -53,10 +53,6 @@ group by l.id;
   where l.id = :id
   order by target_text_roman is null desc, target_text is null desc, t.list_index asc;
 
--- :name get-sentence :? :*
--- :doc fetches sentence
-select * from sentences s
-where s.id = :id;
 
 -- :name get-translation :? :1
 -- :doc fetches translation
@@ -74,21 +70,6 @@ translator_id = :translator_id
 where id = :id
 RETURNING *;
 
--- :name create-sentence!* :<! :1
--- :doc creates a sentence record
-INSERT INTO sentences
-(
-   --~ (if (seq (:text params)) "text," nil)
-creator_id,
- --~ (if (seq (:text_roman params)) "text_roman," nil)
-  language)
-VALUES (
-   --~ (if (seq (:text params)) ":text," nil)
- :creator_id,
---~ (if (seq (:text_roman params)) ":text_roman," nil)
-  :language)
-RETURNING *;
-
 -- :name create-translation!* :<! :1
 -- :doc creates a translation record
 INSERT INTO translations
@@ -99,11 +80,6 @@ VALUES (:source_text,
  :list_id,
  :list_index)
 RETURNING *;
-
--- :name get-sentence-by-id :? :1
--- :doc retrieves a sentence record given the id
-SELECT * FROM sentences
-WHERE id = :id;
 
 -- :name get-users-by-username :? :*
 -- :doc retrieves users by username

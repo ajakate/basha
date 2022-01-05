@@ -3,7 +3,6 @@
    [basha.lists :as list]
    [basha.translations :as translation]
    [ring.util.http-response :as response]
-   [amazonica.aws.s3 :as s3]
    [basha.auth :as auth]
    [basha.config :refer [env]]))
 
@@ -12,20 +11,11 @@
 (def error-types {:conflict response/conflict
                   :bad-request response/bad-request})
 
-(defonce cred {:access-key (:aws-access-key-id env)
-           :secret-key (:aws-secret-access-key env)
-           :endpoint   "us-east-1"})
-
 (defmacro with-handle [& exp]
   `(try
      (response/ok (do ~@exp))
      (catch clojure.lang.ExceptionInfo ~'e
-       (((-> ~'e ex-data :type) error-types) {:message (.getMessage ~'e)}))
-     ;; TODO: add this back when done?
-    ;;  (catch Exception ~'e
-    ;;    (response/internal-server-error {:message (.getMessage ~'e)}))
-
-     ))
+       (((-> ~'e ex-data :type) error-types) {:message (.getMessage ~'e)}))))
 
 (defn signup [{{:keys [username password]} :body-params}]
   (with-handle

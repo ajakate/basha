@@ -3,11 +3,7 @@
   (:require
    [basha.db.core :as db]
    [next.jdbc :as jdbc]
-   [clojure.string :as str]
-   [camel-snake-kebab.core :as csk]
-   [java-time :as t]
-   [basha.config :refer [env]]
-   [cprop.source :as source]))
+   [clojure.string :as str]))
 
 (defn create-translations [sentences list_id conn]
   (map-indexed (fn [idx s]
@@ -58,14 +54,13 @@
 
 ; TODO: cleanup
 (defn list-errors [tried actual]
-  (let [errors (reduce
-                (fn [es elem]
-                  (if (or (contains? actual elem) (= "" elem))
-                    es
-                    (conj es elem)))
-                []
-                tried)]
-    errors))
+  (reduce
+   (fn [es elem]
+     (if (or (contains? actual elem) (= "" elem))
+       es
+       (conj es elem)))
+   []
+   tried))
 
 (defn update-users [id users]
   (let [id (java.util.UUID/fromString id)
