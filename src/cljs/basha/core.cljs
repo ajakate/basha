@@ -9,6 +9,7 @@
    [basha.events]
    [reitit.core :as reitit]
    [reitit.frontend.easy :as rfe]
+   [basha.languages :as bl]
    [clojure.string :as string]))
 
 (defn nav-link [uri title page]
@@ -265,15 +266,15 @@
         [:div.control>div.select
          [:select {:on-change #(reset! draft_source (.. % -target -value))}
           [:option "Select"]
-          [:option "English"]
-          [:option "Marathi"]]]]
+          (for [l bl/supported-languages]
+            [:option l])]]]
        [:div.field
         [:label.label "Target Language"]
         [:div.control>div.select
          [:select {:on-change #(reset! draft_target (.. % -target -value))}
           [:option "Select"]
-          [:option "English"]
-          [:option "Marathi"]]]]
+          (for [l bl/supported-languages]
+            [:option l])]]]
        [:label.label "Upload a .txt file"]
        [:div.file.has-name
         [:label.file-label
