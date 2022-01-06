@@ -113,16 +113,15 @@
                             [:div.column>button.button.p-2.m-1.is-primary.level-item
                              {:on-click #(rf/dispatch [:arm-recording])} "Record New Audio"]]]
                     :armed [:nav.level
-                            [:div.level-left
-                             [:div.level-item "Get ready to start speaking ->"]]
+                            [:div.level-left]
                             [:div.level-right
                              [:button.button.p-2.m-1.is-primary.level-item
-                              {:on-click #(rf/dispatch [:start-recording])} "Start Recording"]
+                              {:on-click #(rf/dispatch [:start-recording])} [:i.fa.fa-microphone.m-1] [:span "Click and Start Speaking!"]]
                              [:button.button.p-2.m-1.level-item
                               {:on-click #(rf/dispatch [:cancel-recording])} "Cancel"]]]
                     :recording [:nav.level
-                                [:div.level-left 
-                                 [:progress.progress.is-danger.level-item]]
+                                [:div.level-left
+                                 [:progress.progress.is-danger.is-large.level-item]]
                                 [:div.level-right
                                  [:button.button.p-2.m-1.is-danger.level-item
                                   {:on-click #(rf/dispatch [:stop-recording])} "Finish Recording"]
@@ -136,14 +135,14 @@
                                 [:button.button.p-2.m-1.level-item
                                  {:on-click #(rf/dispatch [:cancel-recording])} "Cancel"]]]
                               [:p "You can submit this new audio by hitting the 'Save' button below."]
-                              [:p "If you'd rather keep the existing audio (if it's there) hit 'Cancel' above."]]
-                    }]
+                              [:p "If you'd rather keep the existing audio (if it's there) hit 'Cancel' above."]]}]
     (state components)))
 
 (defn translate-modal []
   (let [is-active @(rf/subscribe [:translate-modal-visible])
         translation @(rf/subscribe [:active-translation])
         list @(rf/subscribe [:active-list])
+        target-lang (:target_language list)
         loading-translation @(rf/subscribe [:loading-translation])
         recording-state @(rf/subscribe [:recording-state])
         temp-recording @(rf/subscribe [:temp-recording])
@@ -153,7 +152,7 @@
       [:div.modal
        {:class (if is-active "is-active" nil)}
        [:div.modal-background]
-       [:div.model-content>div.card
+       [:div.model-content>div.card (when (= recording-state :recording) {:class :has-background-success})
         [:header.card-header
          [:p.card-header-title "Translate Sentence"]]
         [:div.card-content
@@ -177,16 +176,18 @@
                  [:audio {:controls "controls" :src (str "data:audio/ogg;base64," audio)}]]
                 [:div.column>button.button.is-danger
                  {:on-click #(rf/dispatch [:delete-audio (:id translation)])} "Delete Audio"]]])
-            [:div.box.p-3
+            [:div.box.p-3 ;(when (= recording-state :recording) {:class :has-background-danger-light})
              [:label.label "Record New Audio"]
              [recording-state-component recording-state temp-recording]]
-            [:label.label "Translation (native script)"]
-            [:div.field
-             [:div.control [:input.input
-                            {:type "text"
-                             :placeholder "मार्टिन फॉलर "
-                             :on-change #(reset! draft_target (.. % -target -value))
-                             :value @draft_target}]]]
+            (when-not (bl/has-latin-script target-lang)
+              [:div
+               [:label.label "Translation (native script)"]
+               [:div.field
+                [:div.control [:input.input
+                               {:type "text"
+                                :placeholder "मार्टिन फॉलर "
+                                :on-change #(reset! draft_target (.. % -target -value))
+                                :value @draft_target}]]]])
             [:label.label "Translation (roman script)"]
             [:div.field
              [:div.control [:input.input
@@ -213,7 +214,7 @@
                                                            :id (:id translation)
                                                            :list_id (:id list)
                                                            :audio (:data temp-recording)}])
-               :disabled (= recording-state :recording)} "Save & Exit"]
+               :disabled (= recording-state :recording)} "Save & Close"]
              [:div.column.has-text-centered.control>button.button {:on-click #(rf/dispatch [:close-translate-modal])} "Cancel"]]])]]
        [:button.modal-close.is-large
         {:aria-label "close" :on-click #(rf/dispatch [:close-translate-modal])} "close"]])))
@@ -266,14 +267,14 @@
         [:div.control>div.select
          [:select {:on-change #(reset! draft_source (.. % -target -value))}
           [:option "Select"]
-          (for [l bl/supported-languages]
+          (for [l bl/language-list]
             [:option l])]]]
        [:div.field
         [:label.label "Target Language"]
         [:div.control>div.select
          [:select {:on-change #(reset! draft_target (.. % -target -value))}
           [:option "Select"]
-          (for [l bl/supported-languages]
+          (for [l bl/language-list]
             [:option l])]]]
        [:label.label "Upload a .txt file"]
        [:div.file.has-name
