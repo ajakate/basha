@@ -18,6 +18,15 @@
     :class (when (= page @(rf/subscribe [:common/page-id])) :is-active)}
    title])
 
+(defn format-string [st]
+  (let [words (map #(str % \space) (string/split st #" "))]
+    (partition 10 10 nil words)))
+
+(defn wrapped-string [st]
+  [:div
+   (for [l (format-string st)]
+     [:p l])])
+
 (defn assign-modal []
   (let [is-active @(rf/subscribe [:users-modal-visible])
         list @(rf/subscribe [:active-list])
@@ -67,43 +76,44 @@
 (defn login-modal []
   (let [is-active @(rf/subscribe [:login-modal-visible])
         error @(rf/subscribe [:login-errors])]
-    [:div.modal
-     {:class (if is-active "is-active" nil)}
-     [:div.modal-background]
-     [:div.model-content>div.card
-      [:header.card-header
-       [:p.card-header-title (modal-vals :header)]]
-      [:div.card-content
-       (r/with-let [draft_user (r/atom nil)
-                    draft_pass (r/atom nil)
-                    show_pass (r/atom false)]
-         [:div
-          [:div.field
-           [:label.label "Username"]
-           [:div.control>input.input
-            {:type "text"
-             :placeholder "sk8hkr69"
-             :on-change #(reset! draft_user (.. % -target -value))
-             :value @draft_user}]]
-          [:label.label "Password"]
-          [:div.field.has-addons
-           [:div.control [:input.input
-                          {:type (if @show_pass "text" "password")
-                           :placeholder "test123"
-                           :on-change #(reset! draft_pass (.. % -target -value))
-                           :value @draft_pass}]]
-           [:div.control>a.button.is-info
-            {:on-click #(swap! show_pass not)}
-            [:i.fa {:class (if @show_pass :fa-eye-slash :fa-eye)}]]]
-          (when error [:p.has-text-danger.is-italic.mb-3 (str "Error: " error)])
-          [:div.control>button.button.is-link
-           {:on-click #(rf/dispatch [(modal-vals :dispatch) {:username @draft_user :password @draft_pass}])
-            :disabled (or (string/blank? @draft_user)
-                          (string/blank? @draft_pass))} (modal-vals :button)]
-          [:br]
-          [:a {:on-click #(rf/dispatch (modal-vals :swap-func))} (modal-vals :swap-message)]])]]
-     [:button.modal-close.is-large
-      {:aria-label "close" :on-click #(rf/dispatch [:close-login-modal])} "close"]]))
+    (when is-active
+      [:div.modal
+       {:class (if is-active "is-active" nil)}
+       [:div.modal-background]
+       [:div.model-content>div.card
+        [:header.card-header
+         [:p.card-header-title (modal-vals :header)]]
+        [:div.card-content
+         (r/with-let [draft_user (r/atom nil)
+                      draft_pass (r/atom nil)
+                      show_pass (r/atom false)]
+           [:div
+            [:div.field
+             [:label.label "Username"]
+             [:div.control>input.input
+              {:type "text"
+               :placeholder "sk8hkr69"
+               :on-change #(reset! draft_user (.. % -target -value))
+               :value @draft_user}]]
+            [:label.label "Password"]
+            [:div.field.has-addons
+             [:div.control [:input.input
+                            {:type (if @show_pass "text" "password")
+                             :placeholder "test123"
+                             :on-change #(reset! draft_pass (.. % -target -value))
+                             :value @draft_pass}]]
+             [:div.control>a.button.is-info
+              {:on-click #(swap! show_pass not)}
+              [:i.fa {:class (if @show_pass :fa-eye-slash :fa-eye)}]]]
+            (when error [:p.has-text-danger.is-italic.mb-3 (str "Error: " error)])
+            [:div.control>button.button.is-link
+             {:on-click #(rf/dispatch [(modal-vals :dispatch) {:username @draft_user :password @draft_pass}])
+              :disabled (or (string/blank? @draft_user)
+                            (string/blank? @draft_pass))} (modal-vals :button)]
+            [:br]
+            [:a {:on-click #(rf/dispatch (modal-vals :swap-func))} (modal-vals :swap-message)]])]]
+       [:button.modal-close.is-large
+        {:aria-label "close" :on-click #(rf/dispatch [:close-login-modal])} "close"]])))
 
 (defn recording-state-component [state temp]
   (let [state (or state :init)
@@ -156,17 +166,11 @@
         [:header.card-header
          [:p.card-header-title "Translate Sentence"]]
         [:div.card-content
-         (r/with-let [draft_source (r/atom (:source_text translation))
-                      draft_target (r/atom (:target_text translation))
+         (r/with-let [draft_target (r/atom (:target_text translation))
                       draft_target_rom (r/atom (:target_text_roman translation))]
            [:div
             [:label.label "Source sentence"]
-            [:div.field
-             [:div.control>input.input
-              {:type "text"
-               :placeholder "sk8hkr69"
-               :on-change #(reset! draft_source (.. % -target -value))
-               :value @draft_source}]]
+            [:div.box.my-5 [wrapped-string (:source_text translation)]]
             [:label.label "Translated Audio"]
             (when-let [audio (:audio translation)]
               [:div.box.p-3
@@ -199,7 +203,6 @@
              [:div.column.has-text-centered.control>button.button.is-link
               {:on-click #(rf/dispatch [:edit-translation {:target_text_roman @draft_target_rom
                                                            :target_text @draft_target
-                                                           :source_text @draft_source
                                                            :id (:id translation)
                                                            :list_id (:id list)
                                                            :audio (:data temp-recording)
@@ -210,7 +213,6 @@
              [:div.column.has-text-centered.control>button.button.is-link
               {:on-click #(rf/dispatch [:edit-translation {:target_text_roman @draft_target_rom
                                                            :target_text @draft_target
-                                                           :source_text @draft_source
                                                            :id (:id translation)
                                                            :list_id (:id list)
                                                            :audio (:data temp-recording)}])
@@ -227,7 +229,7 @@
       [:nav.navbar.is-info>div.container
        [:div.navbar-brand
         [:a.navbar-item {:style (if user-exists {:font-weight :bold :pointer-events :none} {:font-weight :bold})
-                         :on-click #(rf/dispatch [:swap-login-modal true])}
+                         :on-click #(rf/dispatch [:open-login-modal])}
          (if user-exists (str "Hi, " (:username user) "!") "log in")]
         [:span.navbar-burger.burger
          {:data-target :nav-menu
@@ -329,8 +331,11 @@
               [:tr
                [:td (:list_index s)]
                [:td (:translator s)]
-               [:td (:source_text s)]
-               [:td [:div (:target_text s) [:br] (:target_text_roman s)]]
+               [:td [wrapped-string (:source_text s)]]
+               [:td
+                [wrapped-string (:target_text s)]
+                [:br]
+                [wrapped-string (:target_text_roman s)]]
                [:td (if (:has_audio s)
                       [:span.icon.has-text-success>i.fa.fa-check]
                       [:span.icon.has-text-danger>i.fa.fa-ban])]

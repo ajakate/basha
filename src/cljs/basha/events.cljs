@@ -325,9 +325,9 @@
    (assoc db :active-list response :loading-list false)))
 
 (rf/reg-event-db
- :swap-login-modal
- (fn [db [_ val]]
-   (assoc db :login-modal/visible val)))
+ :open-login-modal
+ (fn [db [_]]
+   (assoc db :login-modal/visible true)))
 
 (rf/reg-event-db
  :close-login-modal
