@@ -8,18 +8,40 @@
    [akiroz.re-frame.storage :refer [persist-db]]))
 
 (def with-auth
-  (re-frame.core/->interceptor
+  (rf/->interceptor
    :id      :with-auth
    :after (fn [context]
-            (rf/dispatch [:debug context])
             (let [token (-> context :coeffects :db :user :access-token)
                   original (-> context :coeffects :event)
                   failure (-> context :effects :http-xhrio :on-failure)
-                  with-fail (assoc-in context [:effects :http-xhrio :on-failure] [:with-failure original failure])]
+                  with-fail (assoc-in context [:effects :http-xhrio :on-failure] [:with-auth-failure original failure])]
               (assoc-in with-fail [:effects :http-xhrio :headers] {"Authorization" (str "Token " token)})))))
 
+; TODO: make this free of side effects
+(defn with-loading-state [state-var]
+  (rf/->interceptor
+   :id :loading-state
+   :after (fn [context]
+            (let [original (-> context :coeffects :event)
+                  failure (-> context :effects :http-xhrio :on-failure)
+                  success (-> context :effects :http-xhrio :on-success)
+                  with-fail (assoc-in context [:effects :http-xhrio :on-failure] [:with-loading-false state-var failure])]
+              (rf/dispatch [:set-loading state-var original])
+              (assoc-in with-fail [:effects :http-xhrio :on-success] [:with-loading-false state-var success])))))
+
+(rf/reg-event-db
+ :set-loading
+ (fn [db [_ state-var event]]
+   (assoc db state-var event)))
+
 (rf/reg-event-fx
- :with-failure
+ :with-loading-false
+ (fn [{:keys [db]} [_ state-var orig resp]]
+   {:db (assoc db state-var nil)
+    :fx [[:dispatch (conj orig resp)]]}))
+
+(rf/reg-event-fx
+ :with-auth-failure
  (fn [_ [_ original failure resp]]
    (if (= (:status resp) 401)
      {:fx [[:dispatch [:refresh original]]]}
@@ -177,7 +199,7 @@
 
 (rf/reg-event-fx
  :fetch-translation
- [with-auth]
+ [(with-loading-state :loading-translation) with-auth]
  (fn [_ [_ id]]
    {:http-xhrio {:method          :get
                  :uri             (str "/api/translations/" id)
@@ -187,7 +209,7 @@
 
 (rf/reg-event-fx
  :fetch-list
- [with-auth]
+ [(with-loading-state :loading-list) with-auth]
  (fn [_ [_ id]]
    {:http-xhrio {:method          :get
                  :uri             (str "/api/lists/" id)
@@ -240,8 +262,7 @@
 (rf/reg-event-fx
  :load-list-page
  (fn [{:keys [db]} [_ id]]
-   {:db (assoc db :loading-list true)
-    :dispatch [:fetch-list id]}))
+   {:dispatch [:fetch-list id]}))
 
 (rf/reg-event-db
  :reload-translation
@@ -322,7 +343,7 @@
 (rf/reg-event-db
  :set-active-list
  (fn [db [_ response]]
-   (assoc db :active-list response :loading-list false)))
+   (assoc db :active-list response)))
 
 (rf/reg-event-db
  :open-login-modal
@@ -337,19 +358,13 @@
 (rf/reg-event-fx
  :open-translate-modal
  (fn [{:keys [db]} [_ id]]
-   {:db (assoc db :translate-modal/visible true :loading-translation true :recording-state :init)
+   {:db (assoc db :translate-modal/visible true  :recording-state :init)
     :dispatch [:fetch-translation id]}))
 
-(rf/reg-event-db
- :close-translate-modal
- (fn [db [_]]
-   (assoc db :translate-modal/visible false :loading-translation false :active-translation nil)))
-
-; ADD THE REFRESH ON MODAL CLOSE
 (rf/reg-event-fx
  :close-translate-modal
  (fn [{:keys [db]} _]
-   {:db (assoc db :translate-modal/visible false :loading-translation false :active-translation nil)
+   {:db (assoc db :translate-modal/visible false :active-translation nil)
     :fx  [[:dispatch [:cancel-recording]] [:dispatch [:load-list-page (-> db :active-list :id)]]]}))
 
 (rf/reg-event-db
@@ -358,7 +373,7 @@
    (let [id (:id response)
          list (:active-list db)
          next-id (next-id-in-list list id)]
-     (assoc db :active-translation (assoc response :next_id next-id) :loading-translation false))))
+     (assoc db :active-translation (assoc response :next_id next-id)))))
 
 (rf/reg-event-db
  :set-signup-error
@@ -402,6 +417,11 @@
     :fx [[:dispatch [:clear-login-user]] [:dispatch [:redirect-home]]]}))
 
 ;;subscriptions
+
+(rf/reg-sub
+ :loading-list
+ (fn [db _]
+   (-> db :loading-list)))
 
 (rf/reg-sub
  :users-error
