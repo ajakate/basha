@@ -17,7 +17,6 @@
                   with-fail (assoc-in context [:effects :http-xhrio :on-failure] [:with-auth-failure original failure])]
               (assoc-in with-fail [:effects :http-xhrio :headers] {"Authorization" (str "Token " token)})))))
 
-; TODO: make this free of side effects
 (defn with-loading-state [state-var]
   (rf/->interceptor
    :id :loading-state
@@ -25,13 +24,13 @@
             (let [original (-> context :coeffects :event)
                   failure (-> context :effects :http-xhrio :on-failure)
                   success (-> context :effects :http-xhrio :on-success)
-                  with-fail (assoc-in context [:effects :http-xhrio :on-failure] [:with-loading-false state-var failure])]
-              (rf/dispatch [:set-loading state-var original])
-              (assoc-in with-fail [:effects :http-xhrio :on-success] [:with-loading-false state-var success])))))
+                  with-fail (assoc-in context [:effects :http-xhrio :on-failure] [:with-loading-false state-var failure])
+                  with-loading (assoc-in with-fail [:effects :http-xhrio :on-request] [:set-loading state-var original])]
+              (assoc-in with-loading [:effects :http-xhrio :on-success] [:with-loading-false state-var success])))))
 
 (rf/reg-event-db
  :set-loading
- (fn [db [_ state-var event]]
+ (fn [db [_ state-var event _]]
    (assoc db state-var event)))
 
 (rf/reg-event-fx
@@ -355,11 +354,11 @@
  (fn [db [_]]
    (assoc db :login-modal/visible false :login-modal/signup false :login-modal/errors nil)))
 
+; TODO: not sure if this is needed
 (rf/reg-event-fx
  :open-translate-modal
  (fn [{:keys [db]} [_ id]]
-   {:db (assoc db :translate-modal/visible true  :recording-state :init)
-    :dispatch [:fetch-translation id]}))
+   {:dispatch [:fetch-translation id]}))
 
 (rf/reg-event-fx
  :close-translate-modal
@@ -373,7 +372,10 @@
    (let [id (:id response)
          list (:active-list db)
          next-id (next-id-in-list list id)]
-     (assoc db :active-translation (assoc response :next_id next-id)))))
+     (assoc db
+            :active-translation (assoc response :next_id next-id)
+            :translate-modal/visible true
+            :recording-state :init))))
 
 (rf/reg-event-db
  :set-signup-error

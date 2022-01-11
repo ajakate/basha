@@ -25,6 +25,7 @@
 (defn wrapped-string [st]
   [:div
    (for [l (format-string st)]
+     ^{:key (str l)}
      [:p l])])
 
 (defn assign-modal []
