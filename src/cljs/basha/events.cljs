@@ -151,7 +151,7 @@
 
 (rf/reg-event-fx
  :create-list
- [with-auth]
+ [(with-loading-state :loading-create-list) with-auth]
  (fn [_ [_ params]]
    {:http-xhrio {:method          :post
                  :uri             "/api/lists"
@@ -271,7 +271,11 @@
 (rf/reg-event-fx
  :reset-list-page
  (fn [{:keys [db]} [_ list_id _]]
-   {:db (assoc db :translate-modal/visible false :users-modal-visible false :users-error nil)
+   {:db (assoc db
+               :translate-modal/visible false
+               :users-modal-visible false
+               :users-error nil
+               :active-translation nil)
     :dispatch [:load-list-page list_id]}))
 
 (rf/reg-event-fx
@@ -419,6 +423,11 @@
     :fx [[:dispatch [:clear-login-user]] [:dispatch [:redirect-home]]]}))
 
 ;;subscriptions
+
+(rf/reg-sub
+ :loading-create-list
+ (fn [db _]
+   (-> db :loading-create-list)))
 
 (rf/reg-sub
  :loading-list

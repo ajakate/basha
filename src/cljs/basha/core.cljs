@@ -158,69 +158,76 @@
         recording-state @(rf/subscribe [:recording-state])
         temp-recording @(rf/subscribe [:temp-recording])
         next-id (:next_id translation)]
-    (if loading-translation
-      [:div "loading"]
-      [:div.modal
-       {:class (if is-active "is-active" nil)}
-       [:div.modal-background]
-       [:div.model-content>div.card (when (= recording-state :recording) {:class :has-background-success})
-        [:header.card-header
-         [:p.card-header-title "Translate Sentence"]]
-        [:div.card-content
-         (r/with-let [draft_target (r/atom (:target_text translation))
-                      draft_target_rom (r/atom (:target_text_roman translation))]
-           [:div
-            [:label.label "Source sentence"]
-            [:div.box.my-5 [wrapped-string (:source_text translation)]]
-            [:label.label "Translated Audio"]
-            (when-let [audio (:audio translation)]
-              [:div.box.p-3
-               [:label.label "Existing Audio"]
-               [:div.columns
-                [:div.column
-                 [:audio {:controls "controls" :src (str "data:audio/ogg;base64," audio)}]]
-                [:div.column>button.button.is-danger
-                 {:on-click #(rf/dispatch [:delete-audio (:id translation)])} "Delete Audio"]]])
-            [:div.box.p-3 ;(when (= recording-state :recording) {:class :has-background-danger-light})
-             [:label.label "Record New Audio"]
-             [recording-state-component recording-state temp-recording]]
-            (when-not (bl/has-latin-script target-lang)
-              [:div
-               [:label.label "Translation (native script)"]
-               [:div.field
-                [:div.control [:input.input
-                               {:type "text"
-                                :placeholder "मार्टिन फॉलर "
-                                :on-change #(reset! draft_target (.. % -target -value))
-                                :value @draft_target}]]]])
-            [:label.label "Translation (roman script)"]
-            [:div.field
-             [:div.control [:input.input
-                            {:type "text"
-                             :placeholder "Kasa kay mandali"
-                             :on-change #(reset! draft_target_rom (.. % -target -value))
-                             :value @draft_target_rom}]]]
-            [:div.columns
-             [:div.column.has-text-centered.control>button.button.is-link
-              {:on-click #(rf/dispatch [:edit-translation {:target_text_roman @draft_target_rom
-                                                           :target_text @draft_target
-                                                           :id (:id translation)
-                                                           :list_id (:id list)
-                                                           :audio (:data temp-recording)
-                                                           :goto-next true
-                                                           :next_id next-id}])
-               :disabled (= recording-state :recording)
-               :style (if (:next_id translation) nil {:visibility :hidden})} "Save & Next"]
-             [:div.column.has-text-centered.control>button.button.is-link
-              {:on-click #(rf/dispatch [:edit-translation {:target_text_roman @draft_target_rom
-                                                           :target_text @draft_target
-                                                           :id (:id translation)
-                                                           :list_id (:id list)
-                                                           :audio (:data temp-recording)}])
-               :disabled (= recording-state :recording)} "Save & Close"]
-             [:div.column.has-text-centered.control>button.button {:on-click #(rf/dispatch [:close-translate-modal])} "Cancel"]]])]]
-       [:button.modal-close.is-large
-        {:aria-label "close" :on-click #(rf/dispatch [:close-translate-modal])} "close"]])))
+    [:div.modal
+     {:class (if is-active "is-active" nil)}
+     [:div.modal-background]
+     [:div.model-content>div.card (when (= recording-state :recording) {:class :has-background-success})
+      [:header.card-header
+       [:p.card-header-title "Translate Sentence"]]
+      [:div.card-content
+       (r/with-let [draft_target (r/atom (:target_text translation))
+                    draft_target_rom (r/atom (:target_text_roman translation))]
+         [:div
+          [:label.label "Source sentence"]
+          [:div.box.my-5 [wrapped-string (:source_text translation)]]
+          [:label.label "Translated Audio"]
+          (when-let [audio (:audio translation)]
+            [:div.box.p-3
+             [:label.label "Existing Audio"]
+             [:div.columns
+              [:div.column
+               [:audio {:controls "controls" :src (str "data:audio/ogg;base64," audio)}]]
+              [:div.column>button.button.is-danger
+               {:on-click #(rf/dispatch [:delete-audio (:id translation)])} "Delete Audio"]]])
+          [:div.box.p-3 ;(when (= recording-state :recording) {:class :has-background-danger-light})
+           [:label.label "Record New Audio"]
+           [recording-state-component recording-state temp-recording]]
+          (when-not (bl/has-latin-script target-lang)
+            [:div
+             [:label.label
+              [:span.is-italic "(Optional) "]
+              [:span "Translation - native script"]
+              ]
+             [:div.field
+              [:div.control [:input.input
+                             {:type "text"
+                              :placeholder "मार्टिन फॉलर "
+                              :on-change #(reset! draft_target (.. % -target -value))
+                              :value @draft_target}]]]])
+          [:label.label
+           [:span "Translation"]
+           (when-not (bl/has-latin-script target-lang) [:span " - latin script"])]
+          [:div.field
+           [:div.control [:input.input
+                          {:type "text"
+                           :placeholder "Kasa kay mandali"
+                           :on-change #(reset! draft_target_rom (.. % -target -value))
+                           :value @draft_target_rom}]]]
+          [:div.columns
+           [:div.column.has-text-centered.control>button.button.is-link
+            {:on-click #(rf/dispatch [:edit-translation {:target_text_roman @draft_target_rom
+                                                         :target_text @draft_target
+                                                         :id (:id translation)
+                                                         :list_id (:id list)
+                                                         :audio (:data temp-recording)
+                                                         :goto-next true
+                                                         :next_id next-id}])
+             :disabled (= recording-state :recording)
+             :class (if loading-translation :is-loading nil)
+             :style (if (:next_id translation) nil {:visibility :hidden})} "Save & Next"]
+           [:div.column.has-text-centered.control>button.button.is-link
+            {:on-click #(rf/dispatch [:edit-translation {:target_text_roman @draft_target_rom
+                                                         :target_text @draft_target
+                                                         :id (:id translation)
+                                                         :list_id (:id list)
+                                                         :audio (:data temp-recording)}])
+             :disabled (= recording-state :recording)
+             :class (if loading-translation :is-loading nil)} "Save & Close"]
+           [:div.column.has-text-centered.control>button.button
+            {:on-click #(rf/dispatch [:close-translate-modal])
+             :class (if loading-translation :is-loading nil)} "Cancel"]]])]]
+     [:button.modal-close.is-large
+      {:aria-label "close" :on-click #(rf/dispatch [:close-translate-modal])} "close"]]))
 
 (defn navbar []
   ;; TODO: fix logic seq user nil
@@ -255,7 +262,8 @@
                draft_source (r/atom nil)
                draft_target (r/atom nil)
                draft_file (r/atom nil)]
-    (let [error @(rf/subscribe [:create-list-error])]
+    (let [error @(rf/subscribe [:create-list-error])
+          loading @(rf/subscribe [:loading-create-list])]
       [:div.px-6
        [:p.is-size-2 "Create a new sentence list"]
        [:div.field
@@ -289,7 +297,8 @@
          [:span.file-name (if @draft_file (.. @draft_file -name) [:i "No file selected"])]]]
        [:br]
        [:div.control>button.button.is-link
-        {:on-click #(rf/dispatch [:create-list {:name @draft_name
+        {:class (when loading :is-loading)
+         :on-click #(rf/dispatch [:create-list {:name @draft_name
                                                 :source_language @draft_source
                                                 :target_language @draft_target
                                                 :file  @draft_file}])
@@ -304,56 +313,58 @@
         user @(rf/subscribe [:user])
         is-loading @(rf/subscribe [:loading-list])
         loading-translation @(rf/subscribe [:loading-translation])]
-    (if is-loading
-      [:section.section
-       [:div.has-text-centered.is-size-3.m-6 "Loading List..."]
-       [:progress.progress.is-info]]
-      (when list
-        [:div.has-text-centered
-         [:p.is-size-2 (:name list)]
-         [:p.is-size-4 (str "Created by: " (:creator list))]
-         [:div.columns.m-2
-          [:div.column]
-          [:div.column
-           [:p.is-size-6 "Shared with:"]
-           (if (empty? (:users list))
-             [:p.is-size-5.is-italic "No one"]
-             [:p.is-size-5 (:users list)])]
-          (when (= (:username user) (:creator list))
-            [:div.column>a.button.is-info {:on-click #(rf/dispatch [:open-users-modal])} "Edit Sharing"])
-          [:div.column]]
-         [:section.section.p-1.m-1
-          [:div.columns.is-centered
-           [:div.column.is-narrow
-            [:table.table.is-bordered.is-narrow.is-striped.is-hoverable
-             [:thead [:tr
-                      [:th "ID"]
-                      [:th "Translated By"]
-                      [:th (:source_language list)]
-                      [:th (:target_language list)]
-                      [:th "Audio?"]]]
-             [:tbody
-              (for [s (:translations list)]
-                ^{:key (:id s)}
-                [:tr
-                 [:td (:list_index s)]
-                 [:td (:translator s)]
-                 [:td [wrapped-string (:source_text s)]]
-                 [:td
-                  [wrapped-string (:target_text s)]
-                  [:br]
-                  [wrapped-string (:target_text_roman s)]]
-                 [:td (if (:has_audio s)
-                        [:span.icon.has-text-success>i.fa.fa-check]
-                        [:span.icon.has-text-danger>i.fa.fa-ban])]
-                 [:td [:a.button.is-info
-                       (let [init {:on-click #(rf/dispatch [:open-translate-modal (:id s)])}]
-                         (if loading-translation
-                           (if (= (:id s) (last loading-translation))
-                             (assoc init :class :is-loading)
-                             (assoc init :disabled :disabled))
-                           init))
-                       "edit"]]])]]]]]]))))
+    (when list
+      [:div.has-text-centered
+       (when is-loading
+         [:div.modal.is-active
+          [:div.modal-background]
+          [:div.modal-content>section.section
+           [:div.has-text-centered.is-size-3.m-6>p.has-text-info "Loading List..."]
+           [:progress.progress.is-info]]])
+       [:p.is-size-2 (:name list)]
+       [:p.is-size-4 (str "Created by: " (:creator list))]
+       [:div.columns.m-2
+        [:div.column]
+        [:div.column
+         [:p.is-size-6 "Shared with:"]
+         (if (empty? (:users list))
+           [:p.is-size-5.is-italic "No one"]
+           [:p.is-size-5 (:users list)])]
+        (when (= (:username user) (:creator list))
+          [:div.column>a.button.is-info {:on-click #(rf/dispatch [:open-users-modal])} "Edit Sharing"])
+        [:div.column]]
+       [:section.section.p-1.m-1
+        [:div.columns.is-centered
+         [:div.column.is-narrow
+          [:table.table.is-bordered.is-narrow.is-striped.is-hoverable
+           [:thead [:tr
+                    [:th "ID"]
+                    [:th "Translated By"]
+                    [:th (:source_language list)]
+                    [:th (:target_language list)]
+                    [:th "Audio?"]]]
+           [:tbody
+            (for [s (:translations list)]
+              ^{:key (:id s)}
+              [:tr
+               [:td (:list_index s)]
+               [:td (:translator s)]
+               [:td [wrapped-string (:source_text s)]]
+               [:td
+                [wrapped-string (:target_text s)]
+                [:br]
+                [wrapped-string (:target_text_roman s)]]
+               [:td (if (:has_audio s)
+                      [:span.icon.has-text-success>i.fa.fa-check]
+                      [:span.icon.has-text-danger>i.fa.fa-ban])]
+               [:td [:a.button.is-info
+                     (let [init {:on-click #(rf/dispatch [:open-translate-modal (:id s)])}]
+                       (if loading-translation
+                         (if (= (:id s) (last loading-translation))
+                           (assoc init :class :is-loading)
+                           (assoc init :disabled :disabled))
+                         init))
+                     "edit"]]])]]]]]])))
 
 (defn my-lists []
   (let [lists @(rf/subscribe [:list-summary])]
