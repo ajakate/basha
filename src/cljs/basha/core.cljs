@@ -141,8 +141,10 @@
                     :stopped [:div
                               [:nav.level
                                [:div.level-left
-                                [:audio.level-item {:controls "controls" :src (:url temp)}]]
+                                [:audio.level-item {:controls "controls" :autoplay "autoplay" :src (:url temp)}]]
                                [:div.level-right
+                                [:button.button.p-2.m-1.level-item.is-primary
+                                 {:on-click #(rf/dispatch [:arm-recording])} "Re-record"]
                                 [:button.button.p-2.m-1.level-item
                                  {:on-click #(rf/dispatch [:cancel-recording])} "Cancel"]]]
                               [:p "You can submit this new audio by hitting the 'Save' button below."]
@@ -180,7 +182,7 @@
                [:label.label "Existing Audio"]
                [:div.columns
                 [:div.column
-                 [:audio {:controls "controls" :src (str "data:audio/ogg;base64," audio)}]]
+                 [:audio {:controls "controls" :autoplay "autoplay" :src (str "data:audio/ogg;base64," audio)}]]
                 [:div.column>button.button.is-danger
                  {:on-click #(rf/dispatch [:delete-audio (:id translation)])} "Delete Audio"]]])
             [:div.box.p-3 ;(when (= recording-state :recording) {:class :has-background-danger-light})
