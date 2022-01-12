@@ -165,67 +165,70 @@
       [:header.card-header
        [:p.card-header-title "Translate Sentence"]]
       [:div.card-content
-       (r/with-let [draft_target (r/atom (:target_text translation))
-                    draft_target_rom (r/atom (:target_text_roman translation))]
-         [:div
-          [:label.label "Source sentence"]
-          [:div.box.my-5 [wrapped-string (:source_text translation)]]
-          [:label.label "Translated Audio"]
-          (when-let [audio (:audio translation)]
-            [:div.box.p-3
-             [:label.label "Existing Audio"]
-             [:div.columns
-              [:div.column
-               [:audio {:controls "controls" :src (str "data:audio/ogg;base64," audio)}]]
-              [:div.column>button.button.is-danger
-               {:on-click #(rf/dispatch [:delete-audio (:id translation)])} "Delete Audio"]]])
-          [:div.box.p-3 ;(when (= recording-state :recording) {:class :has-background-danger-light})
-           [:label.label "Record New Audio"]
-           [recording-state-component recording-state temp-recording]]
-          (when-not (bl/has-latin-script target-lang)
-            [:div
-             [:label.label
-              [:span.is-italic "(Optional) "]
-              [:span "Translation - native script"]
-              ]
-             [:div.field
-              [:div.control [:input.input
-                             {:type "text"
-                              :placeholder "मार्टिन फॉलर "
-                              :on-change #(reset! draft_target (.. % -target -value))
-                              :value @draft_target}]]]])
-          [:label.label
-           [:span "Translation"]
-           (when-not (bl/has-latin-script target-lang) [:span " - latin script"])]
-          [:div.field
-           [:div.control [:input.input
-                          {:type "text"
-                           :placeholder "Kasa kay mandali"
-                           :on-change #(reset! draft_target_rom (.. % -target -value))
-                           :value @draft_target_rom}]]]
-          [:div.columns
-           [:div.column.has-text-centered.control>button.button.is-link
-            {:on-click #(rf/dispatch [:edit-translation {:target_text_roman @draft_target_rom
-                                                         :target_text @draft_target
-                                                         :id (:id translation)
-                                                         :list_id (:id list)
-                                                         :audio (:data temp-recording)
-                                                         :goto-next true
-                                                         :next_id next-id}])
-             :disabled (= recording-state :recording)
-             :class (if loading-translation :is-loading nil)
-             :style (if (:next_id translation) nil {:visibility :hidden})} "Save & Next"]
-           [:div.column.has-text-centered.control>button.button.is-link
-            {:on-click #(rf/dispatch [:edit-translation {:target_text_roman @draft_target_rom
-                                                         :target_text @draft_target
-                                                         :id (:id translation)
-                                                         :list_id (:id list)
-                                                         :audio (:data temp-recording)}])
-             :disabled (= recording-state :recording)
-             :class (if loading-translation :is-loading nil)} "Save & Close"]
-           [:div.column.has-text-centered.control>button.button
-            {:on-click #(rf/dispatch [:close-translate-modal])
-             :class (if loading-translation :is-loading nil)} "Cancel"]]])]]
+       (if loading-translation
+         [:section.section
+          [:div.has-text-centered.is-size-3.m-6>p.has-text-info "Loading Next Translation..."]
+          [:progress.progress.is-info]]
+         (r/with-let [draft_target (r/atom (:target_text translation))
+                      draft_target_rom (r/atom (:target_text_roman translation))]
+           [:div
+            [:label.label "Source sentence"]
+            [:div.box.my-5 [wrapped-string (:source_text translation)]]
+            [:label.label "Translated Audio"]
+            (when-let [audio (:audio translation)]
+              [:div.box.p-3
+               [:label.label "Existing Audio"]
+               [:div.columns
+                [:div.column
+                 [:audio {:controls "controls" :src (str "data:audio/ogg;base64," audio)}]]
+                [:div.column>button.button.is-danger
+                 {:on-click #(rf/dispatch [:delete-audio (:id translation)])} "Delete Audio"]]])
+            [:div.box.p-3 ;(when (= recording-state :recording) {:class :has-background-danger-light})
+             [:label.label "Record New Audio"]
+             [recording-state-component recording-state temp-recording]]
+            (when-not (bl/has-latin-script target-lang)
+              [:div
+               [:label.label
+                [:span.is-italic "(Optional) "]
+                [:span "Translation - native script"]]
+               [:div.field
+                [:div.control [:input.input
+                               {:type "text"
+                                :placeholder "मार्टिन फॉलर "
+                                :on-change #(reset! draft_target (.. % -target -value))
+                                :value @draft_target}]]]])
+            [:label.label
+             [:span "Translation"]
+             (when-not (bl/has-latin-script target-lang) [:span " - latin script"])]
+            [:div.field
+             [:div.control [:input.input
+                            {:type "text"
+                             :placeholder "Kasa kay mandali"
+                             :on-change #(reset! draft_target_rom (.. % -target -value))
+                             :value @draft_target_rom}]]]
+            [:div.columns
+             [:div.column.has-text-centered.control>button.button.is-link
+              {:on-click #(rf/dispatch [:edit-translation {:target_text_roman @draft_target_rom
+                                                           :target_text @draft_target
+                                                           :id (:id translation)
+                                                           :list_id (:id list)
+                                                           :audio (:data temp-recording)
+                                                           :goto-next true
+                                                           :next_id next-id}])
+               :disabled (= recording-state :recording)
+               :class (if loading-translation :is-loading nil)
+               :style (if (:next_id translation) nil {:visibility :hidden})} "Save & Next"]
+             [:div.column.has-text-centered.control>button.button.is-link
+              {:on-click #(rf/dispatch [:edit-translation {:target_text_roman @draft_target_rom
+                                                           :target_text @draft_target
+                                                           :id (:id translation)
+                                                           :list_id (:id list)
+                                                           :audio (:data temp-recording)}])
+               :disabled (= recording-state :recording)
+               :class (if loading-translation :is-loading nil)} "Save & Close"]
+             [:div.column.has-text-centered.control>button.button
+              {:on-click #(rf/dispatch [:close-translate-modal])
+               :class (if loading-translation :is-loading nil)} "Cancel"]]]))]]
      [:button.modal-close.is-large
       {:aria-label "close" :on-click #(rf/dispatch [:close-translate-modal])} "close"]]))
 
@@ -382,7 +385,7 @@
                     [:th "source language"]
                     [:th "target language"]
                     [:th "total count"]
-                    [:th "open translations"]]]
+                    [:th "remaing translations"]]]
            [:tbody
             (for [list lists]
               ^{:key (:id list)}
@@ -393,7 +396,13 @@
                [:td (:source_language list)]
                [:td (:target_language list)]
                [:td (:list_count list)]
-               [:td (:open_count list)]
+               [:td
+                (let [count (:open_count list)]
+                  (if (= count 0)
+                    [:div.has-text-success
+                     [:span count]
+                     [:span.icon>i.fa.fa-check]]
+                    [:span count " left"]))]
                [:td [:a.button.is-info {:href (str "/#/lists/edit/" (:id list))} "edit"]]])]]]]]]
       [:h1 "You don't have any lists!"])))
 

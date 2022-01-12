@@ -34,7 +34,10 @@ from lists l
 join translations t on t.list_id=l.id
 full outer join list_users li on li.list_id=l.id
 where l.user_id=:id or li.user_id=:id
-group by l.id;
+group by l.id
+order by
+(count(t.id) filter (where (audio is null) or (target_text_roman is null)) = 0) asc,
+l.created_at asc;
 
 -- :name get-list :? :*
 -- :doc fetches list
