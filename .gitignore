@@ -21,6 +21,9 @@ resources/public/files/dev/*
 resources/public/files/test/*
 !resources/public/files/test/.keep
 
+temp_media/*
+!temp_media/.keep
+
 .vscode
 .shadow-cljs
 .calva
