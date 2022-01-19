@@ -32,4 +32,11 @@ body {
   /* Support for Firefox. */
   -moz-osx-font-smoothing: grayscale;
 }
-
+.blink {
+  animation: blinker 1s linear infinite;
+}
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}

@@ -118,33 +118,30 @@
 
 (defn recording-state-component [state temp]
   (let [state (or state :init)
-        components {:init [:nav.level
-                           [:div.level-left]
-                           [:div.level-right
-                            [:div.column>button.button.p-2.m-1.is-primary.level-item
-                             {:on-click #(rf/dispatch [:arm-recording])} "Record New Audio"]]]
-                    :armed [:nav.level
+        components {:armed [:nav.level
                             [:div.level-left]
                             [:div.level-right
                              [:button.button.p-2.m-1.is-primary.level-item
-                              {:on-click #(rf/dispatch [:start-recording])} [:i.fa.fa-microphone.m-1] [:span "Click and Start Speaking!"]]
-                             [:button.button.p-2.m-1.level-item
-                              {:on-click #(rf/dispatch [:cancel-recording])} "Cancel"]]]
-                    :recording [:nav.level
-                                [:div.level-left
-                                 [:progress.progress.is-danger.is-large.level-item]]
-                                [:div.level-right
-                                 [:button.button.p-2.m-1.is-danger.level-item
-                                  {:on-click #(rf/dispatch [:stop-recording])} "Finish Recording"]
-                                 [:button.button.p-2.m-1.level-item
-                                  {:on-click #(rf/dispatch [:cancel-recording])} "Cancel"]]]
+                              {:on-click #(rf/dispatch [:start-recording])} [:i.fa.fa-microphone.m-1] [:span "Record Now"]]]]
+                    :recording [:div
+                                [:nav.level.mb-0
+                                 [:div.level-left
+                                  [:p.level-item.is-italic.has-text-weight-bold.ml-4 [:span.blink "RECORDING..."]]]]
+                                [:nav.level
+                                 [:div.level-left.mr-2
+                                  [:progress.progress.is-danger.is-large.level-item]]
+                                 [:div.level-right
+                                  [:button.button.p-2.m-1.is-danger.level-item
+                                   {:on-click #(rf/dispatch [:stop-recording])} [:i.fa.fa-stop.m-1] [:span "Finish Recording"]]
+                                  [:button.button.p-2.m-1.level-item
+                                   {:on-click #(rf/dispatch [:cancel-recording])} "Cancel"]]]]
                     :stopped [:div
                               [:nav.level
                                [:div.level-left
                                 [:audio.level-item {:controls "controls" :autoplay "autoplay" :src (:url temp)}]]
                                [:div.level-right
                                 [:button.button.p-2.m-1.level-item.is-primary
-                                 {:on-click #(rf/dispatch [:arm-recording])} "Re-record"]
+                                 {:on-click #(rf/dispatch [:arm-recording])} [:i.fa.fa-repeat.m-1] [:span "Re-record"]]
                                 [:button.button.p-2.m-1.level-item
                                  {:on-click #(rf/dispatch [:cancel-recording])} "Cancel"]]]
                               [:p "You can submit this new audio by hitting the 'Save' button below."]
@@ -163,7 +160,7 @@
     [:div.modal
      {:class (if is-active "is-active" nil)}
      [:div.modal-background]
-     [:div.model-content>div.card (when (= recording-state :recording) {:class :has-background-success})
+     [:div.model-content>div.card
       [:header.card-header
        [:p.card-header-title "Translate Sentence"]]
       [:div.card-content
@@ -185,8 +182,8 @@
                  [:audio {:controls "controls" :autoplay "autoplay" :src (str "data:audio/ogg;base64," audio)}]]
                 [:div.column>button.button.is-danger
                  {:on-click #(rf/dispatch [:delete-audio (:id translation)])} "Delete Audio"]]])
-            [:div.box.p-3 ;(when (= recording-state :recording) {:class :has-background-danger-light})
-             [:label.label "Record New Audio"]
+            [:div.box.p-3
+             [:label.label "New Audio"]
              [recording-state-component recording-state temp-recording]]
             (when-not (bl/has-latin-script target-lang)
               [:div

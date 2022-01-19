@@ -319,7 +319,7 @@
 (rf/reg-event-fx
  :cancel-recording
  (fn [{:keys [db]} [_]]
-   {:db (assoc db :recording-state :init :temp-recording nil)
+   {:db (assoc db :recording-state :armed :temp-recording nil)
     :dispatch [:stop-media-recorder]}))
 
 ;; TODO: keep this for now
@@ -370,16 +370,16 @@
    {:db (assoc db :translate-modal/visible false :active-translation nil)
     :fx  [[:dispatch [:cancel-recording]] [:dispatch [:load-list-page (-> db :active-list :id)]]]}))
 
-(rf/reg-event-db
+(rf/reg-event-fx
  :set-active-translation
- (fn [db [_ response]]
+ (fn [{:keys [db]} [_ response]]
    (let [id (:id response)
          list (:active-list db)
          next-id (next-id-in-list list id)]
-     (assoc db
-            :active-translation (assoc response :next_id next-id)
-            :translate-modal/visible true
-            :recording-state :init))))
+     {:db (assoc db
+                 :active-translation (assoc response :next_id next-id)
+                 :translate-modal/visible true)
+      :dispatch [:arm-recording]})))
 
 (rf/reg-event-db
  :set-signup-error
