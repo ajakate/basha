@@ -50,8 +50,13 @@
         (fn [err]
           (.log
            js/console
-           (str "The following getUserMedia error occurred: " err))))))
-    (.log js/console "getUserMedia not supported on your browser!")))
+           (str "The following getUserMedia error occurred: " err)
+           (rf/dispatch [:set-media-error
+                         "Microphone permissions are not allowed. Check your browser settings for this site, and reload"]))))))
+    (do
+      (.log js/console "getUserMedia not supported on your browser!")
+      (rf/dispatch [:set-media-error
+                    "Microphone access is not allowed in your browser, try using a new version of Chrome or Firefox. Also, make sure your URL starts with https:// and not http://"]))))
 
 (defn start-audio []
   (.click record))

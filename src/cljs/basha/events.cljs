@@ -244,6 +244,11 @@
    {:fx [[:dispatch [:set-login-user resp]] [:dispatch original]]}))
 
 (rf/reg-event-db
+ :set-media-error
+ (fn [db [_ message]]
+   (assoc db :media-error message)))
+
+(rf/reg-event-db
  :set-users-error
  (fn [db [_ resp]]
    (assoc db :users-error (-> resp :response :message))))
@@ -423,6 +428,11 @@
     :fx [[:dispatch [:clear-login-user]] [:dispatch [:redirect-home]]]}))
 
 ;;subscriptions
+
+(rf/reg-sub
+ :media-error
+ (fn [db _]
+   (-> db :media-error)))
 
 (rf/reg-sub
  :loading-create-list

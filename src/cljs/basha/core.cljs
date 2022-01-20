@@ -156,7 +156,8 @@
         loading-translation @(rf/subscribe [:loading-translation])
         recording-state @(rf/subscribe [:recording-state])
         temp-recording @(rf/subscribe [:temp-recording])
-        next-id (:next_id translation)]
+        next-id (:next_id translation)
+        media-error @(rf/subscribe [:media-error])]
     [:div.modal
      {:class (if is-active "is-active" nil)}
      [:div.modal-background]
@@ -184,7 +185,9 @@
                  {:on-click #(rf/dispatch [:delete-audio (:id translation)])} "Delete Audio"]]])
             [:div.box.p-3
              [:label.label "New Audio"]
-             [recording-state-component recording-state temp-recording]]
+             (if media-error
+               [:div.is-italic.has-text-danger [wrapped-string media-error]]
+               [recording-state-component recording-state temp-recording])]
             (when-not (bl/has-latin-script target-lang)
               [:div
                [:label.label
