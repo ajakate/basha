@@ -9,6 +9,7 @@
 (defn set-audio-data [url data]
   (rf/dispatch [:set-temp-recording {:url url :data data}]))
 
+; TODO: fix inline defs
 (defn init-audio []
   (if (.. js/navigator -mediaDevices -getUserMedia)
     (do
