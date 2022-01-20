@@ -28,6 +28,8 @@
                     :handler handle/get-lists}}]
    ["/lists/:id" {:get {:middleware [wrap-jwt-authentication auth-middleware]
                         :handler handle/get-list}}]
+   ["/delete_list" {:post {:middleware [wrap-jwt-authentication auth-middleware]
+                        :handler handle/delete-list}}]
    ["/translations/:id" {:get {:middleware [wrap-jwt-authentication auth-middleware]
                                :handler handle/get-translation}
                          :post {:middleware [wrap-jwt-authentication auth-middleware wrap-params wrap-multipart-params]

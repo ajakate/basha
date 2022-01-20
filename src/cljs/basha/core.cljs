@@ -28,6 +28,27 @@
      ^{:key (str l)}
      [:p l])])
 
+(defn delete-list-modal []
+  (let [active-list @(rf/subscribe [:delete-list-id])
+        id (:id active-list)
+        name (:name active-list)]
+    (when active-list
+      [:div.modal
+       {:class (if active-list "is-active" nil)}
+       [:div.modal-background]
+       [:div.model-content>div.card
+        [:header.card-header>p.card-header-title "Confirm Delete"]
+        [:div.card-content.has-text-centered
+         [:span "Are you sure you want to delete "]
+         [:span.has-text-weight-bold name]
+         [:span "?"]
+         [:p "This action is irreversible..."]
+         [:div.columns.mt-4
+          [:div.column.control>button.button.is-danger
+           {:on-click #(rf/dispatch [:delete-list id])} "Delete"]
+          [:div.column.control>button.button
+           {:on-click #(rf/dispatch [:clear-delete-list-id])} "Cancel"]]]]])))
+
 (defn assign-modal []
   (let [is-active @(rf/subscribe [:users-modal-visible])
         list @(rf/subscribe [:active-list])
@@ -380,7 +401,8 @@
                      "edit"]]])]]]]]])))
 
 (defn my-lists []
-  (let [lists @(rf/subscribe [:list-summary])]
+  (let [lists @(rf/subscribe [:list-summary])
+        user @(rf/subscribe [:user])]
     (if (seq lists)
       [:div.p-2.m-2
        [:h1.title.is-4 "My Sentence Lists"]
@@ -392,10 +414,10 @@
                     [:th "name"]
                     [:th "owner"]
                     [:th "shared with"]
-                    [:th "source language"]
-                    [:th "target language"]
+                    [:th "source"]
+                    [:th "target"]
                     [:th "total count"]
-                    [:th "remaing translations"]]]
+                    [:th "remaing count"]]]
            [:tbody
             (for [list lists]
               ^{:key (:id list)}
@@ -413,7 +435,13 @@
                      [:span count]
                      [:span.icon>i.fa.fa-check]]
                     [:span count " left"]))]
-               [:td [:a.button.is-info {:href (str "/#/lists/edit/" (:id list))} "edit"]]])]]]]]]
+               [:td>a.button.is-info
+                {:href (str "/#/lists/edit/" (:id list))}
+                "edit"]
+               (when (= (:username user) (:creator list))
+                 [:td>a.button.is-danger.is-light
+                  {:on-click #(rf/dispatch [:set-delete-list-id list])}
+                  "delete"])])]]]]]]
       [:h1 "You don't have any lists!"])))
 
 (defn logged-in-home []
@@ -440,7 +468,8 @@
      [page]
      [login-modal]
      [translate-modal]
-     [assign-modal]]))
+     [assign-modal]
+     [delete-list-modal]]))
 
 (defn navigate! [match _]
   (rf/dispatch [:common/navigate match]))

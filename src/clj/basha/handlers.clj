@@ -42,6 +42,9 @@
 (defn get-lists [{{:keys [id]} :identity}]
   (with-handle (list/get-summary id)))
 
+(defn delete-list [{{:keys [id]} :body-params}]
+  (with-handle (list/delete-list id)))
+
 (defn get-list [{{:keys [id]} :path-params}]
   (with-handle (list/fetch id)))
 

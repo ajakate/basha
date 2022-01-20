@@ -56,6 +56,15 @@ l.created_at asc;
   where l.id = :id
   order by target_text_roman is null desc, target_text is null desc, t.list_index asc;
 
+-- :name delete-list :1 :*
+-- :doc deletes a list
+with delete_list as (
+delete from lists l where l.id = :id
+returning id
+), delete_translations as (
+delete from translations where list_id in (select * from delete_list)
+returning translations.list_id
+) delete from list_users where list_id in (select * from delete_translations);
 
 -- :name get-translation :? :1
 -- :doc fetches translation

@@ -52,6 +52,9 @@
 (defn fetch [id]
   (format-list (db/get-list {:id (java.util.UUID/fromString id)})))
 
+(defn delete-list [id]
+  (db/delete-list {:id (java.util.UUID/fromString id)}))
+
 ; TODO: cleanup
 (defn list-errors [tried actual]
   (reduce

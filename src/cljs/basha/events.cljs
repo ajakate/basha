@@ -228,6 +228,17 @@
                  :on-failure [:set-users-error]}}))
 
 (rf/reg-event-fx
+ :delete-list
+ [with-auth]
+ (fn [_ [_ id]]
+   {:http-xhrio {:method          :post
+                 :uri             (str "/api/delete_list")
+                 :params {:id id}
+                 :format          (ajax/json-request-format)
+                 :response-format  (ajax/json-response-format {:keywords? true})
+                 :on-success       [:clear-list-delete]}}))
+
+(rf/reg-event-fx
  :refresh
  (fn [{:keys [db]} [_ original]]
    {:http-xhrio {:method          :post
@@ -247,6 +258,21 @@
  :set-media-error
  (fn [db [_ message]]
    (assoc db :media-error message)))
+
+(rf/reg-event-db
+ :set-delete-list-id
+ (fn [db [_ id]]
+   (assoc db :delete-list-id id)))
+
+(rf/reg-event-db
+ :clear-delete-list-id
+ (fn [db [_]]
+   (assoc db :delete-list-id nil)))
+
+(rf/reg-event-fx
+ :clear-list-delete
+ (fn [_ [_]]
+   {:fx [[:dispatch [:clear-delete-list-id]] [:dispatch [:redirect-home]]]}))
 
 (rf/reg-event-db
  :set-users-error
@@ -433,6 +459,11 @@
     :fx [[:dispatch [:clear-login-user]] [:dispatch [:redirect-home]]]}))
 
 ;;subscriptions
+
+(rf/reg-sub
+ :delete-list-id
+ (fn [db _]
+   (-> db :delete-list-id)))
 
 (rf/reg-sub
  :media-error
