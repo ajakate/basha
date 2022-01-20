@@ -5,7 +5,7 @@
    [reitit.frontend.easy :as rfe]
    [reitit.frontend.controllers :as rfc]
    [basha.audio :as baudio]
-   [akiroz.re-frame.storage :refer [persist-db]]))
+   [akiroz.re-frame.storage :refer [persist-db-keys]]))
 
 (def with-auth
   (rf/->interceptor
@@ -50,7 +50,7 @@
   [event-id handler]
   (rf/reg-event-fx
    event-id
-   [(persist-db :basha-app :user)]
+   [(persist-db-keys :basha-app [:user :hide-native])]
    (fn [{:keys [db]} event-vec]
      {:db (handler db event-vec)})))
 
@@ -411,6 +411,11 @@
  (fn [db [_ user]]
    (assoc db :user user :login-modal/visible false)))
 
+(persisted-reg-event-db
+ :swap-hide-native
+ (fn [db [_]]
+   (assoc db :hide-native (not (:hide-native db)))))
+
 (rf/reg-event-fx
  :set-login
  (fn [_ [_ user]]
@@ -433,6 +438,11 @@
  :media-error
  (fn [db _]
    (-> db :media-error)))
+
+(rf/reg-sub
+ :hide-native
+ (fn [db _]
+   (-> db :hide-native)))
 
 (rf/reg-sub
  :loading-create-list

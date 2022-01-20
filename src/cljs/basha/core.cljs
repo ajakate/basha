@@ -157,7 +157,8 @@
         recording-state @(rf/subscribe [:recording-state])
         temp-recording @(rf/subscribe [:temp-recording])
         next-id (:next_id translation)
-        media-error @(rf/subscribe [:media-error])]
+        media-error @(rf/subscribe [:media-error])
+        hide-native @(rf/subscribe [:hide-native])]
     [:div.modal
      {:class (if is-active "is-active" nil)}
      [:div.modal-background]
@@ -189,16 +190,23 @@
                [:div.is-italic.has-text-danger [wrapped-string media-error]]
                [recording-state-component recording-state temp-recording])]
             (when-not (bl/has-latin-script target-lang)
-              [:div
-               [:label.label
-                [:span.is-italic "(Optional) "]
-                [:span "Translation - native script"]]
-               [:div.field
-                [:div.control [:input.input
-                               {:type "text"
-                                :placeholder "मार्टिन फॉलर "
-                                :on-change #(reset! draft_target (.. % -target -value))
-                                :value @draft_target}]]]])
+              (if hide-native
+                [:button.button.is-pulled-right.is-small.is-link.is-light.ml-4.mb-2
+                 {:on-click #(rf/dispatch [:swap-hide-native])}
+                 "Show native script"]
+                [:div
+                 [:label.label.is-pulled-left
+                  [:span.is-italic "(Optional) "]
+                  [:span "Translation - native script"]]
+                 [:button.button.is-pulled-right.is-small.is-link.is-light.ml-4.mb-2
+                  {:on-click #(rf/dispatch [:swap-hide-native])}
+                  "Hide native script"]
+                 [:div.field
+                  [:div.control [:input.input
+                                 {:type "text"
+                                  :placeholder "मार्टिन फॉलर "
+                                  :on-change #(reset! draft_target (.. % -target -value))
+                                  :value @draft_target}]]]]))
             [:label.label
              [:span "Translation"]
              (when-not (bl/has-latin-script target-lang) [:span " - latin script"])]
@@ -208,7 +216,7 @@
                              :placeholder "Kasa kay mandali"
                              :on-change #(reset! draft_target_rom (.. % -target -value))
                              :value @draft_target_rom}]]]
-            [:div.columns
+            [:div.columns.mt-4
              [:div.column.has-text-centered.control>button.button.is-link
               {:on-click #(rf/dispatch [:edit-translation {:target_text_roman @draft_target_rom
                                                            :target_text @draft_target
