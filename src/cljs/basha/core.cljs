@@ -392,7 +392,7 @@
                       [:span.icon.has-text-success>i.fa.fa-check]
                       [:span.icon.has-text-danger>i.fa.fa-ban])]
                [:td [:a.button.is-info
-                     (let [init {:on-click #(rf/dispatch [:open-translate-modal (:id s)])}]
+                     (let [init {:on-click #(rf/dispatch [:fetch-translation (:id s)])}]
                        (if loading-translation
                          (if (= (:id s) (last loading-translation))
                            (assoc init :class :is-loading)

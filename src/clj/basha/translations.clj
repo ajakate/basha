@@ -1,4 +1,3 @@
-; TODO clean this imports
 (ns basha.translations
   (:require
    [basha.db.core :as db]

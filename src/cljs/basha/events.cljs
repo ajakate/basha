@@ -184,7 +184,7 @@
                    :body (generate-form-data body)
                    :format          (ajax/json-request-format)
                    :response-format  (ajax/json-response-format {:keywords? true})
-                   :on-success       (if next-id [:open-translate-modal next-id] [:reset-list-page list_id])}})))
+                   :on-success       (if next-id [:fetch-translation next-id] [:reset-list-page list_id])}})))
 
 (rf/reg-event-fx
  :fetch-list-summary
@@ -353,7 +353,6 @@
    {:db (assoc db :recording-state :armed :temp-recording nil)
     :dispatch [:stop-media-recorder]}))
 
-;; TODO: keep this for now
 (rf/reg-event-db
  :debug
  (fn [db [_ obj]]
@@ -388,12 +387,6 @@
  :close-login-modal
  (fn [db [_]]
    (assoc db :login-modal/visible false :login-modal/signup false :login-modal/errors nil)))
-
-; TODO: not sure if this is needed
-(rf/reg-event-fx
- :open-translate-modal
- (fn [{:keys [db]} [_ id]]
-   {:dispatch [:fetch-translation id]}))
 
 (rf/reg-event-fx
  :close-translate-modal
