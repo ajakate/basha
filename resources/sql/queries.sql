@@ -41,20 +41,20 @@ l.created_at asc;
 
 -- :name get-list :? :*
 -- :doc fetches list
-  select *, t.id as translation_id,
-  l.id as list_id,
-  u.username as creator,
-  (select username from users where t.translator_id = users.id) translator,
-  (select string_agg(uu.username, ',')
-   from users uu
-   join list_users lluu on lluu.user_id=uu.id
-   where lluu.list_id = :id) users,
-   (t.audio is not null) has_audio
-   from translations t
-  join lists l on l.id=t.list_id
-  join users u on l.user_id=u.id
-  where l.id = :id
-  order by target_text_roman is null desc, target_text is null desc, t.list_index asc;
+select *, t.id as translation_id,
+l.id as list_id,
+u.username as creator,
+(select username from users where t.translator_id = users.id) translator,
+(select string_agg(uu.username, ',')
+ from users uu
+ join list_users lluu on lluu.user_id=uu.id
+ where lluu.list_id = :id) users,
+ (t.audio is not null) has_audio
+ from translations t
+join lists l on l.id=t.list_id
+join users u on l.user_id=u.id
+where l.id = :id
+order by target_text_roman is null desc, target_text is null desc, t.list_index asc;
 
 -- :name delete-list :1 :*
 -- :doc deletes a list
