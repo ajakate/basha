@@ -292,8 +292,8 @@
          [nav-link "#/" (if user-exists "My Dashboard" "Home") :home]
          [nav-link "#/about" "About" :about]
          (when user-exists [:a.navbar-item
-                 {:on-click #(rf/dispatch [:logout])}
-                 "Logout"])]]])))
+                            {:on-click #(rf/dispatch [:logout])}
+                            "Logout"])]]])))
 
 (defn about-page []
   [:section.section>div.container>div.content
@@ -494,10 +494,10 @@
                    :controllers [{:start (fn []
                                            (rf/dispatch [:clear-create-list-error]))}]}]
     ["/lists/edit/:id" {:name :view-list
-                    :view #'view-list
-                    :controllers [{:parameters {:path [:id]}
-                                   :start (fn [{{:keys [id]} :path}]
-                                            (rf/dispatch [:load-list-page id]))}]}]]))
+                        :view #'view-list
+                        :controllers [{:parameters {:path [:id]}
+                                       :start (fn [{{:keys [id]} :path}]
+                                                (rf/dispatch [:load-list-page id]))}]}]]))
 
 (defn start-router! []
   (rfe/start!

@@ -9,14 +9,13 @@
    [java-time :as t]
    [basha.config :refer [env]]))
 
-; TODO: fix this
-(defonce token-secret  "secret")
+(defn token-secret [] (:token-secret env))
 
-(def backend (backends/jws {:secret token-secret}))
+(defn backend [] (backends/jws {:secret (token-secret)}))
 
 (defn wrap-jwt-authentication
   [handler]
-  (wrap-authentication handler backend))
+  (wrap-authentication handler (backend)))
 
 (defn auth-middleware
   [handler]
@@ -33,7 +32,7 @@
                          :password (hashers/derive password)}))))
 
 (defn generate-token [payload time-interval]
-  (jwt/sign payload token-secret
+  (jwt/sign payload (token-secret)
             {:exp   (t/plus (t/instant) time-interval)}))
 
 (defn new-tokens [user]
