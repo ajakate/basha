@@ -12,7 +12,6 @@
    [basha.languages :as bl]
    [clojure.string :as string]))
 
-
 (defn nav-link [uri title page]
   [:a.navbar-item
    {:href   uri
