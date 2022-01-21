@@ -12,7 +12,7 @@
 (defn fetch [id]
   (db/get-translation {:id (java.util.UUID/fromString id)}))
 
-(defn update [id user-id params]
+(defn update-translation [id user-id params]
   (let [audio (-> params :audio :tempfile)
         params (dissoc params :audio)]
     (db/update-translation (assoc params

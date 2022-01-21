@@ -53,7 +53,7 @@
 
 (defn edit-translation [{{:keys [id]} :identity body-params :params path-params :path-params}]
   (let [t-id (:id path-params)]
-    (with-handle (translation/update t-id id body-params))))
+    (with-handle (translation/update-translation t-id id body-params))))
 
 ; TODO: why does with-handle not work here?
 (defn update-users [{{:keys [id]} :path-params body-params :params}]

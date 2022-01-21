@@ -137,7 +137,7 @@
        [:button.modal-close.is-large
         {:aria-label "close" :on-click #(rf/dispatch [:close-login-modal])} "close"]])))
 
-(defn recording-state-component [state temp]
+(defn recording-state-component [state temp existing-audio]
   (let [state (or state :init)
         components {:armed [:nav.level
                             [:div.level-left]
@@ -164,9 +164,17 @@
                                 [:button.button.p-2.m-1.level-item.is-primary
                                  {:on-click #(rf/dispatch [:arm-recording])} [:i.fa.fa-repeat.m-1] [:span "Re-record"]]
                                 [:button.button.p-2.m-1.level-item
-                                 {:on-click #(rf/dispatch [:cancel-recording])} "Cancel"]]]
-                              [:p "You can submit this new audio by hitting the 'Save' button below."]
-                              [:p "If you'd rather keep the existing audio (if it's there) hit 'Cancel' above."]]}]
+                                 {:on-click #(rf/dispatch [:cancel-recording])} "Delete"]]]
+                              (when existing-audio
+                                [:div.notification.is-success.is-light
+                                 [:span.has-text-weight-bold "Tip: "]
+                                 [:span "Click either "]
+                                 [:span.has-text-weight-bold "Save"]
+                                 [:span " button at the bottom of this pop-up to save your new audio."]
+                                 [:br]
+                                 [:span "Click the "]
+                                 [:span.has-text-weight-bold "Delete"]
+                                 [:span " button above to keep the original audio instead."]])]}]
     (state components)))
 
 (defn translate-modal []
@@ -203,13 +211,13 @@
                [:div.columns
                 [:div.column
                  [:audio {:controls "controls" :autoplay "autoplay" :src (str "data:audio/ogg;base64," audio)}]]
-                [:div.column>button.button.is-danger
+                [:div.column>button.button.is-danger.is-pulled-right
                  {:on-click #(rf/dispatch [:delete-audio (:id translation)])} "Delete Audio"]]])
             [:div.box.p-3
              [:label.label "New Audio"]
              (if media-error
                [:div.is-italic.has-text-danger [wrapped-string media-error]]
-               [recording-state-component recording-state temp-recording])]
+               [recording-state-component recording-state temp-recording (:audio translation)])]
             (when-not (bl/has-latin-script target-lang)
               (if hide-native
                 [:button.button.is-pulled-right.is-small.is-link.is-light.ml-4.mb-2
