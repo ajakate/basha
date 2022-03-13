@@ -1,4 +1,3 @@
-; TODO clean this imports; str
 (ns basha.lists
   (:require
    [basha.db.core :as db]
@@ -34,7 +33,7 @@
 ; ADD cljc validation
 (defn create! [name source target file user_id]
   (jdbc/with-transaction [t-conn db/*db*]
-    (let [sentences (-> file slurp clojure.string/split-lines)
+    (let [sentences (-> file slurp str/split-lines)
           list_id (db/create-list!*
                    t-conn
                    {:name name
@@ -55,7 +54,6 @@
 (defn delete-list [id]
   (db/delete-list {:id (java.util.UUID/fromString id)}))
 
-; TODO: cleanup
 (defn list-errors [tried actual]
   (reduce
    (fn [es elem]
