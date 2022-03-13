@@ -429,7 +429,7 @@
                     [:th "source"]
                     [:th "target"]
                     [:th "total count"]
-                    [:th "remaing count"]]]
+                    [:th "remaining count"]]]
            [:tbody
             (for [list lists]
               ^{:key (:id list)}
