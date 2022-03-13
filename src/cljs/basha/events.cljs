@@ -366,7 +366,7 @@
 (rf/reg-event-db
  :set-create-list-error
  (fn [db [_ response]]
-   (assoc db :create-list-error (-> response :response :message))))
+   (assoc db :create-list-error true)))
 
 (rf/reg-event-db
  :clear-create-list-error

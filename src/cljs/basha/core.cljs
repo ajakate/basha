@@ -348,7 +348,11 @@
                        (string/blank? @draft_source)
                        (string/blank? @draft_target)
                        (nil? @draft_file))} "Create List"]
-       [:p.has-text-danger.is-italic.mb-3 (str error)]])))
+       (when error
+         [:div
+          [:br]
+          [:p.has-text-danger.is-italic.mb-3
+           "Your sentence list failed to create. Make sure you are using a plain text file with UTF encoding."]])])))
 
 (defn view-list []
   (let [list @(rf/subscribe [:active-list])
