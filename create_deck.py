@@ -9,11 +9,6 @@ import re
 import traceback
 
 try:
-  print("HERE ARE MY ARGS")
-  print(sys.argv)
-  print("LE FULL ENV")
-  print(os.environ)
-
   list_id = sys.argv[1]
   db_url = sys.argv[2]
 
@@ -23,7 +18,6 @@ try:
   database = matches[4]
   user = matches[1]
   password = matches[2]
-
 
   query = f"""
   select
@@ -97,8 +91,6 @@ try:
   my_package.media_files = media_ids
   my_package.write_to_file(f'temp_decks/{list_id}.apkg')
 except Exception as err:
-  print("WE HAD A ERROR IN PYTHON")
-  print(f"THIS IS ERROR: {err}")
   os.system(f"echo {err.__traceback__} > temp_decks/{list_id}.fail")
 finally:
   os.system(f"rm temp_decks/{list_id}.pending")
