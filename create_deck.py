@@ -92,9 +92,10 @@ try:
   my_package.media_files = media_ids
   my_package.write_to_file(f'temp_decks/{list_id}.apkg')
 except Exception as err:
+  exc_type, exc_value, exc_traceback = sys.exc_info()
   print("WE HAD A ERROR IN PYTHON")
   print(f"THIS IS ERROR: {err}")
-  print(f"THIS IS STACKTRACE: {err.__traceback__}")
+  print(f"THIS IS STACKTRACE: {traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)}")
   os.system(f"echo {err.__traceback__} > temp_decks/{list_id}.fail")
 finally:
   os.system(f"rm temp_decks/{list_id}.pending")
