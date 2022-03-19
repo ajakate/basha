@@ -87,7 +87,6 @@ try:
           fields=[r[0], source, r[2], f"[sound:{media_id}.mp3]"]
           )
       my_deck.add_note(my_note)
-      # media_ids.append(f'temp_media/{media_id}.mp3')
 
   my_package.media_files = media_ids
   my_package.write_to_file(f'temp_decks/{list_id}.apkg')
