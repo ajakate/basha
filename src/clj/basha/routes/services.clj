@@ -37,4 +37,8 @@
    ["/assignees/:id" {:post {:middleware [wrap-jwt-authentication auth-middleware]
                              :handler handle/update-users}}]
    ["/delete_audio/:id" {:post {:middleware [wrap-jwt-authentication auth-middleware]
-                                :handler handle/delete-audio}}]])
+                                :handler handle/delete-audio}}]
+   ["/decks/:id" {:post {:middleware [wrap-jwt-authentication auth-middleware]
+                     :handler handle/create-deck}
+                  :get {:middleware [wrap-jwt-authentication auth-middleware]
+                        :handler handle/fetch-deck}}]])

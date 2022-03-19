@@ -16,10 +16,16 @@
   ],
   "buildpacks": [
     {
+      "url": "https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest.git"
+    },
+    {
       "url": "heroku/nodejs"
     },
     {
       "url": "heroku/clojure"
+    },
+    {
+      "url": "heroku/python"
     }
   ],
   "stack": "heroku-20"
