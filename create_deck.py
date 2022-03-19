@@ -6,6 +6,7 @@ import ffmpeg
 import os
 import sys
 import re
+import traceback
 
 try:
   list_id = sys.argv[1]
@@ -91,7 +92,7 @@ try:
   my_package.media_files = media_ids
   my_package.write_to_file(f'temp_decks/{list_id}.apkg')
 except Exception as err:
-  os.system(f"echo {err} > temp_decks/{list_id}.fail")
+  os.system(f"echo {err.__traceback__} > temp_decks/{list_id}.fail")
 finally:
   os.system(f"rm temp_decks/{list_id}.pending")
   os.system("rm temp_media/*.mp3")
