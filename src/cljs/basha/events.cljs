@@ -2,6 +2,7 @@
   (:require
    [re-frame.core :as rf]
    [ajax.core :as ajax]
+   [ajax.protocols :as protocols]
    [reitit.frontend.easy :as rfe]
    [reitit.frontend.controllers :as rfc]
    [basha.audio :as baudio]
@@ -82,6 +83,16 @@
       (.append form-data (name k) v))
     form-data))
 
+(defn download-file!
+  [data content-type file-name]
+  (let [data-blob (js/Blob. #js [data] #js {:type content-type})
+        link (js/document.createElement "a")]
+    (set! (.-href link) (js/URL.createObjectURL data-blob))
+    (.setAttribute link "download" file-name)
+    (js/document.body.appendChild link)
+    (.click link)
+    (js/document.body.removeChild link)))
+
 ;;dispatchers
 
 (rf/reg-event-db
@@ -160,6 +171,30 @@
                  :response-format  (ajax/json-response-format {:keywords? true})
                  :on-success       [:redirect-home]
                  :on-failure [:set-create-list-error]}}))
+
+(rf/reg-event-fx
+ :export-list
+ [with-auth]
+ (fn [_ [_ id]]
+   {:http-xhrio {:method          :post
+                 :uri             (str "/api/decks/" id)
+                 :format          (ajax/json-request-format)
+                 :response-format  (ajax/json-response-format {:keywords? true})
+                 :on-success       [:fetch-deck id]
+                 :on-failure [:kill-download-modal]}}))
+
+(rf/reg-event-fx
+ :fetch-deck
+ [with-auth]
+ (fn [_ [_ id _]]
+   {:http-xhrio {:method          :get
+                 :uri             (str "/api/decks/" id)
+                 :response-format  {:description "file-download"
+                                    :content-type "*/*"
+                                    :type :blob
+                                    :read protocols/-body}
+                 :on-success       [:download-file]
+                 :on-failure [:handle-deck-failure id]}}))
 
 (rf/reg-event-fx
  :delete-audio
@@ -298,6 +333,38 @@
  :reload-translation
  (fn [db [_]]
    (assoc-in db [:active-translation :audio] nil)))
+
+(rf/reg-event-fx
+ :download-file
+ (fn [_ [_ resp]]
+   (download-file! resp "application/apkg" "Untitled.apkg")
+   {:dispatch [:kill-download-modal]}))
+
+(rf/reg-event-fx
+ :set-downloading-deck
+ (fn [{:keys [db]} [_ id]]
+   {:db  (assoc db :is-downloading true)
+    :dispatch [:export-list id]}))
+
+(rf/reg-event-fx
+ :handle-deck-failure
+ (fn [_ [_ id resp]]
+   (if (= 404 (:status resp))
+     (do
+       (js/setTimeout (fn []) 1000)
+       {:dispatch [:fetch-deck id]})
+     {:dispatch [:set-download-error resp]})))
+
+; TODO: what's wrong with resp/json
+(rf/reg-event-db
+ :set-download-error
+ (fn [db [_ resp]]
+   (assoc db :download-error "Sorry, appears as though something bad happened... please try again.")))
+
+(rf/reg-event-db
+ :kill-download-modal
+ (fn [db [_]]
+   (assoc db :is-downloading false :download-error nil)))
 
 (rf/reg-event-fx
  :reset-list-page
@@ -452,6 +519,16 @@
     :fx [[:dispatch [:clear-login-user]] [:dispatch [:redirect-home]]]}))
 
 ;;subscriptions
+
+(rf/reg-sub
+ :is-downloading
+ (fn [db _]
+   (-> db :is-downloading)))
+
+(rf/reg-sub
+ :download-error
+ (fn [db _]
+   (-> db :download-error)))
 
 (rf/reg-sub
  :delete-list-id

@@ -1,6 +1,7 @@
 (ns basha.handlers
   (:require
    [basha.lists :as list]
+   [basha.decks :as deck]
    [basha.translations :as translation]
    [ring.util.http-response :as response]
    [basha.auth :as auth]
@@ -9,7 +10,8 @@
 ; AUTH
 
 (def error-types {:conflict response/conflict
-                  :bad-request response/bad-request})
+                  :bad-request response/bad-request
+                  :not-found response/not-found})
 
 (defmacro with-handle [& exp]
   `(try
@@ -64,3 +66,11 @@
 
 (defn delete-audio [{{:keys [id]} :path-params}]
   (with-handle (translation/delete-audio id)))
+
+; TODO: return value?
+(defn create-deck [{{:keys [id]} :path-params}]
+  (deck/create id)
+  (response/ok {:ok "hi"}))
+
+(defn fetch-deck [{{:keys [id]} :path-params}]
+  (with-handle (deck/fetch id)))

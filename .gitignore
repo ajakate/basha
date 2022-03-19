@@ -20,6 +20,8 @@ resources/public/files/dev/*
 !resources/public/files/dev/.keep
 resources/public/files/test/*
 !resources/public/files/test/.keep
+temp_decks/*
+!temp_decks/.keep
 
 temp_media/*
 !temp_media/.keep

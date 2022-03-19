@@ -28,6 +28,26 @@
      ^{:key (str l)}
      [:p l])])
 
+(defn download-modal []
+  (let [is-active @(rf/subscribe [:is-downloading])
+        errors @(rf/subscribe [:download-error])]
+    (when is-active
+      [:div.modal
+       {:class (if is-active "is-active" nil)}
+       [:div.modal-background]
+       [:div.model-content>div.card
+        [:header.card-header>p.card-header-title "Downloading Anki Deck..."]
+        [:div.card-content.has-text-centered
+         (if errors
+           [:div
+            [:p.has-text-danger.is-italic.my-4 errors]
+            [:button.button.p-2.m-1
+             {:on-click #(rf/dispatch [:kill-download-modal])}
+             "Cancel"]]
+           [:div
+            [:span "Please don't navigate away from this page..."]
+            [:progress.progress.is-primary.is-large.my-4]])]]])))
+
 (defn delete-list-modal []
   (let [active-list @(rf/subscribe [:delete-list-id])
         id (:id active-list)
@@ -450,6 +470,9 @@
                [:td>a.button.is-info
                 {:href (str "/#/lists/edit/" (:id list))}
                 "edit"]
+               [:td>a.button.is-success
+                {:on-click #(rf/dispatch [:set-downloading-deck (:id list)])}
+                "export anki"]
                (when (= (:username user) (:creator list))
                  [:td>a.button.is-danger.is-light
                   {:on-click #(rf/dispatch [:set-delete-list-id list])}
@@ -481,7 +504,8 @@
      [login-modal]
      [translate-modal]
      [assign-modal]
-     [delete-list-modal]]))
+     [delete-list-modal]
+     [download-modal]]))
 
 (defn navigate! [match _]
   (rf/dispatch [:common/navigate match]))
