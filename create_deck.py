@@ -18,12 +18,12 @@ try:
   list_id = sys.argv[1]
   db_url = sys.argv[2]
 
-  matches = re.search(r':\/\/(.*)\/(.*)\?user=(.*)&password=(.*)', db_url)
+  matches = re.search(r'postgres:\/\/(.*):(.*)@(.*):5432\/(.*)', db_url)
 
-  host = matches[1]
-  database = matches[2]
-  user = matches[3]
-  password = matches[4]
+  host = matches[3]
+  database = matches[4]
+  user = matches[1]
+  password = matches[2]
 
 
   query = f"""
