@@ -11,6 +11,7 @@
   (apply shell/sh (str/split cmd #" ")))
 
 (defn create [list-id]
+  (println "DON'T BE AFRAID")
   (shell-cmd (str "rm -f ./temp_decks/" list-id ".apkg"))
   (shell-cmd (str "rm -f ./temp_decks/" list-id ".fail"))
   (shell-cmd (str "touch ./temp_decks/" list-id ".pending"))
