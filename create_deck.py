@@ -13,8 +13,7 @@ try:
   print(sys.argv)
   print("LE FULL ENV")
   print(os.environ)
-  print("LE DB ENV")
-  print(os.environ.getenv('DATABASE_URL'))
+
   list_id = sys.argv[1]
   db_url = sys.argv[2]
 
@@ -98,10 +97,8 @@ try:
   my_package.media_files = media_ids
   my_package.write_to_file(f'temp_decks/{list_id}.apkg')
 except Exception as err:
-  exc_type, exc_value, exc_traceback = sys.exc_info()
   print("WE HAD A ERROR IN PYTHON")
   print(f"THIS IS ERROR: {err}")
-  print(f"THIS IS STACKTRACE: {traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)}")
   os.system(f"echo {err.__traceback__} > temp_decks/{list_id}.fail")
 finally:
   os.system(f"rm temp_decks/{list_id}.pending")
