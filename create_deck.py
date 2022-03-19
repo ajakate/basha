@@ -9,6 +9,12 @@ import re
 import traceback
 
 try:
+  print("HERE ARE MY ARGS")
+  print(sys.argv)
+  print("LE FULL ENV")
+  print(os.environ)
+  print("LE DB ENV")
+  print(os.environ.getenv('DATABASE_URL'))
   list_id = sys.argv[1]
   db_url = sys.argv[2]
 
