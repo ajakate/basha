@@ -1,9 +1,14 @@
 {
   "name": "basha",
-  "scripts": {},
+  "description": "TODO: fix this",
+  "repository": "https://github.com/ajakate/basha",
+  "scripts": {
+    "postdeploy": "sh build/migrate.sh"
+  },
   "env": {
     "TOKEN_SECRET": {
-      "required": true
+      "required": true,
+      "generator": "secret"
     }
   },
   "formation": {

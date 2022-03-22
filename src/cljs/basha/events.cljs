@@ -229,7 +229,7 @@
                  :uri             "/api/lists"
                  :response-format  (ajax/json-response-format {:keywords? true})
                  :on-success       [:set-list-summary]
-                 :on-failure [:set-list-summary]}}))
+                 :on-failure [:logout]}}))
 
 (rf/reg-event-fx
  :fetch-translation
