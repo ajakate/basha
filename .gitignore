@@ -23,6 +23,9 @@ resources/public/files/test/*
 temp_decks/*
 !temp_decks/.keep
 
+/resources/scss/.sass-cache/*
+/resources/public/css/*
+
 temp_media/*
 !temp_media/.keep
 

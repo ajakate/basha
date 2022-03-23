@@ -1,3 +1,6 @@
+@import "../../node_modules/bulma/sass/utilities/initial-variables";
+@import "../../node_modules/bulma/sass/utilities/functions";
+
 html,
 body {
 	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -40,3 +43,32 @@ body {
     opacity: 0;
   }
 }
+
+// TODO: start the color edits here
+// $black:        hsl(0, 0%, 4%);
+// $black-bis:    hsl(0, 0%, 7%);
+// $black-ter:    hsl(0, 0%, 14%);
+
+// $grey-darker:  hsl(0, 0%, 21%);
+// $grey-dark:    hsl(0, 0%, 29%);
+// $grey:         hsl(0, 0%, 48%);
+// $grey-light:   hsl(0, 0%, 71%);
+// $grey-lighter: hsl(0, 0%, 86%);
+// $grey-lightest: hsl(0, 0%, 93%);
+
+// $white-ter:    hsl(0, 0%, 96%);
+// $white-bis:    hsl(0, 0%, 98%);
+// $white:        hsl(0, 0%, 100%);
+
+// $orange:       hsl(14,  100%, 53%);
+// $yellow:       hsl(44,  100%, 77%);
+// $green:        hsl(153, 53%,  53%);
+// $turquoise:    hsl(171, 100%, 41%);
+// $cyan:         hsl(207, 61%,  53%);
+// $blue:         hsl(229, 53%,  53%);
+// $purple:       hsl(271, 100%, 71%);
+// $red:          hsl(348, 86%, 61%);
+
+// $info: $orange;
+
+@import '../../node_modules/bulma/bulma.sass';
