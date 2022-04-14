@@ -2,9 +2,6 @@
   "name": "basha",
   "description": "TODO: fix this",
   "repository": "https://github.com/ajakate/basha",
-  "scripts": {
-    "postdeploy": "psql -c \"create extension if not exists uuid-ossp\" $DATABASE_URL"
-  },
   "env": {
     "TOKEN_SECRET": {
       "required": true,
@@ -34,9 +31,6 @@
     },
     {
       "url": "heroku/python"
-    },
-    {
-      "url": "https://github.com/heroku/heroku-buildpack-ci-postgresql.git"
     }
   ],
   "stack": "heroku-20"
