@@ -3,7 +3,7 @@
   "description": "TODO: fix this",
   "repository": "https://github.com/ajakate/basha",
   "scripts": {
-    "postdeploy": "sh build/migrate.sh"
+    "postdeploy": "psql -c \"create extension if not exists uuid-ossp\" $DATABASE_URL"
   },
   "env": {
     "TOKEN_SECRET": {
