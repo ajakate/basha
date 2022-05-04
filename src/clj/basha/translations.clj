@@ -1,7 +1,8 @@
 (ns basha.translations
   (:require
    [basha.db.core :as db]
-   [clojure.java.io :as io]))
+   [clojure.java.io :as io]
+   [honey.sql :as sql]))
 
 (defn file2bytes [path]
   (with-open [in (io/input-stream path)
@@ -10,7 +11,11 @@
     (.toByteArray out)))
 
 (defn fetch [id]
-  (db/get-translation {:id (java.util.UUID/fromString id)}))
+  (db/execute-one
+   (sql/format
+    {:select :*
+     :from :translations
+     :where [:= :id (java.util.UUID/fromString id)]})))
 
 (defn update-translation [id user-id params]
   (let [audio (-> params :audio :tempfile)

@@ -37,11 +37,6 @@ join users u on l.user_id=u.id
 where l.id = :id
 order by target_text_roman is null desc, target_text is null desc, t.list_index asc;
 
--- :name get-translation :? :1
--- :doc fetches translation
-select * from translations t
-where t.id = :id;
-
 -- :name update-translation :! :1
 -- :doc updates translation
 update translations
