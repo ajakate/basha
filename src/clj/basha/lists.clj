@@ -2,6 +2,7 @@
   (:require
    [basha.db.core :as db]
    [next.jdbc :as jdbc]
+   [honey.sql :as sql]
    [clojure.string :as str]))
 
 (defn create-translations [sentences list_id conn]
@@ -52,7 +53,18 @@
   (format-list (db/get-list {:id (java.util.UUID/fromString id)})))
 
 (defn delete-list [id]
-  (db/delete-list {:id (java.util.UUID/fromString id)}))
+  (db/execute-one
+   (sql/format
+    {:with [[:delete_list {:delete-from :lists
+                           :where [:= :id (java.util.UUID/fromString id)]
+                           :returning [:id]}]
+            [:delete_translations {:delete-from :translations
+                                   :where [:in :list_id {:select [:*]
+                                                         :from :delete_list}]
+                                   :returning :translations.list_id}]]
+     :delete-from :list_users
+     :where [:in :list_id {:select [:*] :from :delete_translations}]}))
+  )
 
 (defn list-errors [tried actual]
   (reduce
