@@ -48,7 +48,8 @@
                  [prismatic/schema "1.1.12"]
                  ; TODO: implement this
                  [camel-snake-kebab "0.4.2"]
-                 [akiroz.re-frame/storage "0.1.4"]]
+                 [akiroz.re-frame/storage "0.1.4"]
+                 [com.github.seancorfield/honeysql "2.2.891"]]
 
   :min-lein-version "2.0.0"
 

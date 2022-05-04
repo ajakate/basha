@@ -1,15 +1,3 @@
--- START:users
--- :name create-user!* :! :n
--- :doc creates a new user with the provided login and hashed password
-INSERT INTO users
-(username, password)
-VALUES (:username, :password)
-
--- :name get-user-for-login :? :1
--- :doc retrieves a user record given the id
-SELECT username,password,id FROM users
-WHERE username = :username
-
 -- :name create-list!* :! :1
 -- :doc creates a list record
 INSERT INTO lists
