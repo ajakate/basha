@@ -5,11 +5,6 @@
    [honey.sql :as sql]
    [clojure.string :as str]))
 
-(defn create-translations [sentences list_id conn]
-  (map-indexed (fn [idx s]
-         (:id (db/create-translation!* conn {:source_text s :list_id list_id :list_index idx})))
-       sentences))
-
 (defn format-list [resp]
   (let [name (-> resp first :name)
         source_language (-> resp first :source_language)
@@ -31,20 +26,23 @@
                       :list_index (:list_index r)
                       :has_audio (:has_audio r)})}))
 
+(defn create-list [name source target user_id sentences]
+  (db/execute-one
+   (sql/format
+    {:with [[:created_list {:insert-into :lists
+                            :columns [:name :source_language :target_language :user_id]
+                            :values [[name source target user_id]]
+                            :returning :id}]]
+     :insert-into :translations
+     :columns [:source_text :list_id :list_index]
+     :values (map-indexed (fn [idx s] [s {:select :id :from :created_list} idx]) sentences)
+     :returning :*})))
+
+
 ; ADD cljc validation
 (defn create! [name source target file user_id]
-  (jdbc/with-transaction [t-conn db/*db*]
-    (let [sentences (-> file slurp str/split-lines)
-          list_id (db/create-list!*
-                   t-conn
-                   {:name name
-                    :source_language source
-                    :target_language target
-                    :user_id (java.util.UUID/fromString user_id)})
-          sentence_ids (create-translations sentences (:id list_id) t-conn)]
-      ;; TODO: WHY DO I NEED THIS PRINTLN HERE?
-      (println sentence_ids)
-      {:id list_id})))
+  (let [sentences (-> file slurp str/split-lines)]
+    (create-list name source target (java.util.UUID/fromString user_id) sentences)))
 
 (defn get-summary [id]
   (db/get-list-summary {:id (java.util.UUID/fromString id)}))

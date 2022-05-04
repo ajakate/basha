@@ -61,17 +61,6 @@ translator_id = :translator_id
 where id = :id
 RETURNING *;
 
--- :name create-translation!* :<! :1
--- :doc creates a translation record
-INSERT INTO translations
-(source_text,
-list_id,
-list_index)
-VALUES (:source_text,
- :list_id,
- :list_index)
-RETURNING *;
-
 -- :name get-users-by-username :? :*
 -- :doc retrieves users by username
 SELECT id,username FROM users u
