@@ -7,9 +7,7 @@
    [basha.db.core :as db]
    [buddy.sign.jwt :as jwt]
    [java-time :as t]
-   [next.jdbc :as jdbc]
    [honey.sql :as sql]
-   [next.jdbc.result-set :as rs]
    [basha.config :refer [env]]))
 
 (defn token-secret [] (:token-secret env))
@@ -28,24 +26,21 @@
       {:status 401 :body {:error "Unauthorized"}})))
 
 (defn get-user-from-db [username]
-  (jdbc/with-transaction
-    [conn db/*db*]
-    (jdbc/execute-one! conn (sql/format
-                             {:select [:username :password :id]
-                              :from [:users]
-                              :where [:= :username username]})
-                       {:builder-fn rs/as-unqualified-lower-maps})))
+  (db/execute-one
+   (sql/format
+    {:select [:username :password :id]
+     :from [:users]
+     :where [:= :username username]})))
 
 (defn create-user! [username password]
   (let [user (get-user-from-db username)]
     (if user
       (throw (ex-info "User already exists" {:type :conflict}))
-      (jdbc/with-transaction
-        [conn db/*db*]
-        (jdbc/execute! conn (sql/format
-                             {:insert-into :users
-                              :columns [:username :password]
-                              :values [[username (hashers/derive password)]]}))))))
+      (db/execute
+       (sql/format
+        {:insert-into :users
+         :columns [:username :password]
+         :values [[username (hashers/derive password)]]})))))
 
 (defn generate-token [payload time-interval]
   (jwt/sign payload (token-secret)
