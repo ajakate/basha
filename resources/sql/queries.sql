@@ -1,10 +1,3 @@
--- :name create-list!* :! :1
--- :doc creates a list record
-INSERT INTO lists
-(name, user_id, target_language, source_language)
-VALUES (:name, :user_id, :target_language, :source_language)
-RETURNING id;
-
 -- :name get-list-summary :? :*
 -- :doc fetches list summary for user
 select l.id,
