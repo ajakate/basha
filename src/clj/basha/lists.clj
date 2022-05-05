@@ -45,7 +45,27 @@
     (create-list name source target (java.util.UUID/fromString user_id) sentences)))
 
 (defn get-summary [id]
-  (db/get-list-summary {:id (java.util.UUID/fromString id)}))
+  (let [incomplete-filter [:filter [:count :t.id] {:where [:or [:is :audio :null] [:is :target_text_roman :null]]}]]
+    (db/execute
+     (sql/format
+      {:select [:l.id
+                :l.name
+                :l.source_language
+                :l.target_language
+                [{:select :username :from :users :where [:= :users.id :l.user_id]} :creator]
+                [[:count :t.id] :list_count]
+                [incomplete-filter :open_count]
+                [{:select [[[:string_agg :uu.username ","]]]
+                  :from [[:users :uu]]
+                  :join [[:list_users :lluu] [:= :lluu.user_id :uu.id]]
+                  :where [:= :lluu.list_id :l.id]}
+                 :users]]
+       :from [[:lists :l]]
+       :join [[:translations :t] [:= :t.list_id :l.id]]
+       :left-join [[:list_users :li] [:= :li.list_id :l.id]]
+       :where [:or [:= :l.user_id (java.util.UUID/fromString id)] [:= :li.user_id (java.util.UUID/fromString id)]]
+       :group-by [:l.id]
+       :order-by [[incomplete-filter :asc] [:l.created_at :asc]]}))))
 
 (defn fetch [id]
   (format-list (db/get-list {:id (java.util.UUID/fromString id)})))
@@ -73,9 +93,16 @@
    []
    tried))
 
+(defn get-users-by-name [users]
+  (db/execute
+   (sql/format
+    {:select [:id :username]
+     :from :users
+     :where [:in :username users]})))
+
 (defn update-users [id users]
   (let [id (java.util.UUID/fromString id)
-        new (db/get-users-by-username {:users users})
+        new (get-users-by-name users)
         new-names (set (map #(:username %) new))
         new-ids (set (map #(:id %) new))
         errors (list-errors users new-names)]

@@ -1,25 +1,3 @@
--- :name get-list-summary :? :*
--- :doc fetches list summary for user
-select l.id,
-l.name,
-l.source_language,
-l.target_language,
-(select u.username from users u where u.id=l.user_id) creator,
-count(t.id) list_count,
-count(t.id) filter (where (audio is null) or (target_text_roman is null)) open_count,
-(select string_agg(uu.username, ',')
-   from users uu
-   join list_users lluu on lluu.user_id=uu.id
-   where lluu.list_id=l.id) users
-from lists l
-join translations t on t.list_id=l.id
-full outer join list_users li on li.list_id=l.id
-where l.user_id=:id or li.user_id=:id
-group by l.id
-order by
-(count(t.id) filter (where (audio is null) or (target_text_roman is null)) = 0) asc,
-l.created_at asc;
-
 -- :name get-list :? :*
 -- :doc fetches list
 select *, t.id as translation_id,
@@ -48,10 +26,3 @@ set
 translator_id = :translator_id
 where id = :id
 RETURNING *;
-
--- :name get-users-by-username :? :*
--- :doc retrieves users by username
-SELECT id,username FROM users u
-WHERE u.username in (:v*:users)
-
-
