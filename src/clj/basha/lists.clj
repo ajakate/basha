@@ -62,7 +62,7 @@
                  :users]]
        :from [[:lists :l]]
        :join [[:translations :t] [:= :t.list_id :l.id]]
-       :left-join [[:list_users :li] [:= :li.list_id :l.id]]
+       :full-join [[:list_users :li] [:= :li.list_id :l.id]]
        :where [:or [:= :l.user_id (java.util.UUID/fromString id)] [:= :li.user_id (java.util.UUID/fromString id)]]
        :group-by [:l.id]
        :order-by [[incomplete-filter :asc] [:l.created_at :asc]]}))))
