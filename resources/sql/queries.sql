@@ -54,20 +54,4 @@ RETURNING *;
 SELECT id,username FROM users u
 WHERE u.username in (:v*:users)
 
--- :name delete-list-users :! :n
--- :doc retrieves users by username
-delete from list_users
-where list_id = :list_id;
 
--- :name create-list-users :! :n
--- :doc retrieves users by username
-insert into list_users
-(user_id, list_id)
-values :t*:users;
-
--- :name delete-audio-for-translation :! :1
--- :doc updates translation removes audio
-update translations
-set audio = null
-where id = :id
-RETURNING *;

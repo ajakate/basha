@@ -81,9 +81,11 @@
         errors (list-errors users new-names)]
     (if (seq errors)
       {:error {:message (str "The following users could not be found: " (str/join ", " errors))}}
-      (jdbc/with-transaction
-        [t-conn db/*db*]
-        (db/delete-list-users t-conn {:list_id id})
-        (when (seq new-ids)
-          (db/create-list-users  t-conn {:users (map (fn [e] [e id]) new-ids)}))
-        {:ok "fine"}))))
+      (db/execute-one
+       (sql/format
+        {:with [[:noop {:delete-from :list_users
+                        :where [:= :list_id id]}]]
+         :insert-into :list_users
+         :columns [:user_id :list_id]
+         :values (map (fn [e] [e id]) new-ids)
+         :returning :*})))))

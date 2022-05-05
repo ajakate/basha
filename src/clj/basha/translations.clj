@@ -26,4 +26,8 @@
                                   :audio (if audio (file2bytes audio) nil)))))
 
 (defn delete-audio [id]
-  (db/delete-audio-for-translation {:id (java.util.UUID/fromString id)}))
+  (db/execute-one
+   (sql/format
+    {:update :translations
+     :set {:audio nil}
+     :where [:= :id (java.util.UUID/fromString id)]})))
