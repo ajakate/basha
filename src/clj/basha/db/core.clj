@@ -1,13 +1,15 @@
 (ns basha.db.core
   (:require
-    [cheshire.core :refer [generate-string parse-string]]
-    [next.jdbc.date-time]
-    [next.jdbc.prepare]
-    [next.jdbc.result-set]
-    [clojure.tools.logging :as log]
-    [conman.core :as conman]
-    [basha.config :refer [env]]
-    [mount.core :refer [defstate]])
+   [cheshire.core :refer [generate-string parse-string]]
+   [next.jdbc.date-time]
+   [next.jdbc.prepare]
+   [next.jdbc.result-set]
+   [clojure.tools.logging :as log]
+   [next.jdbc :as jdbc]
+   [next.jdbc.result-set :as rs]
+   [conman.core :as conman]
+   [basha.config :refer [env]]
+   [mount.core :refer [defstate]])
   (:import (org.postgresql.util PGobject)))
 
 (defstate ^:dynamic *db*
@@ -17,8 +19,6 @@
              (log/warn "database connection URL was not found, please set :database-url in your config, e.g: dev-config.edn")
              *db*))
   :stop (conman/disconnect! *db*))
-
-(conman/bind-connection *db* "sql/queries.sql")
 
 (defn pgobj->clj [^org.postgresql.util.PGobject pgobj]
   (let [type (.getType pgobj)
@@ -75,7 +75,13 @@
         (.setObject stmt idx (.createArrayOf conn elem-type (to-array v)))
         (.setObject stmt idx (clj->jsonb-pgobj v))))))
 
-(comment
-  (conman/bind-connection *db* "sql/queries.sql")
-  )
+(defn txn [func sqlmap]
+  (jdbc/with-transaction
+    [conn *db*]
+    (func conn sqlmap {:builder-fn rs/as-unqualified-lower-maps})))
 
+(defn execute-one [sqlmap]
+  (txn jdbc/execute-one! sqlmap))
+
+(defn execute [sqlmap]
+  (txn jdbc/execute! sqlmap))

@@ -7,6 +7,7 @@
    [basha.db.core :as db]
    [buddy.sign.jwt :as jwt]
    [java-time :as t]
+   [honey.sql :as sql]
    [basha.config :refer [env]]))
 
 (defn token-secret [] (:token-secret env))
@@ -24,12 +25,22 @@
       (handler request)
       {:status 401 :body {:error "Unauthorized"}})))
 
+(defn get-user-from-db [username]
+  (db/execute-one
+   (sql/format
+    {:select [:username :password :id]
+     :from [:users]
+     :where [:= :username username]})))
+
 (defn create-user! [username password]
-  (let [user (db/get-user-for-login {:username username})]
+  (let [user (get-user-from-db username)]
     (if user
       (throw (ex-info "User already exists" {:type :conflict}))
-      (db/create-user!* {:username    username
-                         :password (hashers/derive password)}))))
+      (db/execute
+       (sql/format
+        {:insert-into :users
+         :columns [:username :password]
+         :values [[username (hashers/derive password)]]})))))
 
 (defn generate-token [payload time-interval]
   (jwt/sign payload (token-secret)
@@ -40,12 +51,12 @@
    :refresh-token (generate-token user (t/days 5))})
 
 (defn login [username password]
-  (let [user (db/get-user-for-login {:username username})
+  (let [user (get-user-from-db username)
         authenticated (hashers/check password (:password user))]
     (if authenticated
       (assoc (new-tokens (dissoc user :password)) :username username)
       (throw (ex-info "Wrong username or password entered" {:type :bad-request})))))
 
 (defn refresh [username]
-  (let [user (db/get-user-for-login {:username username})]
+  (let [user (get-user-from-db username)]
     (assoc (new-tokens (dissoc user :password)) :username username)))
