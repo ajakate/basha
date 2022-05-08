@@ -68,7 +68,28 @@
        :order-by [[incomplete-filter :asc] [:l.created_at :asc]]}))))
 
 (defn fetch [id]
-  (format-list (db/get-list {:id (java.util.UUID/fromString id)})))
+  (format-list
+   (db/execute
+    (sql/format
+     {:select [:*
+               [:t.id :translation_id]
+               [:l.id :list_id]
+               [:u.username :creator]
+               [{:select :username
+                 :from :users
+                 :where [:= :t.translator_id :users.id]} :translator]
+               [{:select [[[:string_agg :uu.username ","]]]
+                 :from [[:users :uu]]
+                 :join [[:list_users :lluu] [:= :lluu.user_id :uu.id]]
+                 :where [:= :lluu.list_id (java.util.UUID/fromString id)]} :users]
+               [[:is :t.audio [:not :null]] :has_audio]]
+      :from [[:translations :t]]
+      :join [[:lists :l] [:= :l.id :t.list_id]
+             [:users :u] [:= :l.user_id :u.id]]
+      :where [:= :l.id (java.util.UUID/fromString id)]
+      :order-by [[[:is :target_text_roman :null] :desc]
+                 [[:is :target_text :null] :desc]
+                 [:t.list_index :asc]]}))))
 
 (defn delete-list [id]
   (db/execute-one
