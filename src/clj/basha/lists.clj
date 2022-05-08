@@ -1,7 +1,6 @@
 (ns basha.lists
   (:require
    [basha.db.core :as db]
-   [next.jdbc :as jdbc]
    [honey.sql :as sql]
    [clojure.string :as str]))
 
@@ -44,6 +43,12 @@
   (let [sentences (-> file slurp str/split-lines)]
     (create-list name source target (java.util.UUID/fromString user_id) sentences)))
 
+(defn comma-list-users-sql [matcher]
+  {:select [[[:string_agg :username ","]]]
+   :from :users
+   :join [:list_users [:= :list_users.user_id :users.id]]
+   :where [:= :list_users.list_id matcher]})
+
 (defn get-summary [id]
   (let [incomplete-filter [:filter [:count :t.id] {:where [:or [:is :audio :null] [:is :target_text_roman :null]]}]]
     (db/execute
@@ -55,11 +60,7 @@
                 [{:select :username :from :users :where [:= :users.id :l.user_id]} :creator]
                 [[:count :t.id] :list_count]
                 [incomplete-filter :open_count]
-                [{:select [[[:string_agg :uu.username ","]]]
-                  :from [[:users :uu]]
-                  :join [[:list_users :lluu] [:= :lluu.user_id :uu.id]]
-                  :where [:= :lluu.list_id :l.id]}
-                 :users]]
+                [(comma-list-users-sql :l.id) :users]]
        :from [[:lists :l]]
        :join [[:translations :t] [:= :t.list_id :l.id]]
        :full-join [[:list_users :li] [:= :li.list_id :l.id]]
@@ -78,10 +79,7 @@
                [{:select :username
                  :from :users
                  :where [:= :t.translator_id :users.id]} :translator]
-               [{:select [[[:string_agg :uu.username ","]]]
-                 :from [[:users :uu]]
-                 :join [[:list_users :lluu] [:= :lluu.user_id :uu.id]]
-                 :where [:= :lluu.list_id (java.util.UUID/fromString id)]} :users]
+               [(comma-list-users-sql (java.util.UUID/fromString id)) :users]
                [[:is :t.audio [:not :null]] :has_audio]]
       :from [[:translations :t]]
       :join [[:lists :l] [:= :l.id :t.list_id]
