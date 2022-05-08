@@ -36,9 +36,7 @@
   "Restarts database."
   []
   (mount/stop #'basha.db.core/*db*)
-  (mount/start #'basha.db.core/*db*)
-  (binding [*ns* (the-ns 'basha.db.core)]
-    (conman/bind-connection basha.db.core/*db* "sql/queries.sql")))
+  (mount/start #'basha.db.core/*db*))
 
 (defn reset-db
   "Resets database."

@@ -19,11 +19,16 @@
 
 (defn update-translation [id user-id params]
   (let [audio (-> params :audio :tempfile)
-        params (dissoc params :audio)]
-    (db/update-translation (assoc params
-                                  :id (java.util.UUID/fromString id)
-                                  :translator_id (java.util.UUID/fromString user-id)
-                                  :audio (if audio (file2bytes audio) nil)))))
+        params (dissoc params :audio)
+        full (assoc params
+                    :translator_id (java.util.UUID/fromString user-id)
+                    :audio (if audio (file2bytes audio) nil))
+        filtered (into {} (filter (comp some? val) full))]
+    (db/execute-one
+     (sql/format
+      {:update :translations
+       :set filtered
+       :where [:= :id (java.util.UUID/fromString id)]}))))
 
 (defn delete-audio [id]
   (db/execute-one
