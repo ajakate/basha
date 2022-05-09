@@ -44,6 +44,7 @@ try:
   cur.execute(query)
   rows = cur.fetchall()
   cur.close()
+  conn.close()
 
   my_model = genanki.Model(
     1607392319,
@@ -63,7 +64,7 @@ try:
     ])
 
   list_name = rows[0][4]
-  my_deck = genanki.Deck(2059400110,list_name)
+  my_deck = genanki.Deck(2059400110, f"Basha - {list_name}")
 
   my_package = genanki.Package(my_deck)
 

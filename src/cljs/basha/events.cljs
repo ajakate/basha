@@ -175,26 +175,26 @@
 (rf/reg-event-fx
  :export-list
  [with-auth]
- (fn [_ [_ id]]
+ (fn [_ [_ id name]]
    {:http-xhrio {:method          :post
                  :uri             (str "/api/decks/" id)
                  :format          (ajax/json-request-format)
                  :response-format  (ajax/json-response-format {:keywords? true})
-                 :on-success       [:fetch-deck id]
+                 :on-success       [:fetch-deck id name]
                  :on-failure [:kill-download-modal]}}))
 
 (rf/reg-event-fx
  :fetch-deck
  [with-auth]
- (fn [_ [_ id _]]
+ (fn [_ [_ id name _]]
    {:http-xhrio {:method          :get
                  :uri             (str "/api/decks/" id)
                  :response-format  {:description "file-download"
                                     :content-type "*/*"
                                     :type :blob
                                     :read protocols/-body}
-                 :on-success       [:download-file]
-                 :on-failure [:handle-deck-failure id]}}))
+                 :on-success       [:download-file name]
+                 :on-failure [:handle-deck-failure id name]}}))
 
 (rf/reg-event-fx
  :delete-audio
@@ -336,23 +336,23 @@
 
 (rf/reg-event-fx
  :download-file
- (fn [_ [_ resp]]
-   (download-file! resp "application/apkg" "Untitled.apkg")
+ (fn [_ [_ name resp]]
+   (download-file! resp "application/apkg" (str "Basha - " name ".apkg"))
    {:dispatch [:kill-download-modal]}))
 
 (rf/reg-event-fx
  :set-downloading-deck
- (fn [{:keys [db]} [_ id]]
+ (fn [{:keys [db]} [_ id name]]
    {:db  (assoc db :is-downloading true)
-    :dispatch [:export-list id]}))
+    :dispatch [:export-list id name]}))
 
 (rf/reg-event-fx
  :handle-deck-failure
- (fn [_ [_ id resp]]
+ (fn [_ [_ id name resp]]
    (if (= 404 (:status resp))
      (do
        (js/setTimeout (fn []) 1000)
-       {:dispatch [:fetch-deck id]})
+       {:dispatch [:fetch-deck id name]})
      {:dispatch [:set-download-error resp]})))
 
 ; TODO: what's wrong with resp/json

@@ -471,7 +471,7 @@
                 {:href (str "/#/lists/edit/" (:id list))}
                 "edit"]
                [:td>a.button.is-success
-                {:on-click #(rf/dispatch [:set-downloading-deck (:id list)])}
+                {:on-click #(rf/dispatch [:set-downloading-deck (:id list) (:name list)])}
                 "export anki"]
                (when (= (:username user) (:creator list))
                  [:td>a.button.is-danger.is-light
