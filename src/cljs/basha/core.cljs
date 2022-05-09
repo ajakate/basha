@@ -321,7 +321,6 @@
 
 (defn create-list-page []
   (r/with-let [draft_name (r/atom nil)
-               draft_source (r/atom nil)
                draft_target (r/atom nil)
                draft_file (r/atom nil)]
     (let [error @(rf/subscribe [:create-list-error])
@@ -335,13 +334,6 @@
           :placeholder "My new sentence list"
           :on-change #(reset! draft_name (.. % -target -value))
           :value @draft_name}]]
-       [:div.field
-        [:label.label "Source Language"]
-        [:div.control>div.select
-         [:select {:on-change #(reset! draft_source (.. % -target -value))}
-          [:option "Select"]
-          (for [l bl/language-list]
-            [:option l])]]]
        [:div.field
         [:label.label "Target Language"]
         [:div.control>div.select
@@ -361,11 +353,10 @@
        [:div.control>button.button.is-link
         {:class (when loading :is-loading)
          :on-click #(rf/dispatch [:create-list {:name @draft_name
-                                                :source_language @draft_source
+                                                :source_language "English"
                                                 :target_language @draft_target
                                                 :file  @draft_file}])
          :disabled (or (string/blank? @draft_name)
-                       (string/blank? @draft_source)
                        (string/blank? @draft_target)
                        (nil? @draft_file))} "Create List"]
        (when error
@@ -446,10 +437,9 @@
                     [:th "name"]
                     [:th "owner"]
                     [:th "shared with"]
-                    [:th "source"]
-                    [:th "target"]
-                    [:th "total count"]
-                    [:th "remaining count"]]]
+                    [:th "language"]
+                    [:th "# total"]
+                    [:th "# remaining"]]]
            [:tbody
             (for [list lists]
               ^{:key (:id list)}
@@ -457,7 +447,6 @@
                [:td (:name list)]
                [:td (:creator list)]
                [:td (:users list)]
-               [:td (:source_language list)]
                [:td (:target_language list)]
                [:td (:list_count list)]
                [:td
