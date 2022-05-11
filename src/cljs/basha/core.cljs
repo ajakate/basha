@@ -220,10 +220,22 @@
           [:div.has-text-centered.is-size-3.m-6>p.has-text-info "Loading Next Translation..."]
           [:progress.progress.is-info]]
          (r/with-let [draft_target (r/atom (:target_text translation))
-                      draft_target_rom (r/atom (:target_text_roman translation))]
+                      draft_target_rom (r/atom (:target_text_roman translation))
+                      draft_source (r/atom (:source_text translation))
+                      editing-source (r/atom false)]
            [:div
             [:label.label "Source sentence"]
-            [:div.box.my-5 [wrapped-string (:source_text translation)]]
+            [:button.button.is-pulled-right.is-small.is-primary.ml-4.mb-4
+             {:on-click  #(swap! editing-source not)}
+             (if @editing-source "Done editing" "Edit Source Sentence")]
+            (if @editing-source
+              [:div.field
+               [:div.control [:input.input
+                              {:type "text"
+                               :placeholder "What's up?"
+                               :on-change #(reset! draft_source (.. % -target -value))
+                               :value @draft_source}]]]
+              [:div.box.my-5 [wrapped-string @draft_source]])
             [:label.label "Translated Audio"]
             (when-let [audio (:audio translation)]
               [:div.box.p-3
@@ -265,29 +277,25 @@
                              :placeholder "Kasa kay mandali"
                              :on-change #(reset! draft_target_rom (.. % -target -value))
                              :value @draft_target_rom}]]]
-            [:div.columns.mt-4
-             [:div.column.has-text-centered.control>button.button.is-link
-              {:on-click #(rf/dispatch [:edit-translation {:target_text_roman @draft_target_rom
-                                                           :target_text @draft_target
-                                                           :id (:id translation)
-                                                           :list_id (:id list)
-                                                           :audio (:data temp-recording)
-                                                           :goto-next true
-                                                           :next_id next-id}])
-               :disabled (= recording-state :recording)
-               :class (if loading-translation :is-loading nil)
-               :style (if (:next_id translation) nil {:visibility :hidden})} "Save & Next"]
-             [:div.column.has-text-centered.control>button.button.is-link
-              {:on-click #(rf/dispatch [:edit-translation {:target_text_roman @draft_target_rom
-                                                           :target_text @draft_target
-                                                           :id (:id translation)
-                                                           :list_id (:id list)
-                                                           :audio (:data temp-recording)}])
-               :disabled (= recording-state :recording)
-               :class (if loading-translation :is-loading nil)} "Save & Close"]
-             [:div.column.has-text-centered.control>button.button
-              {:on-click #(rf/dispatch [:close-translate-modal])
-               :class (if loading-translation :is-loading nil)} "Cancel"]]]))]]
+            (let [base-params {:source_text @draft_source
+                               :target_text_roman @draft_target_rom
+                               :target_text @draft_target
+                               :id (:id translation)
+                               :list_id (:id list)
+                               :audio (:data temp-recording)}]
+              [:div.columns.mt-4
+               [:div.column.has-text-centered.control>button.button.is-link
+                {:on-click #(rf/dispatch [:edit-translation (assoc base-params :goto-next true :next_id next-id)])
+                 :disabled (= recording-state :recording)
+                 :class (if loading-translation :is-loading nil)
+                 :style (if (:next_id translation) nil {:visibility :hidden})} "Save & Next"]
+               [:div.column.has-text-centered.control>button.button.is-link
+                {:on-click #(rf/dispatch [:edit-translation base-params])
+                 :disabled (= recording-state :recording)
+                 :class (if loading-translation :is-loading nil)} "Save & Close"]
+               [:div.column.has-text-centered.control>button.button
+                {:on-click #(rf/dispatch [:close-translate-modal])
+                 :class (if loading-translation :is-loading nil)} "Cancel"]])]))]]
      [:button.modal-close.is-large
       {:aria-label "close" :on-click #(rf/dispatch [:close-translate-modal])} "close"]]))
 
