@@ -10,7 +10,8 @@
    [reitit.core :as reitit]
    [reitit.frontend.easy :as rfe]
    [basha.languages :as bl]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [basha.modals.delete :refer [delete-modal]]))
 
 (defn nav-link [uri title page]
   [:a.navbar-item
@@ -47,27 +48,6 @@
            [:div
             [:span "Please don't navigate away from this page..."]
             [:progress.progress.is-primary.is-large.my-4]])]]])))
-
-(defn delete-list-modal []
-  (let [active-list @(rf/subscribe [:delete-list-id])
-        id (:id active-list)
-        name (:name active-list)]
-    (when active-list
-      [:div.modal
-       {:class (if active-list "is-active" nil)}
-       [:div.modal-background]
-       [:div.model-content>div.card
-        [:header.card-header>p.card-header-title "Confirm Delete"]
-        [:div.card-content.has-text-centered
-         [:span "Are you sure you want to delete "]
-         [:span.has-text-weight-bold name]
-         [:span "?"]
-         [:p "This action is irreversible..."]
-         [:div.columns.mt-4
-          [:div.column.control>button.button.is-danger
-           {:on-click #(rf/dispatch [:delete-list id])} "Delete"]
-          [:div.column.control>button.button
-           {:on-click #(rf/dispatch [:clear-delete-list-id])} "Cancel"]]]]])))
 
 (defn assign-modal []
   (let [is-active @(rf/subscribe [:users-modal-visible])
@@ -429,7 +409,15 @@
                            (assoc init :class :is-loading)
                            (assoc init :disabled :disabled))
                          init))
-                     "edit"]]])]]]]]])))
+                     "edit"]]
+               [:td [:a.button.is-danger
+                     (let [init {:on-click #(rf/dispatch [:set-delete-translation-id s])}]
+                       (if loading-translation
+                         (if (= (:id s) (last loading-translation)) ;; TODO: need this ?
+                           (assoc init :class :is-loading)
+                           (assoc init :disabled :disabled))
+                         init))
+                     "delete"]]])]]]]]])))
 
 (defn my-lists []
   (let [lists @(rf/subscribe [:list-summary])
@@ -501,7 +489,16 @@
      [login-modal]
      [translate-modal]
      [assign-modal]
-     [delete-list-modal]
+     [delete-modal
+      :delete-list-id
+      :clear-delete-list-id
+      :delete-list
+      :name]
+     [delete-modal
+      :delete-translation-id
+      :clear-delete-translation-id
+      :delete-translation
+      :source_text]
      [download-modal]]))
 
 (defn navigate! [match _]

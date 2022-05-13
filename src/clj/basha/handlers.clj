@@ -47,6 +47,9 @@
 (defn delete-list [{{:keys [id]} :body-params}]
   (with-handle (list/delete-list id)))
 
+(defn delete-translation [{{:keys [id]} :body-params}]
+  (with-handle (translation/delete-translation id)))
+
 (defn get-list [{{:keys [id]} :path-params}]
   (with-handle (list/fetch id)))
 

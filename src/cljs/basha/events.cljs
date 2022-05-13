@@ -274,6 +274,17 @@
                  :on-success       [:clear-list-delete]}}))
 
 (rf/reg-event-fx
+ :delete-translation
+ [with-auth]
+ (fn [_ [_ id]]
+   {:http-xhrio {:method          :post
+                 :uri             (str "/api/delete_translation")
+                 :params {:id id}
+                 :format          (ajax/json-request-format)
+                 :response-format  (ajax/json-response-format {:keywords? true})
+                 :on-success       [:clear-translation-delete]}}))
+
+(rf/reg-event-fx
  :refresh
  (fn [{:keys [db]} [_ original]]
    {:http-xhrio {:method          :post
@@ -300,14 +311,29 @@
    (assoc db :delete-list-id id)))
 
 (rf/reg-event-db
+ :set-delete-translation-id
+ (fn [db [_ id]]
+   (assoc db :delete-translation-id id)))
+
+(rf/reg-event-db
  :clear-delete-list-id
  (fn [db [_]]
    (assoc db :delete-list-id nil)))
+
+(rf/reg-event-db
+ :clear-delete-translation-id
+ (fn [db [_]]
+   (assoc db :delete-translation-id nil)))
 
 (rf/reg-event-fx
  :clear-list-delete
  (fn [_ [_]]
    {:fx [[:dispatch [:clear-delete-list-id]] [:dispatch [:redirect-home]]]}))
+
+(rf/reg-event-fx
+ :clear-translation-delete
+ (fn [{:keys [db]} [_]]
+   {:fx [[:dispatch [:clear-delete-translation-id]] [:dispatch [:load-list-page (-> db :active-list :id)]]]}))
 
 (rf/reg-event-db
  :set-users-error
@@ -534,6 +560,11 @@
  :delete-list-id
  (fn [db _]
    (-> db :delete-list-id)))
+
+(rf/reg-sub
+ :delete-translation-id
+ (fn [db _]
+   (-> db :delete-translation-id)))
 
 (rf/reg-sub
  :media-error

@@ -17,6 +17,12 @@
      :from :translations
      :where [:= :id (java.util.UUID/fromString id)]})))
 
+(defn delete-translation [id]
+  (db/execute-one
+   (sql/format
+    {:delete-from :translations
+     :where [:= :id (java.util.UUID/fromString id)]})))
+
 (defn update-translation [id user-id params]
   (let [audio (-> params :audio :tempfile)
         params (dissoc params :audio)
