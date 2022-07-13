@@ -17,6 +17,7 @@ generated using Luminus version "4.19"
 ## Quick Deploy
 
 For the fastest way to get a free instance to try out:
+
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/ajakate/basha)
 
 
@@ -68,6 +69,7 @@ pip install -r requirements.txt
 ```
 
 Every time (including first time):
+
 `conda activate basha`
 
 Then run:
