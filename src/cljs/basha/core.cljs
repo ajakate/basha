@@ -11,13 +11,8 @@
    [reitit.frontend.easy :as rfe]
    [basha.languages :as bl]
    [clojure.string :as string]
-   [basha.modals.delete :refer [delete-modal]]))
-
-(defn nav-link [uri title page]
-  [:a.navbar-item
-   {:href   uri
-    :class (when (= page @(rf/subscribe [:common/page-id])) :is-active)}
-   title])
+   [basha.modals.delete :refer [delete-modal]]
+   [basha.layout.navbar :refer [navbar]]))
 
 (defn format-string [st]
   (let [words (map #(str % \space) (string/split st #" "))]
@@ -278,30 +273,6 @@
                  :class (if loading-translation :is-loading nil)} "Cancel"]])]))]]
      [:button.modal-close.is-large
       {:aria-label "close" :on-click #(rf/dispatch [:close-translate-modal])} "close"]]))
-
-(defn navbar []
-  ;; TODO: fix logic seq user nil
-  (r/with-let [expanded? (r/atom false)]
-    (let [user @(rf/subscribe [:user])
-          user-exists (seq user)]
-      [:nav.navbar.is-info>div.container
-       [:div.navbar-brand
-        [:a.navbar-item {:style (if user-exists {:font-weight :bold :pointer-events :none} {:font-weight :bold})
-                         :on-click #(rf/dispatch [:open-login-modal])}
-         (if user-exists (str "Hi, " (:username user) "!") "log in")]
-        [:span.navbar-burger.burger
-         {:data-target :nav-menu
-          :on-click #(swap! expanded? not)
-          :class (when @expanded? :is-active)}
-         [:span] [:span] [:span]]]
-       [:div#nav-menu.navbar-menu
-        {:class (when @expanded? :is-active)}
-        [:div.navbar-start
-         [nav-link "#/" (if user-exists "My Dashboard" "Home") :home]
-         [nav-link "#/about" "About" :about]
-         (when user-exists [:a.navbar-item
-                            {:on-click #(rf/dispatch [:logout])}
-                            "Logout"])]]])))
 
 (defn about-page []
   [:section.section>div.container>div.content
