@@ -44,58 +44,20 @@ body {
   }
 }
 
-$black:        hsl(0, 0%, 4%);
-$black-bis:    hsl(0, 0%, 7%);
-$black-ter:    hsl(0, 0%, 14%);
-
-$grey-darker:  hsl(0, 0%, 21%);
-$grey-dark:    hsl(0, 0%, 29%);
-$grey:         hsl(0, 0%, 48%);
-$grey-light:   hsl(0, 0%, 71%);
-$grey-lighter: hsl(0, 0%, 86%);
-$grey-lightest: hsl(0, 0%, 93%);
-
-$white-ter:    hsl(0, 0%, 96%);
-$white-bis:    hsl(0, 0%, 98%);
-$white:        hsl(0, 0%, 100%);
-
-$orange:       hsl(14,  100%, 53%);
-$yellow:       hsl(44,  100%, 77%);
-$green:        hsl(153, 53%,  53%);
-$turquoise:    hsl(171, 100%, 41%);
-$cyan:         hsl(207, 61%,  53%);
-$blue:         hsl(229, 53%,  53%);
-$purple:       hsl(271, 100%, 71%);
-$red:          hsl(348, 86%, 61%);
-
-// $new_blue: #56d5e9;
-// $new_green: #acbf1b;
-// $new_brown: #d9bf9f;
-// $new_yellow: #fffc72;
-// $new_orange: #ffaf74;
-// $faded: #fdf8b6;
-
-$new_blue: #2dc3dd;
-$new_green: #80bf1b;
-$new_brown: #d9bf9f;
-$new_yellow: #fffc72;
-$new_orange: #ff8732;
-$faded: #fdf8b6;
-
-$info: $new_orange;
-$primary: $new_green;
-$link: $new_blue;
-$red: hsl(0, 85%, 60%);
-
-// html { background: $faded; }
-
-body { background-color: #b2ae7f}
-
-
 // new stuff starts here
 
 $basha-bold-orange: #ff8732;
 $basha-turq: #2dc3dd;
+$basha-yellow: #f3dc44;
+
+$orange: $basha-bold-orange;
+$orange-invert: findColorInvert($orange);
+$custom-colors: ("orange": ($orange, $orange-invert));
+
+
+body {
+  background-image: linear-gradient(to top right, $basha-yellow, $basha-turq);
+}
 
 .nav-container {
   background-color: white;
@@ -137,6 +99,62 @@ $basha-turq: #2dc3dd;
 
 .bold {
   font-weight: 700;
+}
+
+.login-container {
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  margin: 48px;
+}
+
+.login-half {
+  flex: 1 1 0px;
+  background-color: white;
+  max-width: 650px;
+}
+
+.login-form {
+
+  // TODOO: fix this TITLE!!!!
+  .ftitle {
+    font-size: larger;
+    margin-bottom: 15px;
+  }
+
+  .description {
+    margin-bottom: 15px;
+  }
+
+  .finput {
+    min-width: 70%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    border-radius: 6px;
+    border: 1px solid silver; 
+  }
+
+  i {
+    margin-left: -30px;
+    cursor: pointer;
+  }
+}
+
+.login-image {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 10px;
+
+  img {
+    max-height: 30rem;
+  }
+}
+
+.primary-button {
+  background-color: $basha-bold-orange;
+  color: white;
 }
 
 @import '../../node_modules/bulma/bulma.sass';

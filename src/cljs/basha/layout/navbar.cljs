@@ -13,10 +13,13 @@
         [:img {:src "/img/logo.png" :alt "logo"}]
         [:p "Basha"]]]
       [:div]
+      [:div]
+      [:div]
+
       (if user-exists
         [:a.link.centered-text.color-turq.bold {:href "/#/"} "Dashboard"]
         [:div])
       [:a.link.centered-text.color-turq.bold {:href "https://www.bashalang.org" :target "_blank"} "Resources"]
       (if user-exists
         [:a.link.centered-text.color-turq.bold {:on-click #(rf/dispatch [:logout])} "Logout"]
-        [:a.link.centered-text.color-turq.bold {:on-click #(rf/dispatch [:open-login-modal])} "Login"])]]))
+        [:a.link.centered-text.color-turq.bold {:href "/#/login"} "Login"])]]))

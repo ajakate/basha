@@ -12,7 +12,8 @@
    [basha.languages :as bl]
    [clojure.string :as string]
    [basha.modals.delete :refer [delete-modal]]
-   [basha.layout.navbar :refer [navbar]]))
+   [basha.layout.navbar :refer [navbar]]
+   [basha.pages.login :refer [login-page]]))
 
 (defn format-string [st]
   (let [words (map #(str % \space) (string/split st #" "))]
@@ -73,64 +74,6 @@
               {:on-click #(rf/dispatch [:close-users-modal])} "Cancel"]]]]]
          [:button.modal-close.is-large
           {:aria-label "close" :on-click #(rf/dispatch [:close-users-modal])} "close"]]))))
-
-(defn modal-vals [arg]
-  (let [signup @(rf/subscribe [:is-signup])
-        login-vals {:swap-message "Create an account"
-                    :button "Log In"
-                    :swap-func [:set-signup true]
-                    :header "Log In"
-                    :dispatch :login}
-        signup-vals {:swap-message "Log in to an existing account"
-                     :button "Sign Up"
-                     :swap-func [:set-signup false]
-                     :header "Create an Account"
-                     :dispatch :signup}]
-    (if signup
-      (arg signup-vals)
-      (arg login-vals))))
-
-(defn login-modal []
-  (let [is-active @(rf/subscribe [:login-modal-visible])
-        error @(rf/subscribe [:login-errors])]
-    (when is-active
-      [:div.modal
-       {:class (if is-active "is-active" nil)}
-       [:div.modal-background]
-       [:div.model-content>div.card
-        [:header.card-header
-         [:p.card-header-title (modal-vals :header)]]
-        [:div.card-content
-         (r/with-let [draft_user (r/atom nil)
-                      draft_pass (r/atom nil)
-                      show_pass (r/atom false)]
-           [:div
-            [:div.field
-             [:label.label "Username"]
-             [:div.control>input.input
-              {:type "text"
-               :placeholder "sk8hkr69"
-               :on-change #(reset! draft_user (.. % -target -value))
-               :value @draft_user}]]
-            [:label.label "Password"]
-            [:div.field.has-addons
-             [:div.control [:input.input
-                            {:type (if @show_pass "text" "password")
-                             :placeholder "test123"
-                             :on-change #(reset! draft_pass (.. % -target -value))
-                             :value @draft_pass}]]
-             [:div.control>a.button.is-info
-              {:on-click #(swap! show_pass not)}
-              [:i.fa {:class (if @show_pass :fa-eye-slash :fa-eye)}]]]
-            (when error [:p.has-text-danger.is-italic.mb-3 (str "Error: " error)])
-            [:div.control>button.button.is-link
-             {:on-click #(rf/dispatch [(modal-vals :dispatch) {:username @draft_user :password @draft_pass}])
-              :disabled (or (string/blank? @draft_user)
-                            (string/blank? @draft_pass))} (modal-vals :button)]
-            [:br]
-            [:a {:on-click #(rf/dispatch (modal-vals :swap-func))} (modal-vals :swap-message)]])]]
-       [:button.modal-close.is-large
-        {:aria-label "close" :on-click #(rf/dispatch [:close-login-modal])} "close"]])))
 
 (defn recording-state-component [state temp existing-audio]
   (let [state (or state :init)
@@ -457,7 +400,6 @@
     [:div
      [navbar]
      [page]
-     [login-modal]
      [translate-modal]
      [assign-modal]
      [delete-modal
@@ -480,6 +422,9 @@
    [["/" {:name        :home
           :view        #'home-page
           :controllers [{:start (fn [_] (rf/dispatch [:page/init-home]))}]}]
+    ["/login" {:name        :login
+               :view        #'login-page
+               :controllers [{:start (fn [_] (rf/dispatch [:redirect-if-logged-in]))}]}]
     ["/about" {:name :about
                :view #'about-page}]
     ["/lists/new" {:name :create-list

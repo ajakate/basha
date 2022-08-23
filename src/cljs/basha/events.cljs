@@ -471,16 +471,6 @@
  (fn [db [_ response]]
    (assoc db :active-list response)))
 
-(rf/reg-event-db
- :open-login-modal
- (fn [db [_]]
-   (assoc db :login-modal/visible true)))
-
-(rf/reg-event-db
- :close-login-modal
- (fn [db [_]]
-   (assoc db :login-modal/visible false :login-modal/signup false :login-modal/errors nil)))
-
 (rf/reg-event-fx
  :close-translate-modal
  (fn [{:keys [db]} _]
@@ -501,12 +491,12 @@
 (rf/reg-event-db
  :set-signup-error
  (fn [db [_ response]]
-   (assoc db :login-modal/errors (-> response :response :message))))
+   (assoc db :login-errors (-> response :response :message))))
 
 (rf/reg-event-db
  :set-signup
  (fn [db [_ val]]
-   (assoc db :login-modal/signup val :login-modal/errors nil)))
+   (assoc db :login-modal/signup val :login-errors nil)))
 
 (rf/reg-event-db
  :open-users-modal
@@ -521,7 +511,7 @@
 (persisted-reg-event-db
  :set-login-user
  (fn [db [_ user]]
-   (assoc db :user user :login-modal/visible false)))
+   (assoc db :user user)))
 
 (persisted-reg-event-db
  :swap-hide-native
@@ -531,7 +521,13 @@
 (rf/reg-event-fx
  :set-login
  (fn [_ [_ user]]
-   {:fx [[:dispatch [:close-login-modal]] [:dispatch [:set-login-user user]] [:dispatch [:redirect-home]]]}))
+   {:fx [[:dispatch [:set-login-user user]] [:dispatch [:redirect-home]]]}))
+
+(rf/reg-event-fx
+ :redirect-if-logged-in
+ (fn [{:keys [db]} [_]]
+   (when (seq (:user db))
+     {:fx [[:dispatch [:redirect-home]]]})))
 
 (persisted-reg-event-db
  :clear-login-user
@@ -637,11 +633,6 @@
    (-> db :list-summary)))
 
 (rf/reg-sub
- :login-modal-visible
- (fn [db _]
-   (-> db :login-modal/visible)))
-
-(rf/reg-sub
  :translate-modal-visible
  (fn [db _]
    (-> db :translate-modal/visible)))
@@ -654,7 +645,7 @@
 (rf/reg-sub
  :login-errors
  (fn [db _]
-   (-> db :login-modal/errors)))
+   (-> db :login-errors)))
 
 (rf/reg-sub
  :user
