@@ -14,7 +14,8 @@
    [basha.modals.delete :refer [delete-modal]]
    [basha.layout.navbar :refer [navbar]]
    [basha.layout.footer :refer [footer]]
-   [basha.pages.login :refer [login-page]]))
+   [basha.pages.login :refer [login-page]]
+   [basha.pages.dashboard :refer [dashboard-page]]))
 
 (defn format-string [st]
   (let [words (map #(str % \space) (string/split st #" "))]
@@ -334,68 +335,6 @@
                          init))
                      "delete"]]])]]]]]])))
 
-(defn my-lists []
-  (let [lists @(rf/subscribe [:list-summary])
-        user @(rf/subscribe [:user])]
-    (if (seq lists)
-      [:div.p-2.m-2
-       [:h1.title.is-4 "My Sentence Lists"]
-       [:section.section.p-1.m-1
-        [:div.columns.is-centered
-         [:div.column.is-narrow
-          [:table.table.is-bordered.is-narrow.is-striped.is-hoverable
-           [:thead [:tr
-                    [:th "name"]
-                    [:th "owner"]
-                    [:th "shared with"]
-                    [:th "language"]
-                    [:th "# total"]
-                    [:th "# remaining"]]]
-           [:tbody
-            (for [list lists]
-              ^{:key (:id list)}
-              [:tr
-               [:td (:name list)]
-               [:td (:creator list)]
-               [:td (:users list)]
-               [:td (:target_language list)]
-               [:td (:list_count list)]
-               [:td
-                (let [count (:open_count list)]
-                  (if (= count 0)
-                    [:div.has-text-success
-                     [:span count]
-                     [:span.icon>i.fa.fa-check]]
-                    [:span count " left"]))]
-               [:td>a.button.is-info
-                {:href (str "/#/lists/edit/" (:id list))}
-                "edit"]
-               [:td>a.button.is-success
-                {:on-click #(rf/dispatch [:set-downloading-deck (:id list) (:name list)])}
-                "export anki"]
-               (when (= (:username user) (:creator list))
-                 [:td>a.button.is-danger.is-light
-                  {:on-click #(rf/dispatch [:set-delete-list-id list])}
-                  "delete"])])]]]]]]
-      [:h1 "You don't have any lists!"])))
-
-(defn logged-in-home []
-  [:div.has-text-centered
-   [:p.is-size-1 "My Dashboard"]
-   [:a.button.is-primary.m-3 {:href "/#/lists/new"} "Create a New Sentence List"]
-   [my-lists]])
-
-(defn logged-out-home []
-  [:section.section>div.container>div.content
-   (when-let [docs @(rf/subscribe [:docs])]
-     [:div {:dangerouslySetInnerHTML {:__html (md->html docs)}}])])
-
-(defn home-page []
-  (let [user @(rf/subscribe [:user])]
-    (if (seq user)
-      [logged-in-home]
-      [logged-out-home])))
-
 (defn page []
   (when-let [page @(rf/subscribe [:common/page])]
     [:div
@@ -422,7 +361,7 @@
 (def router
   (reitit/router
    [["/" {:name        :home
-          :view        #'home-page
+          :view        #'dashboard-page
           :controllers [{:start (fn [_] (rf/dispatch [:page/init-home]))}]}]
     ["/login" {:name        :login
                :view        #'login-page

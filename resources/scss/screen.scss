@@ -21,6 +21,7 @@ $family-primary: $family-serif;
 $basha-bold-orange: #ff8732;
 $basha-turq: #2dc3dd;
 $basha-yellow: #f3dc44;
+$basha-green: #94e681;
 
 $orange: $basha-bold-orange;
 $orange-invert: findColorInvert($orange);
@@ -28,7 +29,10 @@ $orange-invert: findColorInvert($orange);
 $blue : $basha-turq;
 $blue-invert: findColorInvert($blue);
 
-$custom-colors: ("blue": ($blue, $blue-invert), "orange": ($orange, $orange-invert));
+$green: $basha-green;
+$green-invert: findColorInvert($green);
+
+$custom-colors: ("blue": ($blue, $blue-invert),"orange": ($orange, $orange-invert),"green": ($green, $green-invert));
 
 body {
   background-image: linear-gradient(to top right, $basha-yellow, $basha-turq);
@@ -46,6 +50,13 @@ body {
   padding: 15px 24px;
   display: flex;
   justify-content: space-between;
+}
+
+$panel-width: 1300px;
+
+.basha-panel {
+  max-width: $panel-width;
+  margin: 48px;
 }
 
 .logo {
@@ -84,16 +95,14 @@ body {
 }
 
 .login-container {
-  margin: auto;
   display: flex;
   justify-content: center;
   margin: 48px;
 }
 
 .login-half {
-  flex: 1 1 0px;
-  background-color: white;
-  max-width: 650px;
+  flex-basis: 100%;
+  max-width: $panel-width / 2;
 }
 
 .login-form {
@@ -120,6 +129,18 @@ body {
     margin-left: -30px;
     cursor: pointer;
   }
+}
+
+.background-semi-faded {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.full-width {
+  width: 100%
+}
+
+.table-fix {
+  overflow-x: auto;
 }
 
 .login-image {
