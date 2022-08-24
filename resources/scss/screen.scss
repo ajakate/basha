@@ -52,7 +52,11 @@ $basha-yellow: #f3dc44;
 
 $orange: $basha-bold-orange;
 $orange-invert: findColorInvert($orange);
-$custom-colors: ("orange": ($orange, $orange-invert));
+
+$blue : $basha-turq;
+$blue-invert: findColorInvert($blue);
+
+$custom-colors: ("blue": ($blue, $blue-invert), "orange": ($orange, $orange-invert));
 
 
 body {
@@ -60,6 +64,13 @@ body {
 }
 
 .nav-container {
+  background-color: white;
+  padding: 15px 24px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.foot-container {
   background-color: white;
   padding: 15px 24px;
   display: flex;

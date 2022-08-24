@@ -1,6 +1,7 @@
 (ns basha.layout.navbar
   (:require
-   [re-frame.core :as rf]))
+   [re-frame.core :as rf]
+   [basha.components.shared :refer [logo]]))
 
 ;; TODOO: fix links
 (defn navbar []
@@ -8,14 +9,10 @@
         user-exists (seq user)]
     [:nav
      [:div.nav-container
-      [:div.logo
-       [:a {:href "https://www.bashalang.org" :target "_blank"}
-        [:img {:src "/img/logo.png" :alt "logo"}]
-        [:p "Basha"]]]
+      [logo]
       [:div]
       [:div]
       [:div]
-
       (if user-exists
         [:a.link.centered-text.color-turq.bold {:href "/#/"} "Dashboard"]
         [:div])

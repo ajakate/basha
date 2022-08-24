@@ -13,6 +13,7 @@
    [clojure.string :as string]
    [basha.modals.delete :refer [delete-modal]]
    [basha.layout.navbar :refer [navbar]]
+   [basha.layout.footer :refer [footer]]
    [basha.pages.login :refer [login-page]]))
 
 (defn format-string [st]
@@ -412,7 +413,8 @@
       :clear-delete-translation-id
       :delete-translation
       :source_text]
-     [download-modal]]))
+     [download-modal]
+     [footer]]))
 
 (defn navigate! [match _]
   (rf/dispatch [:common/navigate match]))
