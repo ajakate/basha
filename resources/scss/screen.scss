@@ -1,40 +1,14 @@
+@charset "utf-8";
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900');
+@import url('https://fonts.googleapis.com/css2?family=Khand');
+
+$family-serif: "Montserrat", serif;
+$family-primary: $family-serif;
+
 @import "../../node_modules/bulma/sass/utilities/initial-variables";
 @import "../../node_modules/bulma/sass/utilities/functions";
 
-html,
-body {
-	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-}
-@font-face {
-  font-family: 'Material Icons';
-  font-style: normal;
-  font-weight: 400;
-  src: url(/assets/material-icons/iconfont/MaterialIcons-Regular.eot); /* For IE6-8 */
-  src: local('Material Icons'),
-       local('MaterialIcons-Regular'),
-       url(/assets/material-icons/iconfont/MaterialIcons-Regular.woff2) format('woff2'),
-       url(/assets/material-icons/iconfont/MaterialIcons-Regular.woff) format('woff'),
-       url(/assets/material-icons/iconfont/MaterialIcons-Regular.ttf) format('truetype');
-}
-.material-icons {
-  font-family: 'Material Icons';
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;  /* Preferred icon size */
-  display: inline-block;
-  line-height: 1;
-  text-transform: none;
-  letter-spacing: normal;
-  word-wrap: normal;
-  white-space: nowrap;
-  direction: ltr;
-  /* Support for all WebKit browsers. */
-  -webkit-font-smoothing: antialiased;
-  /* Support for Safari and Chrome. */
-  text-rendering: optimizeLegibility;
-  /* Support for Firefox. */
-  -moz-osx-font-smoothing: grayscale;
-}
 .blink {
   animation: blinker 1s linear infinite;
 }
@@ -43,8 +17,6 @@ body {
     opacity: 0;
   }
 }
-
-// new stuff starts here
 
 $basha-bold-orange: #ff8732;
 $basha-turq: #2dc3dd;
@@ -57,7 +29,6 @@ $blue : $basha-turq;
 $blue-invert: findColorInvert($blue);
 
 $custom-colors: ("blue": ($blue, $blue-invert), "orange": ($orange, $orange-invert));
-
 
 body {
   background-image: linear-gradient(to top right, $basha-yellow, $basha-turq);
