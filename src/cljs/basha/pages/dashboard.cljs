@@ -51,7 +51,7 @@
 
 (defn dashboard-page []
   (let [lists @(rf/subscribe [:list-summary])]
-    [:div.basha-panel.background-semi-faded.p-5
+    [:div.px-6>div.basha-panel.mx-auto.background-semi-faded.p-5
      [:div.is-flex.is-justify-content-space-between
       [:div.is-size-3.bold.mb-3 "My Dashboard"]
       [:a.button.is-orange.bold {:href "/#/lists/new"} "Add New Deck"]]

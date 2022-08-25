@@ -27,7 +27,7 @@
     (r/with-let [draft_user (r/atom nil)
                  draft_pass (r/atom nil)
                  show_pass (r/atom false)]
-      [:div.basha-panel.is-flex.is-justify-content-center
+      [:div.px-6>div.basha-panel.mx-auto.is-flex.is-justify-content-center
        [:div.login-half.has-background-white.login-form.px-6.py-5
         [:h1.ftitle.bold "Nice to See You Again"]
         [:p.description "Let's get signed back in so you can continue learning."]
