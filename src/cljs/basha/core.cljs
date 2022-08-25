@@ -16,7 +16,8 @@
    [basha.layout.footer :refer [footer]]
    [basha.pages.login :refer [login-page]]
    [basha.pages.dashboard :refer [dashboard-page]]
-   [basha.pages.edit-list :refer [edit-list]]))
+   [basha.pages.edit-list :refer [edit-list]]
+   [basha.modals.download :refer [download-modal]]))
 
 ;; TODOO: DELETE THESE!!!!!
 (defn format-string [st]
@@ -28,26 +29,6 @@
    (for [l (format-string st)]
      ^{:key (str l)}
      [:p l])])
-
-(defn download-modal []
-  (let [is-active @(rf/subscribe [:is-downloading])
-        errors @(rf/subscribe [:download-error])]
-    (when is-active
-      [:div.modal
-       {:class (if is-active "is-active" nil)}
-       [:div.modal-background]
-       [:div.model-content>div.card
-        [:header.card-header>p.card-header-title "Downloading Anki Deck..."]
-        [:div.card-content.has-text-centered
-         (if errors
-           [:div
-            [:p.has-text-danger.is-italic.my-4 errors]
-            [:button.button.p-2.m-1
-             {:on-click #(rf/dispatch [:kill-download-modal])}
-             "Cancel"]]
-           [:div
-            [:span "Please don't navigate away from this page..."]
-            [:progress.progress.is-primary.is-large.my-4]])]]])))
 
 (defn assign-modal []
   (let [is-active @(rf/subscribe [:users-modal-visible])
