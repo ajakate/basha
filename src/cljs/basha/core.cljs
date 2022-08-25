@@ -11,6 +11,7 @@
    [basha.languages :as bl]
    [clojure.string :as string]
    [basha.modals.delete :refer [delete-modal]]
+   [basha.modals.create-deck :refer [create-deck-modal]]
    [basha.layout.navbar :refer [navbar]]
    [basha.layout.footer :refer [footer]]
    [basha.pages.login :refer [login-page]]
@@ -224,52 +225,6 @@
   [:section.section>div.container>div.content
    [:img {:src "/img/warning_clojure.png"}]])
 
-(defn create-list-page []
-  (r/with-let [draft_name (r/atom nil)
-               draft_target (r/atom nil)
-               draft_file (r/atom nil)]
-    (let [error @(rf/subscribe [:create-list-error])
-          loading @(rf/subscribe [:loading-create-list])]
-      [:div.px-6
-       [:p.is-size-2 "Create a new sentence list"]
-       [:div.field
-        [:label.label "Name"]
-        [:div.control>input.input
-         {:type "text"
-          :placeholder "My new sentence list"
-          :on-change #(reset! draft_name (.. % -target -value))
-          :value @draft_name}]]
-       [:div.field
-        [:label.label "Target Language"]
-        [:div.control>div.select
-         [:select {:on-change #(reset! draft_target (.. % -target -value))}
-          [:option "Select"]
-          (for [l bl/language-list]
-            [:option l])]]]
-       [:label.label "Upload a .txt file"]
-       [:div.file.has-name
-        [:label.file-label
-         [:input.file-input {:type "file" :name "list" :on-change #(reset! draft_file (-> % .-target .-files (aget 0)))}]
-         [:span.file-cta
-          [:span.file-icon>i.fa.fa-upload]
-          [:span.file-label "Choose a file"]]
-         [:span.file-name (if @draft_file (.. @draft_file -name) [:i "No file selected"])]]]
-       [:br]
-       [:div.control>button.button.is-link
-        {:class (when loading :is-loading)
-         :on-click #(rf/dispatch [:create-list {:name @draft_name
-                                                :source_language "English"
-                                                :target_language @draft_target
-                                                :file  @draft_file}])
-         :disabled (or (string/blank? @draft_name)
-                       (string/blank? @draft_target)
-                       (nil? @draft_file))} "Create List"]
-       (when error
-         [:div
-          [:br]
-          [:p.has-text-danger.is-italic.mb-3
-           "Your sentence list failed to create. Make sure you are using a plain text file with UTF encoding."]])])))
-
 ;; TODOO: delete this once all good
 (defn view-list []
   (let [list @(rf/subscribe [:active-list])
@@ -344,6 +299,7 @@
      [page]
      [translate-modal]
      [assign-modal]
+     [create-deck-modal]
      [delete-modal
       :delete-list-id
       :clear-delete-list-id
@@ -370,10 +326,6 @@
                :controllers [{:start (fn [_] (rf/dispatch [:redirect-if-logged-in]))}]}]
     ["/about" {:name :about
                :view #'about-page}]
-    ["/lists/new" {:name :create-list
-                   :view #'create-list-page
-                   :controllers [{:start (fn []
-                                           (rf/dispatch [:clear-create-list-error]))}]}]
     ["/lists/edit/:id" {:name :view-list
                         :view #'edit-list
                         :controllers [{:parameters {:path [:id]}

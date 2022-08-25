@@ -14,6 +14,7 @@
        {:class (if active "is-active" nil)}
        [:div.modal-background]
        [:div.model-content>div.card.has-background-white.has-text-centered.p-4
+        [:img.my-3 {:src "img/delete_icon.png"}]
         [:h2.has-text-red.is-size-3.mb-4 "Confirm Delete"]
         [:div
          [:span "Are you sure you want to delete "]

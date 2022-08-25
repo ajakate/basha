@@ -54,7 +54,9 @@
     [:div.px-6>div.basha-panel.mx-auto.background-semi-faded.p-5
      [:div.is-flex.is-justify-content-space-between
       [:div.is-size-3.bold.mb-3 "My Dashboard"]
-      [:a.button.is-orange.bold {:href "/#/lists/new"} "Add New Deck"]]
+      [:a.button.is-orange.bold
+       {:on-click #(rf/dispatch [:create-deck-modal-visible true])}
+       "Add New Deck"]]
      [:p "Use this hub to upload your files, manage translations, and export decks."]
      (if (seq lists)
        [list-summary-table lists]

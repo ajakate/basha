@@ -8,6 +8,19 @@
    [basha.audio :as baudio]
    [akiroz.re-frame.storage :refer [persist-db-keys]]))
 
+(def simple-states
+  [:create-deck-modal-visible])
+
+(doseq [event simple-states]
+  (rf/reg-event-db
+   event
+   (fn [db [_ val]]
+     (assoc db event val)))
+  (rf/reg-sub
+   event
+   (fn [db _]
+     (-> db event))))
+
 (def with-auth
   (rf/->interceptor
    :id      :with-auth
@@ -169,7 +182,7 @@
                  :body (generate-form-data params)
                  :format          (ajax/json-request-format)
                  :response-format  (ajax/json-response-format {:keywords? true})
-                 :on-success       [:redirect-home]
+                 :on-success       [:on-create-list-success]
                  :on-failure [:set-create-list-error]}}))
 
 (rf/reg-event-fx
@@ -334,6 +347,12 @@
  :clear-translation-delete
  (fn [{:keys [db]} [_]]
    {:fx [[:dispatch [:clear-delete-translation-id]] [:dispatch [:load-list-page (-> db :active-list :id)]]]}))
+
+(rf/reg-event-fx
+ :on-create-list-success
+ (fn [{:keys [db]} [_]]
+   {:db (assoc db :create-deck-modal-visible false)
+    :fx [[:dispatch [:redirect-home]]]}))
 
 (rf/reg-event-db
  :set-users-error
