@@ -22,6 +22,7 @@ $basha-bold-orange: #ff8732;
 $basha-turq: #2dc3dd;
 $basha-yellow: #f3dc44;
 $basha-green: #94e681;
+$basha-red: #ff2020;
 
 $orange: $basha-bold-orange;
 $orange-invert: findColorInvert($orange);
@@ -32,7 +33,10 @@ $blue-invert: findColorInvert($blue);
 $green: $basha-green;
 $green-invert: findColorInvert($green);
 
-$custom-colors: ("blue": ($blue, $blue-invert),"orange": ($orange, $orange-invert),"green": ($green, $green-invert));
+$red: $basha-red;
+$red-invert: findColorInvert($red);
+
+$custom-colors: ("blue": ($blue, $blue-invert),"orange": ($orange, $orange-invert),"green": ($green, $green-invert), "red": ($red, $red-invert));
 
 body {
   background-image: linear-gradient(to top right, $basha-yellow, $basha-turq);
