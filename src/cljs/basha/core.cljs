@@ -4,7 +4,6 @@
    [reagent.dom :as rdom]
    [reagent.core :as r]
    [re-frame.core :as rf]
-   [markdown.core :refer [md->html]]
    [basha.ajax :as ajax]
    [basha.events]
    [reitit.core :as reitit]
@@ -15,17 +14,8 @@
    [basha.layout.navbar :refer [navbar]]
    [basha.layout.footer :refer [footer]]
    [basha.pages.login :refer [login-page]]
-   [basha.pages.dashboard :refer [dashboard-page]]))
-
-(defn format-string [st]
-  (let [words (map #(str % \space) (string/split st #" "))]
-    (partition 10 10 nil words)))
-
-(defn wrapped-string [st]
-  [:div
-   (for [l (format-string st)]
-     ^{:key (str l)}
-     [:p l])])
+   [basha.pages.dashboard :refer [dashboard-page]]
+   [basha.pages.edit-list :refer [edit-list]]))
 
 (defn download-modal []
   (let [is-active @(rf/subscribe [:is-downloading])
@@ -269,6 +259,7 @@
           [:p.has-text-danger.is-italic.mb-3
            "Your sentence list failed to create. Make sure you are using a plain text file with UTF encoding."]])])))
 
+;; TODOO: delete this once all good
 (defn view-list []
   (let [list @(rf/subscribe [:active-list])
         user @(rf/subscribe [:user])
@@ -373,7 +364,7 @@
                    :controllers [{:start (fn []
                                            (rf/dispatch [:clear-create-list-error]))}]}]
     ["/lists/edit/:id" {:name :view-list
-                        :view #'view-list
+                        :view #'edit-list
                         :controllers [{:parameters {:path [:id]}
                                        :start (fn [{{:keys [id]} :path}]
                                                 (rf/dispatch [:load-list-page id]))}]}]]))
