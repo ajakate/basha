@@ -49,10 +49,6 @@
          [:button.modal-close.is-large
           {:aria-label "close" :on-click #(rf/dispatch [:close-users-modal])} "close"]]))))
 
-(defn about-page []
-  [:section.section>div.container>div.content
-   [:img {:src "/img/warning_clojure.png"}]])
-
 (defn page []
   (when-let [page @(rf/subscribe [:common/page])]
     [:div
@@ -85,8 +81,6 @@
     ["/login" {:name        :login
                :view        #'login-page
                :controllers [{:start (fn [_] (rf/dispatch [:redirect-if-logged-in]))}]}]
-    ["/about" {:name :about
-               :view #'about-page}]
     ["/lists/edit/:id" {:name :view-list
                         :view #'edit-list
                         :controllers [{:parameters {:path [:id]}
