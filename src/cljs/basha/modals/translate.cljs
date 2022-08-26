@@ -1,19 +1,9 @@
 (ns basha.modals.translate
   (:require
    [re-frame.core :as rf]
-   [clojure.string :as string]
    [basha.languages :as bl]
-   [reagent.core :as r]))
-
-(defn format-string [st]
-  (let [words (map #(str % \space) (string/split st #" "))]
-    (partition 10 10 nil words)))
-
-(defn wrapped-string [st]
-  [:div
-   (for [l (format-string st)]
-     ^{:key (str l)}
-     [:p l])])
+   [reagent.core :as r]
+   [basha.components.shared :refer [wrapped-string]]))
 
 (defn display-audio-state [new-audio existing-audio recording-state]
   (if (= recording-state :recording)

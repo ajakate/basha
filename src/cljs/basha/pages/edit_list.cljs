@@ -1,17 +1,7 @@
 (ns basha.pages.edit-list
    (:require
     [re-frame.core :as rf]
-    [clojure.string :as string]))
-
-(defn format-string [st]
-  (let [words (map #(str % \space) (string/split st #" "))]
-    (partition 10 10 nil words)))
-
-(defn wrapped-string [st]
-  [:div
-   (for [l (format-string st)]
-     ^{:key (str l)}
-     [:p l])])
+    [basha.components.shared :refer [wrapped-string]]))
 
 ;; TODOO: list who is shared with??
 ;; Refactor romaniziaton display

@@ -19,17 +19,6 @@
    [basha.modals.download :refer [download-modal]]
    [basha.modals.translate :refer [translate-modal]]))
 
-;; TODOO: DELETE THESE!!!!!
-(defn format-string [st]
-  (let [words (map #(str % \space) (string/split st #" "))]
-    (partition 10 10 nil words)))
-
-(defn wrapped-string [st]
-  [:div
-   (for [l (format-string st)]
-     ^{:key (str l)}
-     [:p l])])
-
 (defn assign-modal []
   (let [is-active @(rf/subscribe [:users-modal-visible])
         list @(rf/subscribe [:active-list])
@@ -63,73 +52,6 @@
 (defn about-page []
   [:section.section>div.container>div.content
    [:img {:src "/img/warning_clojure.png"}]])
-
-;; TODOO: delete this once all good
-(defn view-list []
-  (let [list @(rf/subscribe [:active-list])
-        user @(rf/subscribe [:user])
-        is-loading @(rf/subscribe [:loading-list])
-        loading-translation @(rf/subscribe [:loading-translation])]
-    (when list
-      [:div.has-text-centered
-       (when is-loading
-         [:div.modal.is-active
-          [:div.modal-background]
-          [:div.modal-content>section.section
-           [:div.has-text-centered.is-size-3.m-6>p.has-text-info "Loading List..."]
-           [:progress.progress.is-info]]])
-       [:p.is-size-2 (:name list)]
-       [:p.is-size-4 (str "Created by: " (:creator list))]
-       [:div.columns.m-2
-        [:div.column]
-        [:div.column
-         [:p.is-size-6 "Shared with:"]
-         (if (empty? (:users list))
-           [:p.is-size-5.is-italic "No one"]
-           [:p.is-size-5 (:users list)])]
-        (when (= (:username user) (:creator list))
-          [:div.column>a.button.is-info {:on-click #(rf/dispatch [:open-users-modal])} "Edit Sharing"])
-        [:div.column]]
-       [:section.section.p-1.m-1
-        [:div.columns.is-centered
-         [:div.column.is-narrow
-          [:table.table.is-bordered.is-narrow.is-striped.is-hoverable
-           [:thead [:tr
-                    [:th "ID"]
-                    [:th "Translated By"]
-                    [:th (:source_language list)]
-                    [:th (:target_language list)]
-                    [:th "Audio?"]]]
-           [:tbody
-            (for [s (:translations list)]
-              ^{:key (:id s)}
-              [:tr
-               [:td (:list_index s)]
-               [:td (:translator s)]
-               [:td [wrapped-string (:source_text s)]]
-               [:td
-                [wrapped-string (:target_text s)]
-                [:br]
-                [wrapped-string (:target_text_roman s)]]
-               [:td (if (:has_audio s)
-                      [:span.icon.has-text-success>i.fa.fa-check]
-                      [:span.icon.has-text-danger>i.fa.fa-ban])]
-               [:td [:a.button.is-info
-                     (let [init {:on-click #(rf/dispatch [:fetch-translation (:id s)])}]
-                       (if loading-translation
-                         (if (= (:id s) (last loading-translation))
-                           (assoc init :class :is-loading)
-                           (assoc init :disabled :disabled))
-                         init))
-                     "edit"]]
-               [:td [:a.button.is-danger
-                     (let [init {:on-click #(rf/dispatch [:set-delete-translation-id s])}]
-                       (if loading-translation
-                         (if (= (:id s) (last loading-translation)) ;; TODO: need this ?
-                           (assoc init :class :is-loading)
-                           (assoc init :disabled :disabled))
-                         init))
-                     "delete"]]])]]]]]])))
 
 (defn page []
   (when-let [page @(rf/subscribe [:common/page])]
