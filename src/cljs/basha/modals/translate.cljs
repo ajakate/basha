@@ -24,6 +24,7 @@
         :display-existing-audio
         :display-new))))
 
+;; TODOO: media error :(
 (defn translate-modal []
   (let [is-active @(rf/subscribe [:translate-modal-visible])
         translation @(rf/subscribe [:active-translation])
