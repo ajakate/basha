@@ -504,7 +504,8 @@
          next-id (next-id-in-list list id)]
      {:db (assoc db
                  :active-translation (assoc response :next_id next-id)
-                 :translate-modal/visible true)
+                 :translate-modal/visible true
+                 :temp-recording nil)
       :dispatch [:arm-recording]})))
 
 (rf/reg-event-db

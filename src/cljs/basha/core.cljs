@@ -8,7 +8,6 @@
    [basha.events]
    [reitit.core :as reitit]
    [reitit.frontend.easy :as rfe]
-   [basha.languages :as bl]
    [clojure.string :as string]
    [basha.modals.delete :refer [delete-modal]]
    [basha.modals.create-deck :refer [create-deck-modal]]
@@ -17,7 +16,8 @@
    [basha.pages.login :refer [login-page]]
    [basha.pages.dashboard :refer [dashboard-page]]
    [basha.pages.edit-list :refer [edit-list]]
-   [basha.modals.download :refer [download-modal]]))
+   [basha.modals.download :refer [download-modal]]
+   [basha.modals.translate :refer [translate-modal]]))
 
 ;; TODOO: DELETE THESE!!!!!
 (defn format-string [st]
@@ -59,148 +59,6 @@
               {:on-click #(rf/dispatch [:close-users-modal])} "Cancel"]]]]]
          [:button.modal-close.is-large
           {:aria-label "close" :on-click #(rf/dispatch [:close-users-modal])} "close"]]))))
-
-(defn recording-state-component [state temp existing-audio]
-  (let [state (or state :init)
-        components {:armed [:nav.level
-                            [:div.level-left]
-                            [:div.level-right
-                             [:button.button.p-2.m-1.is-primary.level-item
-                              {:on-click #(rf/dispatch [:start-recording])} [:i.fa.fa-microphone.m-1] [:span "Record Now"]]]]
-                    :recording [:div
-                                [:nav.level.mb-0
-                                 [:div.level-left
-                                  [:p.level-item.is-italic.has-text-weight-bold.ml-4 [:span.blink "RECORDING..."]]]]
-                                [:nav.level
-                                 [:div.level-left.mr-2
-                                  [:progress.progress.is-danger.is-large.level-item]]
-                                 [:div.level-right
-                                  [:button.button.p-2.m-1.is-danger.level-item
-                                   {:on-click #(rf/dispatch [:stop-recording])} [:i.fa.fa-stop.m-1] [:span "Finish Recording"]]
-                                  [:button.button.p-2.m-1.level-item
-                                   {:on-click #(rf/dispatch [:cancel-recording])} "Cancel"]]]]
-                    :stopped [:div
-                              [:nav.level
-                               [:div.level-left
-                                [:audio.level-item {:controls "controls" :autoplay "autoplay" :src (:url temp)}]]
-                               [:div.level-right
-                                [:button.button.p-2.m-1.level-item.is-primary
-                                 {:on-click #(rf/dispatch [:arm-recording])} [:i.fa.fa-repeat.m-1] [:span "Re-record"]]
-                                [:button.button.p-2.m-1.level-item
-                                 {:on-click #(rf/dispatch [:cancel-recording])} "Delete"]]]
-                              (when existing-audio
-                                [:div.notification.is-success.is-light
-                                 [:span.has-text-weight-bold "Tip: "]
-                                 [:span "Click either "]
-                                 [:span.has-text-weight-bold "Save"]
-                                 [:span " button at the bottom of this pop-up to save your new audio."]
-                                 [:br]
-                                 [:span "Click the "]
-                                 [:span.has-text-weight-bold "Delete"]
-                                 [:span " button above to keep the original audio instead."]])]}]
-    (state components)))
-
-(defn translate-modal []
-  (let [is-active @(rf/subscribe [:translate-modal-visible])
-        translation @(rf/subscribe [:active-translation])
-        list @(rf/subscribe [:active-list])
-        target-lang (:target_language list)
-        loading-translation @(rf/subscribe [:loading-translation])
-        recording-state @(rf/subscribe [:recording-state])
-        temp-recording @(rf/subscribe [:temp-recording])
-        next-id (:next_id translation)
-        media-error @(rf/subscribe [:media-error])
-        hide-native @(rf/subscribe [:hide-native])]
-    [:div.modal
-     {:class (if is-active "is-active" nil)}
-     [:div.modal-background]
-     [:div.model-content>div.card
-      [:header.card-header
-       [:p.card-header-title "Translate Sentence"]]
-      [:div.card-content
-       (if loading-translation
-         [:section.section
-          [:div.has-text-centered.is-size-3.m-6>p.has-text-info "Loading Next Translation..."]
-          [:progress.progress.is-info]]
-         (r/with-let [draft_target (r/atom (:target_text translation))
-                      draft_target_rom (r/atom (:target_text_roman translation))
-                      draft_source (r/atom (:source_text translation))
-                      editing-source (r/atom false)]
-           [:div
-            [:label.label "Source sentence"]
-            [:button.button.is-pulled-right.is-small.is-primary.ml-4.mb-4
-             {:on-click  #(swap! editing-source not)}
-             (if @editing-source "Done editing" "Edit Source Sentence")]
-            (if @editing-source
-              [:div.field
-               [:div.control [:input.input
-                              {:type "text"
-                               :placeholder "What's up?"
-                               :on-change #(reset! draft_source (.. % -target -value))
-                               :value @draft_source}]]]
-              [:div.box.my-5 [wrapped-string @draft_source]])
-            [:label.label "Translated Audio"]
-            (when-let [audio (:audio translation)]
-              [:div.box.p-3
-               [:label.label "Existing Audio"]
-               [:div.columns
-                [:div.column
-                 [:audio {:controls "controls" :autoplay "autoplay" :src (str "data:audio/ogg;base64," audio)}]]
-                [:div.column>button.button.is-danger.is-pulled-right
-                 {:on-click #(rf/dispatch [:delete-audio (:id translation)])} "Delete Audio"]]])
-            [:div.box.p-3
-             [:label.label "New Audio"]
-             (if media-error
-               [:div.is-italic.has-text-danger [wrapped-string media-error]]
-               [recording-state-component recording-state temp-recording (:audio translation)])]
-            (when-not (bl/has-latin-script target-lang)
-              (if hide-native
-                [:button.button.is-pulled-right.is-small.is-link.is-light.ml-4.mb-2
-                 {:on-click #(rf/dispatch [:swap-hide-native])}
-                 "Show native script"]
-                [:div
-                 [:label.label.is-pulled-left
-                  [:span.is-italic "(Optional) "]
-                  [:span "Translation - native script"]]
-                 [:button.button.is-pulled-right.is-small.is-link.is-light.ml-4.mb-2
-                  {:on-click #(rf/dispatch [:swap-hide-native])}
-                  "Hide native script"]
-                 [:div.field
-                  [:div.control [:input.input
-                                 {:type "text"
-                                  :placeholder "मार्टिन फॉलर "
-                                  :on-change #(reset! draft_target (.. % -target -value))
-                                  :value @draft_target}]]]]))
-            [:label.label
-             [:span "Translation"]
-             (when-not (bl/has-latin-script target-lang) [:span " - latin script"])]
-            [:div.field
-             [:div.control [:input.input
-                            {:type "text"
-                             :placeholder "Kasa kay mandali"
-                             :on-change #(reset! draft_target_rom (.. % -target -value))
-                             :value @draft_target_rom}]]]
-            (let [base-params {:source_text @draft_source
-                               :target_text_roman @draft_target_rom
-                               :target_text @draft_target
-                               :id (:id translation)
-                               :list_id (:id list)
-                               :audio (:data temp-recording)}]
-              [:div.columns.mt-4
-               [:div.column.has-text-centered.control>button.button.is-link
-                {:on-click #(rf/dispatch [:edit-translation (assoc base-params :goto-next true :next_id next-id)])
-                 :disabled (= recording-state :recording)
-                 :class (if loading-translation :is-loading nil)
-                 :style (if (:next_id translation) nil {:visibility :hidden})} "Save & Next"]
-               [:div.column.has-text-centered.control>button.button.is-link
-                {:on-click #(rf/dispatch [:edit-translation base-params])
-                 :disabled (= recording-state :recording)
-                 :class (if loading-translation :is-loading nil)} "Save & Close"]
-               [:div.column.has-text-centered.control>button.button
-                {:on-click #(rf/dispatch [:close-translate-modal])
-                 :class (if loading-translation :is-loading nil)} "Cancel"]])]))]]
-     [:button.modal-close.is-large
-      {:aria-label "close" :on-click #(rf/dispatch [:close-translate-modal])} "close"]]))
 
 (defn about-page []
   [:section.section>div.container>div.content

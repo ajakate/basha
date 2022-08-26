@@ -58,6 +58,10 @@ body {
 
 $panel-width: 1300px;
 
+.maxx {
+  max-width: $panel-width / 2;
+}
+
 .basha-panel {
   max-width: $panel-width;
   margin: 48px;
