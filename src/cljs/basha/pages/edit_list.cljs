@@ -41,9 +41,9 @@
              [:td (:translator s)]
              [:td [wrapped-string (:source_text s)]]
              [:td
-              [wrapped-string (:target_text s)]
-              [:br]
-              [wrapped-string (:target_text_roman s)]]
+              [:div
+               [wrapped-string (:target_text s)]
+               [wrapped-string (:target_text_roman s)]]]
              [:td (if (:has_audio s)
                     [:span.icon.has-text-success>i.fa.fa-check]
                     [:span.icon.has-text-danger>i.fa.fa-ban])]
