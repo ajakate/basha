@@ -21,6 +21,7 @@
    ["/lists" {:post {:middleware [wrap-jwt-authentication auth-middleware wrap-params wrap-multipart-params]
                      :parameters {:multipart {:file multipart/temp-file-part
                                               :name s/Str
+                                              :has_latin_script s/Bool
                                               :source_language s/Str
                                               :target_language s/Str}}
                      :handler handle/create-list}

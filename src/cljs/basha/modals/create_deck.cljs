@@ -2,9 +2,13 @@
   (:require
    [re-frame.core :as rf]
    [reagent.core :as r]
-   [basha.languages :as bl]
    [clojure.string :as string]
    [basha.events]))
+
+(defn swap-radio [radio-id draft_val]
+  (if (= radio-id "select_latin_script_true")
+    (reset! draft_val true)
+    (reset! draft_val false)))
 
 ;; TODOO: add link to community decks
 ;; TODOO: fix modal close button
@@ -13,7 +17,8 @@
     (when active
       (r/with-let [draft_name (r/atom nil)
                    draft_target (r/atom nil)
-                   draft_file (r/atom nil)] 
+                   draft_file (r/atom nil)
+                   draft_has_latin_script (r/atom true)]
         (let [error @(rf/subscribe [:create-list-error])
               loading @(rf/subscribe [:loading-create-list])]
           [:div.modal
@@ -32,11 +37,25 @@
                 :on-change #(reset! draft_name (.. % -target -value))
                 :value @draft_name}]
               [:p.py-2.mt-3.bold "Language"]
-              [:div.control>div.select
-               [:select {:on-change #(reset! draft_target (.. % -target -value))}
-                [:option "Select"]
-                (for [l bl/language-list]
-                  [:option l])]]
+              [:input.input
+               {:type "text"
+                :placeholder "Language you want to learn"
+                :on-change #(reset! draft_target (.. % -target -value))
+                :value @draft_target}]
+              [:p.py-2.mt-3.bold "Writing System"]
+              [:label.radio [:input
+                             {:type "radio"
+                              :checked (= @draft_has_latin_script true)
+                              :id "select_latin_script_true"
+                              :on-click #(swap-radio (.. % -target -id) draft_has_latin_script)
+                              :name "latin_script"}] " This language uses latin script"]
+              [:br]
+              [:label.radio [:input
+                             {:type "radio"
+                              :checked (= @draft_has_latin_script false)
+                              :id "select_latin_script_false"
+                              :on-click #(swap-radio (.. % -target -id) draft_has_latin_script)
+                              :name "latin_script"}] " This language uses a different script"]
               [:p.py-2.mt-3.bold "Deck File"]
               [:div.file.has-name
                [:label.file-label
@@ -50,6 +69,7 @@
                :on-click #(rf/dispatch [:create-list {:name @draft_name
                                                       :source_language "English"
                                                       :target_language @draft_target
+                                                      :has_latin_script @draft_has_latin_script
                                                       :file  @draft_file}])
                :disabled (or (string/blank? @draft_name)
                              (string/blank? @draft_target)

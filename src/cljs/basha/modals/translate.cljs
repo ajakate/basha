@@ -1,7 +1,6 @@
 (ns basha.modals.translate
   (:require
    [re-frame.core :as rf]
-   [basha.languages :as bl]
    [reagent.core :as r]
    [basha.components.shared :refer [wrapped-string]]))
 
@@ -55,14 +54,14 @@
              (if @editing-source
                [:div [:i.fa.fa-check] [:span.ml-1 "Done"]]
                [:div [:i.fa.fa-pencil] [:span.ml-1 "Edit"]])]]
-           [:div.column.is-half.bold "Translate Text - Latin Script"]
+           [:div.column.is-half.bold "Translate Text"]
            [:div.column.is-half
             [:input.input
              {:type "text"
               :placeholder "Kasa kay mandali"
               :on-change #(reset! draft_target_rom (.. % -target -value))
               :value @draft_target_rom}]]
-           (when-not (bl/has-latin-script target-lang)
+           (when-not (:has_latin_script list)
              [:<>
               [:div.column.is-half.bold "Translate Text - Native Script (Optional)"]
               [:div.column.is-half

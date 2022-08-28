@@ -8,12 +8,14 @@
   (let [name (-> resp first :name)
         source_language (-> resp first :source_language)
         target_language (-> resp first :target_language)
+        has_latin_script (-> resp first :has_latin_script)
         creator (-> resp first :creator)
         users (-> resp first :users)]
     {:id (-> resp first :list_id)
      :name name
      :source_language source_language
      :target_language target_language
+     :has_latin_script has_latin_script
      :creator creator
      :users users
      :translations (for [r resp]
@@ -25,12 +27,12 @@
                       :list_index (:list_index r)
                       :has_audio (:has_audio r)})}))
 
-(defn create-list [name source target user_id sentences]
+(defn create-list [name source target has_latin_script user_id sentences]
   (db/execute-one
    (sql/format
     {:with [[:created_list {:insert-into :lists
-                            :columns [:name :source_language :target_language :user_id]
-                            :values [[name source target user_id]]
+                            :columns [:name :source_language :target_language :user_id :has_latin_script]
+                            :values [[name source target user_id has_latin_script]]
                             :returning :id}]]
      :insert-into :translations
      :columns [:source_text :list_id :list_index]
@@ -39,9 +41,10 @@
 
 
 ; ADD cljc validation
-(defn create! [name source target file user_id]
-  (let [sentences (-> file slurp str/split-lines)]
-    (create-list name source target (java.util.UUID/fromString user_id) sentences)))
+(defn create! [name source target has_latin_script file user_id]
+  (let [sentences (-> file slurp str/split-lines)
+        has_latin_script (boolean (Boolean/valueOf has_latin_script))]
+    (create-list name source target has_latin_script (java.util.UUID/fromString user_id) sentences)))
 
 (defn comma-list-users-sql [matcher]
   {:select [[[:string_agg :username ","]]]
@@ -75,6 +78,7 @@
      {:select [:*
                [:t.id :translation_id]
                [:l.id :list_id]
+               [:l.has_latin_script :has_latin_script]
                [:u.username :creator]
                [{:select :username
                  :from :users

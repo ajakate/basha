@@ -34,11 +34,12 @@
 
 ; LISTS
 
-(defn create-list [{{:keys [id]} :identity {:keys [file name source_language target_language]} :params}]
+(defn create-list [{{:keys [id]} :identity {:keys [file name source_language target_language has_latin_script]} :params}]
   (with-handle (list/create!
                 name
                 source_language
                 target_language
+                has_latin_script
                 (:tempfile file) id)))
 
 (defn get-lists [{{:keys [id]} :identity}]
