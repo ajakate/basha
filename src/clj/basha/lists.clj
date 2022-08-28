@@ -2,20 +2,24 @@
   (:require
    [basha.db.core :as db]
    [honey.sql :as sql]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [basha.util :as util]))
 
 (defn format-list [resp]
-  (let [name (-> resp first :name)
-        source_language (-> resp first :source_language)
-        target_language (-> resp first :target_language)
-        has_latin_script (-> resp first :has_latin_script)
-        creator (-> resp first :creator)
-        users (-> resp first :users)]
-    {:id (-> resp first :list_id)
+  (let [list (-> resp first)
+        name (:name list)
+        source_language (:source_language list)
+        target_language (:target_language list)
+        has_latin_script (:has_latin_script list)
+        share_code (util/encode-uuid (:id list))
+        creator (:creator list)
+        users (:users list)]
+    {:id (:list_id list)
      :name name
      :source_language source_language
      :target_language target_language
      :has_latin_script has_latin_script
+     :share_code share_code
      :creator creator
      :users users
      :translations (for [r resp]

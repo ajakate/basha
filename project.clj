@@ -49,7 +49,8 @@
                  ; TODO: implement this
                  [camel-snake-kebab "0.4.2"]
                  [akiroz.re-frame/storage "0.1.4"]
-                 [com.github.seancorfield/honeysql "2.2.891"]]
+                 [com.github.seancorfield/honeysql "2.2.891"]
+                 [jstrutz/hashids "1.0.1"]]
 
   :min-lein-version "2.0.0"
 

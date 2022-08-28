@@ -17,8 +17,10 @@
    [basha.pages.dashboard :refer [dashboard-page]]
    [basha.pages.edit-list :refer [edit-list]]
    [basha.modals.download :refer [download-modal]]
-   [basha.modals.translate :refer [translate-modal]]))
+   [basha.modals.translate :refer [translate-modal]]
+   [basha.modals.share :refer [share-modal]]))
 
+;; TODOO: DELETE MEEEE
 (defn assign-modal []
   (let [is-active @(rf/subscribe [:users-modal-visible])
         list @(rf/subscribe [:active-list])
@@ -55,7 +57,7 @@
      [navbar]
      [page]
      [translate-modal]
-     [assign-modal]
+     [share-modal]
      [create-deck-modal]
      [delete-modal
       :delete-list-id
