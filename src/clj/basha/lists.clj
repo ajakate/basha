@@ -108,38 +108,4 @@
                                                          :from :delete_list}]
                                    :returning :translations.list_id}]]
      :delete-from :list_users
-     :where [:in :list_id {:select [:*] :from :delete_translations}]}))
-  )
-
-(defn list-errors [tried actual]
-  (reduce
-   (fn [es elem]
-     (if (or (contains? actual elem) (= "" elem))
-       es
-       (conj es elem)))
-   []
-   tried))
-
-(defn get-users-by-name [users]
-  (db/execute
-   (sql/format
-    {:select [:id :username]
-     :from :users
-     :where [:in :username users]})))
-
-(defn update-users [id users]
-  (let [id (java.util.UUID/fromString id)
-        new (get-users-by-name users)
-        new-names (set (map #(:username %) new))
-        new-ids (set (map #(:id %) new))
-        errors (list-errors users new-names)]
-    (if (seq errors)
-      {:error {:message (str "The following users could not be found: " (str/join ", " errors))}}
-      (db/execute-one
-       (sql/format
-        {:with [[:noop {:delete-from :list_users
-                        :where [:= :list_id id]}]]
-         :insert-into :list_users
-         :columns [:user_id :list_id]
-         :values (map (fn [e] [e id]) new-ids)
-         :returning :*})))))
+     :where [:in :list_id {:select [:*] :from :delete_translations}]})))

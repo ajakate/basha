@@ -37,8 +37,6 @@
                                 :handler handle/edit-translation}}]
    ["/delete_translation" {:post {:middleware [wrap-jwt-authentication auth-middleware]
                            :handler handle/delete-translation}}]
-   ["/assignees/:id" {:post {:middleware [wrap-jwt-authentication auth-middleware]
-                             :handler handle/update-users}}]
    ["/delete_audio/:id" {:post {:middleware [wrap-jwt-authentication auth-middleware]
                                 :handler handle/delete-audio}}]
    ["/decks/:id" {:post {:middleware [wrap-jwt-authentication auth-middleware]

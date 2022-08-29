@@ -266,18 +266,6 @@
                  :on-success       [:set-active-list]}}))
 
 (rf/reg-event-fx
- :edit-users
- [with-auth]
- (fn [_ [_ params]]
-   {:http-xhrio {:method          :post
-                 :uri             (str "/api/assignees/" (:list_id params))
-                 :params {:users (:users params)}
-                 :format          (ajax/json-request-format)
-                 :response-format  (ajax/json-response-format {:keywords? true})
-                 :on-success       [:reset-list-page (:list_id params)]
-                 :on-failure [:set-users-error]}}))
-
-(rf/reg-event-fx
  :delete-list
  [with-auth]
  (fn [_ [_ id]]
@@ -399,11 +387,6 @@
  (fn [{:keys [db]} [_]]
    {:db (assoc db :create-deck-modal-visible false)
     :fx [[:dispatch [:redirect-home]]]}))
-
-(rf/reg-event-db
- :set-users-error
- (fn [db [_ resp]]
-   (assoc db :users-error (-> resp :response :message))))
 
 (rf/reg-event-fx
  :set-home-state

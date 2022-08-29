@@ -62,13 +62,6 @@
   (let [t-id (:id path-params)]
     (with-handle (translation/update-translation t-id id body-params))))
 
-; TODO: why does with-handle not work here?
-(defn update-users [{{:keys [id]} :path-params body-params :params}]
-  (let [resp (list/update-users id (:users body-params))]
-    (if-let [error (:error resp)]
-      (response/bad-request error)
-      (response/ok resp))))
-
 (defn delete-audio [{{:keys [id]} :path-params}]
   (with-handle (translation/delete-audio id)))
 
