@@ -2,13 +2,11 @@
   (:require
    [day8.re-frame.http-fx]
    [reagent.dom :as rdom]
-   [reagent.core :as r]
    [re-frame.core :as rf]
    [basha.ajax :as ajax]
    [basha.events]
    [reitit.core :as reitit]
    [reitit.frontend.easy :as rfe]
-   [clojure.string :as string]
    [basha.modals.delete :refer [delete-modal]]
    [basha.modals.create-deck :refer [create-deck-modal]]
    [basha.layout.navbar :refer [navbar]]
@@ -20,37 +18,6 @@
    [basha.modals.download :refer [download-modal]]
    [basha.modals.translate :refer [translate-modal]]
    [basha.modals.share :refer [share-modal]]))
-
-;; TODOO: DELETE MEEEE
-(defn assign-modal []
-  (let [is-active @(rf/subscribe [:users-modal-visible])
-        list @(rf/subscribe [:active-list])
-        error @(rf/subscribe [:users-error])]
-    (when is-active
-      (r/with-let [draft_users (r/atom (:users list))]
-        [:div.modal
-         {:class (if is-active "is-active" nil)}
-         [:div.modal-background]
-         [:div.model-content>div.card
-          [:header.card-header
-           [:p.card-header-title "Edit sharing"]]
-          [:div.card-content
-           [:div
-            [:div.field
-             [:label.label "Assignees"]
-             [:div.control>input.input
-              {:type "text"
-               :placeholder "sk8hkr69"
-               :on-change #(reset! draft_users (.. % -target -value))
-               :value @draft_users}]]
-            (when error [:p.has-text-danger.is-italic.mb-3 (str "Error: " error)])
-            [:div.columns
-             [:div.column.control>button.button.is-link
-              {:on-click #(rf/dispatch [:edit-users {:users (string/split @draft_users #",") :list_id (:id list)}])} "Submit"]
-             [:div.column.control>button.button
-              {:on-click #(rf/dispatch [:close-users-modal])} "Cancel"]]]]]
-         [:button.modal-close.is-large
-          {:aria-label "close" :on-click #(rf/dispatch [:close-users-modal])} "close"]]))))
 
 (defn page []
   (when-let [page @(rf/subscribe [:common/page])]

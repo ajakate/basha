@@ -148,8 +148,10 @@
  :page/init-home
  (fn [{:keys [db]} _]
    (if (seq (:user db))
-     {:dispatch [:fetch-list-summary]}
-     {:dispatch [:fetch-docs]})))
+     {:dispatch [:fetch-list-summary]
+      :db (assoc db :invite nil)}
+     {:dispatch [:fetch-docs]
+      :db (assoc db :invite nil)})))
 
 (rf/reg-event-fx
  :signup
@@ -332,10 +334,25 @@
                  :on-success       [:redirect-home]
                  }}))
 
-(rf/reg-event-db
+(rf/reg-event-fx
+ :set-login-state
+ (fn [_ [_]]
+   (rfe/push-state :login)))
+
+(rf/reg-event-fx
  :set-invite
- (fn [db [_ resp]]
-   (assoc db :invite resp)))
+ (fn [{:keys [db]} [_ resp]]
+   (let [user (:user db)]
+     (if (seq user)
+       {:db (assoc db :invite resp)}
+       {:db (assoc db :invite resp)
+        :fx [[:dispatch [:set-login-state]]]}))))
+
+(rf/reg-event-fx
+ :on-create-list-success
+ (fn [{:keys [db]} [_]]
+   {:db (assoc db :create-deck-modal-visible false)
+    :fx [[:dispatch [:redirect-home]]]}))
 
 (rf/reg-event-fx
  :refresh-success
@@ -394,9 +411,19 @@
    (rfe/push-state :home)))
 
 (rf/reg-event-fx
+ :set-invite-state
+ (fn [_ [_]]
+   (rfe/push-state :invite {:code "null"})))
+
+(rf/reg-event-fx
  :redirect-home
  (fn [{:keys [_]} [_]]
    {:fx [[:dispatch [:set-home-state]] [:dispatch [:page/init-home]]]}))
+
+(rf/reg-event-fx
+ :redirect-invite
+ (fn [_ [_]]
+   {:fx [[:dispatch [:set-invite-state]]]}))
 
 (rf/reg-event-fx
  :load-list-page
@@ -569,8 +596,10 @@
 
 (rf/reg-event-fx
  :set-login
- (fn [_ [_ user]]
-   {:fx [[:dispatch [:set-login-user user]] [:dispatch [:redirect-home]]]}))
+ (fn [{:keys [db]} [_ user]]
+   (if (seq (:invite db))
+     {:fx [[:dispatch [:set-login-user user]] [:dispatch [:redirect-invite]]]}
+     {:fx [[:dispatch [:set-login-user user]] [:dispatch [:redirect-home]]]})))
 
 (rf/reg-event-fx
  :redirect-if-logged-in
