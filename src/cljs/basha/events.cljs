@@ -309,6 +309,35 @@
                  :on-failure [:logout]}}))
 
 (rf/reg-event-fx
+ :fetch-invite
+ [(with-loading-state :loading-invite)]
+ (fn [_ [_ code]]
+   {:http-xhrio {:method          :get
+                 :uri             (str "/api/invite/" code)
+                 :format          (ajax/json-request-format)
+                 :response-format  (ajax/json-response-format {:keywords? true})
+                 :on-success       [:set-invite]
+                ;;  :on-failure [:kill-download-modal]
+                 }}))
+
+(rf/reg-event-fx
+ :add-share
+ [with-auth]
+ (fn [_ [_ params]]
+   {:http-xhrio {:method          :post
+                 :uri             "/api/invite"
+                 :params params
+                 :format          (ajax/json-request-format)
+                 :response-format  (ajax/json-response-format {:keywords? true})
+                 :on-success       [:redirect-home]
+                 }}))
+
+(rf/reg-event-db
+ :set-invite
+ (fn [db [_ resp]]
+   (assoc db :invite resp)))
+
+(rf/reg-event-fx
  :refresh-success
  (fn [_ [_ original resp]]
    {:fx [[:dispatch [:set-login-user resp]] [:dispatch original]]}))
@@ -573,6 +602,11 @@
    (-> db :download-error)))
 
 (rf/reg-sub
+ :invite
+ (fn [db _]
+   (-> db :invite)))
+
+(rf/reg-sub
  :delete-list-id
  (fn [db _]
    (-> db :delete-list-id)))
@@ -596,6 +630,12 @@
  :loading-create-list
  (fn [db _]
    (-> db :loading-create-list)))
+
+;; TODOO: don't need this perhaps
+(rf/reg-sub
+ :loading-invite
+ (fn [db _]
+   (-> db :loading-invite)))
 
 (rf/reg-sub
  :loading-list

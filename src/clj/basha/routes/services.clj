@@ -44,4 +44,7 @@
    ["/decks/:id" {:post {:middleware [wrap-jwt-authentication auth-middleware]
                      :handler handle/create-deck}
                   :get {:middleware [wrap-jwt-authentication auth-middleware]
-                        :handler handle/fetch-deck}}]])
+                        :handler handle/fetch-deck}}]
+   ["/invite" {:post {:middleware [wrap-jwt-authentication auth-middleware]
+                      :handler handle/create-share}}]
+   ["/invite/:code" {:get {:handler handle/fetch-invite}}]])

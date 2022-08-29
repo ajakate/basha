@@ -16,6 +16,7 @@
    [basha.pages.login :refer [login-page]]
    [basha.pages.dashboard :refer [dashboard-page]]
    [basha.pages.edit-list :refer [edit-list]]
+   [basha.pages.invite :refer [invite-page]]
    [basha.modals.download :refer [download-modal]]
    [basha.modals.translate :refer [translate-modal]]
    [basha.modals.share :refer [share-modal]]))
@@ -87,7 +88,12 @@
                         :view #'edit-list
                         :controllers [{:parameters {:path [:id]}
                                        :start (fn [{{:keys [id]} :path}]
-                                                (rf/dispatch [:load-list-page id]))}]}]]))
+                                                (rf/dispatch [:load-list-page id]))}]}]
+    ["/share/:code" {:name :invite
+                     :view #'invite-page
+                     :controllers [{:parameters {:path [:code]}
+                                    :start (fn [{{:keys [code]} :path}]
+                                             (rf/dispatch [:fetch-invite code]))}]}]]))
 
 (defn start-router! []
   (rfe/start!

@@ -11,7 +11,7 @@
         source_language (:source_language list)
         target_language (:target_language list)
         has_latin_script (:has_latin_script list)
-        share_code (util/encode-uuid (:id list))
+        share_code (util/encode-uuid (:list_id list))
         creator (:creator list)
         users (:users list)]
     {:id (:list_id list)
