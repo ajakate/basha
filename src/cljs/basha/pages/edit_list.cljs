@@ -1,14 +1,10 @@
 (ns basha.pages.edit-list
    (:require
     [re-frame.core :as rf]
-    [basha.components.shared :refer [wrapped-string]]))
+    [basha.components.shared :refer [wrapped-string is-admin]]))
 
-;; TODOO: list who is shared with??
-;; Refactor romaniziaton display
-;; FIX THE NOT LOADING ISSUE.. :(
 (defn edit-list []
   (let [list @(rf/subscribe [:active-list])
-        user @(rf/subscribe [:user])
         is-loading @(rf/subscribe [:loading-list])
         loading-translation @(rf/subscribe [:loading-translation])]
     (when list
@@ -22,7 +18,8 @@
        [:div.px-6>div.basha-panel.mx-auto.background-semi-faded.p-5
         [:div.is-flex.is-justify-content-space-between
          [:div.is-size-3.bold.mb-3 (:name list)]
-         [:a.button.is-orange.bold {:on-click #(rf/dispatch [:open-users-modal])} "Generate Sharing Link"]]
+         (when (is-admin)
+           [:a.button.is-orange.bold {:on-click #(rf/dispatch [:open-users-modal])} "Generate Sharing Link"])]
         [:div "Owned by " [:span.bold (:creator list)]]
         [:div.table-container.m-4.my-6>table.table.is-fullwidth
          [:thead.has-background-blue

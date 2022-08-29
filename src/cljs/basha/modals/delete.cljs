@@ -4,7 +4,6 @@
    [re-frame.core :as rf]
    [basha.events]))
 
-;; TODOO: add icon
 (defn delete-modal [sub-delete-id clear-delete-id delete-func name-key]
   (let [active @(rf/subscribe [sub-delete-id])
         id (:id active)
@@ -14,7 +13,7 @@
        {:class (if active "is-active" nil)}
        [:div.modal-background]
        [:div.model-content>div.card.has-background-white.has-text-centered.p-4
-        [:img.my-3 {:src "img/delete_icon.png"}]
+        [:div.is-flex.is-justify-content-center>img.my-3.image.is-96x96 {:src "img/delete_icon.png"}]
         [:h2.has-text-red.is-size-3.mb-4 "Confirm Delete"]
         [:div
          [:span "Are you sure you want to delete "]

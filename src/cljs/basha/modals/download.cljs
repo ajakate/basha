@@ -2,7 +2,6 @@
   (:require
    [re-frame.core :as rf]))
 
-;; TODOO: fix icon size
 (defn download-modal []
   (let [is-active @(rf/subscribe [:is-downloading])
         errors @(rf/subscribe [:download-error])]
@@ -11,7 +10,7 @@
        {:class (if is-active "is-active" nil)}
        [:div.modal-background]
        [:div.model-content>div.card.has-background-white.has-text-centered.p-6
-        [:img.my-3 {:src "img/download_icon.png"}]
+        [:div.is-flex.is-justify-content-center>img.my-3.image.is-96x96 {:src "img/download_icon.png"}]
         [:p.has-text-orange.is-size-3.mb-4 "Downloading Your Deck..."]
         (if errors
           [:div

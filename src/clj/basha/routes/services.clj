@@ -45,4 +45,5 @@
                         :handler handle/fetch-deck}}]
    ["/invite" {:post {:middleware [wrap-jwt-authentication auth-middleware]
                       :handler handle/create-share}}]
-   ["/invite/:code" {:get {:handler handle/fetch-invite}}]])
+   ["/invite/:code" {:get {:handler handle/fetch-invite}}]
+   ["/info" {:get {:handler handle/fetch-info}}]])

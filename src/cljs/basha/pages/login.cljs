@@ -4,13 +4,22 @@
    [re-frame.core :as rf]
    [reagent.core :as r]))
 
+(defn is-first-user [info]
+  (= 0 (:total_users info)))
+
+(defn show-signup-option [info invite]
+  (if (seq invite)
+    true
+    (is-first-user info)))
+
 (defn login-page []
   (let [error @(rf/subscribe [:login-errors])
-        invite @(rf/subscribe [:invite])]
+        invite @(rf/subscribe [:invite])
+        info @(rf/subscribe [:info])]
     (r/with-let [draft_user (r/atom nil)
                  draft_pass (r/atom nil)
                  show_pass (r/atom false)
-                 is-signup (r/atom false)]
+                 is-signup (r/atom (is-first-user info))]
       [:div.px-6>div.basha-panel.mx-auto.is-flex.is-justify-content-center
        [:div.login-half.has-background-white.login-form.px-6.py-5
         (when (seq invite)
@@ -49,6 +58,7 @@
             {:on-click #(rf/dispatch [:login {:username @draft_user :password @draft_pass}])
              :disabled (or (string/blank? @draft_user)
                            (string/blank? @draft_pass))} "Login"]
-           [:div [:span "Need an account? "] [:a.link {:on-click #(swap! is-signup not)} "Sign up"]]])]
+           (when (show-signup-option info invite)
+             [:div [:span "Need an account? "] [:a.link {:on-click #(swap! is-signup not)} "Sign up"]])])]
        [:div.login-half.login-image
         [:img {:src "img/splash_v2.png"}]]])))

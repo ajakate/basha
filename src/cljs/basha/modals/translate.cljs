@@ -13,18 +13,15 @@
         :display-existing-audio
         :display-new))))
 
-;; TODOO: media error :(
 (defn translate-modal []
   (let [is-active @(rf/subscribe [:translate-modal-visible])
         translation @(rf/subscribe [:active-translation])
         list @(rf/subscribe [:active-list])
-        target-lang (:target_language list)
         loading-translation @(rf/subscribe [:loading-translation])
         recording-state @(rf/subscribe [:recording-state])
         temp-recording @(rf/subscribe [:temp-recording])
         next-id (:next_id translation)
-        media-error @(rf/subscribe [:media-error])
-        hide-native @(rf/subscribe [:hide-native])]
+        media-error @(rf/subscribe [:media-error])]
     [:div.modal
      {:class (if is-active "is-active" nil)}
      [:div.modal-background]
@@ -71,41 +68,43 @@
                  :on-change #(reset! draft_target (.. % -target -value))
                  :value @draft_target}]]])
            [:div.column.is-half.bold "Record Audio Translation "]
-           [:div.column.is-half
-            (case (display-audio-state temp-recording (:audio translation) recording-state)
-              :display-new
-              [:button.button.p-2.m-1.is-outlined.is-blue.is-small
-               {:on-click #(rf/dispatch [:start-recording])} [:i.fa.fa-microphone.m-1] [:span "Record Now"]]
-              :display-existing-audio
-              [:div
-               [:audio {:controls "controls" :autoplay "autoplay" :src (str "data:audio/ogg;base64," (:audio translation))}]
-               [:div.is-pulled-right
-                [:button.button.is-outlined.is-blue.is-small.mr-2
-                 {:on-click #(rf/dispatch [:start-recording])}
-                 "redo audio"]
-                [:button.button.is-outlined.is-blue.is-small
-                 {:on-click #(rf/dispatch [:delete-audio (:id translation)])}
-                 "delete audio"]]]
-              :display-new-audio
-              [:div
-               [:audio {:controls "controls" :autoplay "autoplay" :src (:url temp-recording)}]
-               [:div.is-pulled-right
-                [:button.button.is-outlined.is-blue.is-small.mr-2
-                 {:on-click #(rf/dispatch [:start-recording])}
-                 "redo audio"]
-                [:button.button.is-outlined.is-blue.is-small
-                 {:on-click #(rf/dispatch [:cancel-recording])}
-                 "clear new recording"]]]
-              :display-recording
-              [:div
-               [:div.columns.is-vcentered [:span.column.is-narrow.blink "RECORDING..."] [:div.column.is-narrow>progress.progress.is-blue.is-small]]
-               [:div.is-pulled-right
-                [:button.button.is-outlined.is-blue.is-small.mr-2
-                 {:on-click #(rf/dispatch [:stop-recording])}
-                 "finish"]
-                [:button.button.is-outlined.is-blue.is-small
-                 {:on-click #(rf/dispatch [:cancel-recording])}
-                 "cancel"]]])]
+           (if media-error
+             [:div.column.is-half.is-italic.has-text-danger media-error]
+             [:div.column.is-half
+              (case (display-audio-state temp-recording (:audio translation) recording-state)
+                :display-new
+                [:button.button.p-2.m-1.is-outlined.is-blue.is-small
+                 {:on-click #(rf/dispatch [:start-recording])} [:i.fa.fa-microphone.m-1] [:span "Record Now"]]
+                :display-existing-audio
+                [:div
+                 [:audio {:controls "controls" :autoplay "autoplay" :src (str "data:audio/ogg;base64," (:audio translation))}]
+                 [:div.is-pulled-right
+                  [:button.button.is-outlined.is-blue.is-small.mr-2
+                   {:on-click #(rf/dispatch [:start-recording])}
+                   "redo audio"]
+                  [:button.button.is-outlined.is-blue.is-small
+                   {:on-click #(rf/dispatch [:delete-audio (:id translation)])}
+                   "delete audio"]]]
+                :display-new-audio
+                [:div
+                 [:audio {:controls "controls" :autoplay "autoplay" :src (:url temp-recording)}]
+                 [:div.is-pulled-right
+                  [:button.button.is-outlined.is-blue.is-small.mr-2
+                   {:on-click #(rf/dispatch [:start-recording])}
+                   "redo audio"]
+                  [:button.button.is-outlined.is-blue.is-small
+                   {:on-click #(rf/dispatch [:cancel-recording])}
+                   "clear new recording"]]]
+                :display-recording
+                [:div
+                 [:div.columns.is-vcentered [:span.column.is-narrow.blink "RECORDING..."] [:div.column.is-narrow>progress.progress.is-blue.is-small]]
+                 [:div.is-pulled-right
+                  [:button.button.is-outlined.is-blue.is-small.mr-2
+                   {:on-click #(rf/dispatch [:stop-recording])}
+                   "finish"]
+                  [:button.button.is-outlined.is-blue.is-small
+                   {:on-click #(rf/dispatch [:cancel-recording])}
+                   "cancel"]]])])
            (let [base-params {:source_text @draft_source
                               :target_text_roman @draft_target_rom
                               :target_text @draft_target

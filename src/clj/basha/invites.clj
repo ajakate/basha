@@ -27,7 +27,6 @@
      :from [:list_users]
      :where [:and [:= :list_id l_id] [:= :user_id u_id]]})))
 
-;; TODOO: don't create if it's the owner
 (defn create-share [user_id list_id]
   (let [user_uid (java.util.UUID/fromString user_id)
         list_uid (java.util.UUID/fromString list_id)

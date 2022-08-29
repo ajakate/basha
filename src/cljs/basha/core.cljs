@@ -77,5 +77,6 @@
 (defn init! []
   (start-router!)
   (ajax/load-interceptors!)
+  (rf/dispatch [:fetch-info])
   (rf/dispatch-sync [:init-local-storage])
   (mount-components))

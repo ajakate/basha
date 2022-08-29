@@ -17,7 +17,7 @@
        [:div.model-content>div.card.has-background-white.has-text-centered
         (let [link (share-link (:share_code list))]
           [:div.p-5
-           [:img.my-3 {:src "img/link_icon.png"}]
+           [:div.is-flex.is-justify-content-center>img.my-3.image.is-96x96 {:src "img/link_icon.png"}]
            [:p.py-4 "Anyone with this link will be able to view and edit this deck"]
            [:div.is-flex
             [:input.input

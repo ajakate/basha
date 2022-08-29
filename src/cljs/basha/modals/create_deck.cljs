@@ -26,7 +26,7 @@
            [:div.modal-background]
            [:div.model-content>div.card.has-background-white.has-text-centered
             [:div.p-6
-             [:img.my-3 {:src "img/deck_icon.png"}]
+             [:div.is-flex.is-justify-content-center>img.my-3.image.is-96x96 {:src "img/deck_icon.png"}]
              [:h2.has-text-orange.is-size-3.mb-4 "Create a New Deck"]
              [:p.pb-4 "Upload your deck as a plain-text (.txt) file"]
              [:div.has-text-left

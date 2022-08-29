@@ -1,11 +1,10 @@
 (ns basha.pages.dashboard
   (:require 
-   [re-frame.core :as rf]))
+   [re-frame.core :as rf]
+   [basha.components.shared :refer [is-admin]]))
 
 ;; TODOO:
-;; confirm shares
 ;; add logged out CTA
-;; only delete if owner
 (defn no-lists []
   [:div.has-text-centered
    [:img.py-6 {:src "/img/empty_state_graphic.png"}]
@@ -44,19 +43,24 @@
            [:a.link.has-text-orange.px-2
             {:on-click #(rf/dispatch [:set-downloading-deck (:id list) (:name list)])}
             "Download"]
-           [:p "|"]
-           [:a.link.has-text-orange.px-2
-            {:on-click #(rf/dispatch [:set-delete-list-id list])}
-            "Delete"]]]]))]])
+           (when (is-admin)
+             [:<>
+              [:p "|"]
+              [:a.link.has-text-orange.px-2
+               {:on-click #(rf/dispatch [:set-delete-list-id list])}
+               "Delete"]])]]]))]])
 
 (defn dashboard-page []
-  (let [lists @(rf/subscribe [:list-summary])]
+  (let [lists @(rf/subscribe [:list-summary])
+        user @(rf/subscribe [:user])
+        info  @(rf/subscribe [:info])]
     [:div.px-6>div.basha-panel.mx-auto.background-semi-faded.p-5
      [:div.is-flex.is-justify-content-space-between
       [:div.is-size-3.bold.mb-3 "My Dashboard"]
-      [:a.button.is-orange.bold
-       {:on-click #(rf/dispatch [:create-deck-modal-visible true])}
-       "Add New Deck"]]
+      (when (is-admin)
+        [:a.button.is-orange.bold
+         {:on-click #(rf/dispatch [:create-deck-modal-visible true])}
+         "Add New Deck"])]
      [:p "Use this hub to upload your files, manage translations, and export decks."]
      (if (seq lists)
        [list-summary-table lists]

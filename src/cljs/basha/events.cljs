@@ -300,7 +300,6 @@
 
 (rf/reg-event-fx
  :fetch-invite
- [(with-loading-state :loading-invite)]
  (fn [_ [_ code]]
    {:http-xhrio {:method          :get
                  :uri             (str "/api/invite/" code)
@@ -321,6 +320,20 @@
                  :response-format  (ajax/json-response-format {:keywords? true})
                  :on-success       [:redirect-home]
                  }}))
+
+(rf/reg-event-fx
+ :fetch-info
+ (fn [_ [_ _]]
+   {:http-xhrio {:method          :get
+                 :uri             "/api/info"
+                 :format          (ajax/json-request-format)
+                 :response-format  (ajax/json-response-format {:keywords? true})
+                 :on-success       [:set-info]}}))
+
+(rf/reg-event-db
+ :set-info
+ (fn [db [_ resp]]
+   (assoc db :info resp)))
 
 (rf/reg-event-fx
  :set-login-state
@@ -400,8 +413,9 @@
 
 (rf/reg-event-fx
  :redirect-home
- (fn [{:keys [_]} [_]]
-   {:fx [[:dispatch [:set-home-state]] [:dispatch [:page/init-home]]]}))
+ (fn [{:keys [db]} [_]]
+   {:db (assoc db :invite nil)
+    :fx [[:dispatch [:set-home-state]] [:dispatch [:page/init-home]]]}))
 
 (rf/reg-event-fx
  :redirect-invite
@@ -624,6 +638,11 @@
    (-> db :delete-list-id)))
 
 (rf/reg-sub
+ :info
+ (fn [db _]
+   (-> db :info)))
+
+(rf/reg-sub
  :delete-translation-id
  (fn [db _]
    (-> db :delete-translation-id)))
@@ -642,12 +661,6 @@
  :loading-create-list
  (fn [db _]
    (-> db :loading-create-list)))
-
-;; TODOO: don't need this perhaps
-(rf/reg-sub
- :loading-invite
- (fn [db _]
-   (-> db :loading-invite)))
 
 (rf/reg-sub
  :loading-list

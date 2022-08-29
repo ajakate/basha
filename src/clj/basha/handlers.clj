@@ -6,6 +6,7 @@
    [ring.util.http-response :as response]
    [basha.auth :as auth]
    [basha.invites :as invite]
+   [basha.info :as info]
    [basha.config :refer [env]]))
 
 ; AUTH
@@ -78,3 +79,6 @@
 
 (defn create-share [{{:keys [list_id user_id]} :body-params}]
   (with-handle (invite/create-share user_id list_id)))
+
+(defn fetch-info [_]
+  (with-handle (info/fetch)))

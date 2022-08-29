@@ -1,6 +1,7 @@
 (ns basha.components.shared
   (:require
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [re-frame.core :as rf]))
 
 ;; TODOO: fix formatting bold
 (defn logo []
@@ -18,3 +19,8 @@
    (for [l (format-string st)]
      ^{:key (str l)}
      [:p l])])
+
+(defn is-admin []
+  (let [user @(rf/subscribe [:user])
+        info  @(rf/subscribe [:info])]
+    (= (:admin info) (:username user))))
