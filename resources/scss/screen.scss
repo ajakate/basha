@@ -110,7 +110,7 @@ $panel-width: 1300px;
 
 .login-half {
   flex-basis: 100%;
-  max-width: $panel-width / 2;
+  max-width: calc($panel-width / 2);
 }
 
 .login-form {

@@ -455,9 +455,7 @@
  :handle-deck-failure
  (fn [_ [_ id name resp]]
    (if (= 404 (:status resp))
-     (do
-       (js/setTimeout (fn []) 1000)
-       {:dispatch [:fetch-deck id name]})
+     {:fx [[:dispatch-later {:ms 2000 :dispatch [:fetch-deck id name]}]]}
      {:dispatch [:set-download-error resp]})))
 
 ; TODO: what's wrong with resp/json
