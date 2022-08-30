@@ -75,7 +75,9 @@
   (with-handle (deck/fetch id)))
 
 (defn fetch-invite [{{:keys [code]} :path-params}]
-  (with-handle (invite/fetch code)))
+  (with-handle
+    (let [response (invite/fetch code)]
+      (assoc response :code code))))
 
 (defn create-share [{{:keys [list_id user_id]} :body-params}]
   (with-handle (invite/create-share user_id list_id)))

@@ -50,7 +50,7 @@
           :controllers [{:start (fn [_] (rf/dispatch [:page/init-home]))}]}]
     ["/login" {:name        :login
                :view        #'login-page
-               :controllers [{:start (fn [_] (rf/dispatch [:redirect-if-logged-in]))}]}]
+               :controllers [{:start (fn [_] (rf/dispatch [:login-controller]))}]}]
     ["/lists/edit/:id" {:name :view-list
                         :view #'edit-list
                         :controllers [{:parameters {:path [:id]}
@@ -77,6 +77,6 @@
 (defn init! []
   (start-router!)
   (ajax/load-interceptors!)
-  (rf/dispatch [:fetch-info])
+  (rf/dispatch-sync [:fetch-info])
   (rf/dispatch-sync [:init-local-storage])
   (mount-components))

@@ -47,11 +47,15 @@
  (fn [db [_ state-var event _]]
    (assoc db state-var event)))
 
+(rf/reg-event-db
+ :set-unloading
+ (fn [db [_ state-var]]
+   (assoc db state-var nil)))
+
 (rf/reg-event-fx
  :with-loading-false
  (fn [{:keys [db]} [_ state-var orig resp]]
-   {:db (assoc db state-var nil)
-    :fx [[:dispatch (conj orig resp)]]}))
+   {:fx [[:dispatch (conj orig resp)] [:dispatch [:set-unloading state-var]]]}))
 
 (rf/reg-event-fx
  :with-auth-failure
@@ -144,13 +148,15 @@
   (fn [db [_ error]]
     (assoc db :common/error error)))
 
+(def log (.-log js/console))
+
 (rf/reg-event-fx
  :page/init-home
  (fn [{:keys [db]} _]
    (if (seq (:user db))
      {:dispatch [:fetch-list-summary]
       :db (assoc db :invite nil)}
-     {:dispatch [:fetch-docs]
+     {:dispatch [:set-login-state]
       :db (assoc db :invite nil)})))
 
 (rf/reg-event-fx
@@ -323,6 +329,7 @@
 
 (rf/reg-event-fx
  :fetch-info
+ [(with-loading-state :loading-info)]
  (fn [_ [_ _]]
    {:http-xhrio {:method          :get
                  :uri             "/api/info"
@@ -408,8 +415,8 @@
 
 (rf/reg-event-fx
  :set-invite-state
- (fn [_ [_]]
-   (rfe/push-state :invite {:code "null"})))
+ (fn [{:keys [db]} [_]]
+   (rfe/push-state :invite {:code (-> db :invite :code)})))
 
 (rf/reg-event-fx
  :redirect-home
@@ -599,6 +606,12 @@
      {:fx [[:dispatch [:set-login-user user]] [:dispatch [:redirect-home]]]})))
 
 (rf/reg-event-fx
+ :login-controller
+ (fn [{:keys [db]} [_]]
+   {:db (assoc db :login-errors nil)
+    :fx [[:dispatch [:fetch-info]] [:dispatch [:redirect-if-logged-in]]]}))
+
+(rf/reg-event-fx
  :redirect-if-logged-in
  (fn [{:keys [db]} [_]]
    (when (seq (:user db))
@@ -611,8 +624,8 @@
 
 (rf/reg-event-fx
  :logout
- (fn [_ [_]]
-   {:db {}
+ (fn [{:keys [db]} [_]]
+   {:db (assoc db :info (:info db))
     :fx [[:dispatch [:clear-login-user]] [:dispatch [:redirect-home]]]}))
 
 ;;subscriptions
@@ -731,6 +744,11 @@
  :login-errors
  (fn [db _]
    (-> db :login-errors)))
+
+(rf/reg-sub
+ :loading-info
+ (fn [db _]
+   (-> db :loading-info)))
 
 (rf/reg-sub
  :user
