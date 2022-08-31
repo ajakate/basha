@@ -1,14 +1,23 @@
 (ns basha.core
   (:require
-    [basha.handler :as handler]
-    [basha.nrepl :as nrepl]
-    [luminus.http-server :as http]
-    [luminus-migrations.core :as migrations]
-    [basha.config :refer [env]]
-    [clojure.tools.cli :refer [parse-opts]]
-    [clojure.tools.logging :as log]
-    [mount.core :as mount])
+   [basha.handler :as handler]
+   [basha.nrepl :as nrepl]
+   [luminus.http-server :as http]
+   [luminus-migrations.core :as migrations]
+   [basha.config :refer [env]]
+   [clojure.tools.cli :refer [parse-opts]]
+   [clojure.tools.logging :as log]
+   [clojure.string :as string]
+   [mount.core :as mount])
   (:gen-class))
+
+;; Hacky workaround for running deployed envs in supabase...
+;; needs the direct 5432 connection for migrations, but
+;; needs 6543 for normal app (connection pooling)
+(defn db-connection-string-for-migrations [original-arg]
+  (let [con-string (:database-url original-arg)
+        new-string (string/replace con-string  #":(\d+)\/" ":5432/")]
+    {:database-url new-string}))
 
 ;; log uncaught exceptions in threads
 (Thread/setDefaultUncaughtExceptionHandler
@@ -54,7 +63,8 @@
                         mount/start-with-args
                         :started)]
     (log/info component "started"))
-  (migrations/migrate ["migrate"] (select-keys env [:database-url]))
+  (migrations/migrate ["migrate"]
+                      (db-connection-string-for-migrations (select-keys env [:database-url])))
   (.addShutdownHook (Runtime/getRuntime) (Thread. stop-app)))
 
 (defn -main [& args]

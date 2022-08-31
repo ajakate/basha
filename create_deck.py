@@ -12,12 +12,13 @@ try:
   list_id = sys.argv[1]
   db_url = sys.argv[2]
 
-  matches = re.search(r'postgres:\/\/(.*):(.*)@(.*):5432\/(.*)', db_url)
+  matches = re.search(r'postgres:\/\/(.*):(.*)@(.*):(\d+)\/(.*)', db_url)
 
-  host = matches[3]
-  database = matches[4]
   user = matches[1]
   password = matches[2]
+  host = matches[3]
+  port = matches[4]
+  database = matches[5]
 
   query = f"""
   select
@@ -37,6 +38,7 @@ try:
   conn = psycopg2.connect(
       host=host,
       database=database,
+      port=port,
       user=user,
       password=password)
 
