@@ -12,13 +12,23 @@ try:
   list_id = sys.argv[1]
   db_url = sys.argv[2]
 
-  matches = re.search(r'postgres:\/\/(.*):(.*)@(.*):(\d+)\/(.*)', db_url)
+  if db_url.startswith("postgres"):
+    matches = re.search(r'postgres:\/\/(.*):(.*)@(.*):(\d+)\/(.*)', db_url)
 
-  user = matches[1]
-  password = matches[2]
-  host = matches[3]
-  port = matches[4]
-  database = matches[5]
+    user = matches[1]
+    password = matches[2]
+    host = matches[3]
+    port = matches[4]
+    database = matches[5]
+  else:
+    matches = re.search(r'jdbc:postgresql:\/\/(.*):(\d+)\/(.*)\?user=(.*)&password=(.*)', db_url)
+
+    user = matches[4]
+    password = matches[5]
+    host = matches[1]
+    port = matches[2]
+    database = matches[3]
+
 
   query = f"""
   select
