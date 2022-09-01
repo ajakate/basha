@@ -80,8 +80,13 @@
     (with-open [connection (jdbc/get-connection my-datasource)]
       (func connection sqlmap {:builder-fn rs/as-unqualified-lower-maps}))))
 
+(defn txn [func sqlmap]
+  (jdbc/with-transaction
+    [conn *db*]
+    (func conn sqlmap {:builder-fn rs/as-unqualified-lower-maps})))
+
 (defn execute-one [sqlmap]
-  (executor jdbc/execute-one! sqlmap))
+  (txn jdbc/execute-one! sqlmap))
 
 (defn execute [sqlmap]
-  (executor jdbc/execute! sqlmap))
+  (txn jdbc/execute! sqlmap))
