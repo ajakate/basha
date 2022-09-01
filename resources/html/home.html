@@ -5,9 +5,11 @@
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <title>Welcome to Basha!</title>
       <link rel="icon" href="/img/logo.png" type="image/png"/>
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"/>
+      {% style "/css/screen.css?id=3" %}
+      {% style "/assets/material-icons/css/material-icons.min.css" %}
   </head>
   <body>
-    
     <div id="app">
       <section class="section">
         <div class="container is-fluid">Loading...</div>
@@ -16,15 +18,9 @@
     </div>
     <div class="record-start"></div>
     <div class="record-stop"></div>
-
-    <!-- scripts and styles -->
-    {% style "/assets/material-icons/css/material-icons.min.css" %}
-    {% style "/css/screen.css?id=3" %}
-
     <script type="text/javascript">
         var csrfToken = "{{csrf-token}}";
     </script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     {% script "/js/app.js" %}
   </body>
 </html>

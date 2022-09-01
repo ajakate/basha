@@ -75,6 +75,11 @@
         (.setObject stmt idx (.createArrayOf conn elem-type (to-array v)))
         (.setObject stmt idx (clj->jsonb-pgobj v))))))
 
+(defn executor [func sqlmap]
+  (let [my-datasource (jdbc/get-datasource (:database-url env))]
+    (with-open [connection (jdbc/get-connection my-datasource)]
+      (func connection sqlmap {:builder-fn rs/as-unqualified-lower-maps}))))
+
 (defn txn [func sqlmap]
   (jdbc/with-transaction
     [conn *db*]

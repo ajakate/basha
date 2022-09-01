@@ -2,18 +2,24 @@
   (:require
    [basha.db.core :as db]
    [honey.sql :as sql]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [basha.util :as util]))
 
 (defn format-list [resp]
-  (let [name (-> resp first :name)
-        source_language (-> resp first :source_language)
-        target_language (-> resp first :target_language)
-        creator (-> resp first :creator)
-        users (-> resp first :users)]
-    {:id (-> resp first :list_id)
+  (let [list (-> resp first)
+        name (:name list)
+        source_language (:source_language list)
+        target_language (:target_language list)
+        has_latin_script (:has_latin_script list)
+        share_code (util/encode-uuid (:list_id list))
+        creator (:creator list)
+        users (:users list)]
+    {:id (:list_id list)
      :name name
      :source_language source_language
      :target_language target_language
+     :has_latin_script has_latin_script
+     :share_code share_code
      :creator creator
      :users users
      :translations (for [r resp]
@@ -25,12 +31,12 @@
                       :list_index (:list_index r)
                       :has_audio (:has_audio r)})}))
 
-(defn create-list [name source target user_id sentences]
+(defn create-list [name source target has_latin_script user_id sentences]
   (db/execute-one
    (sql/format
     {:with [[:created_list {:insert-into :lists
-                            :columns [:name :source_language :target_language :user_id]
-                            :values [[name source target user_id]]
+                            :columns [:name :source_language :target_language :user_id :has_latin_script]
+                            :values [[name source target user_id has_latin_script]]
                             :returning :id}]]
      :insert-into :translations
      :columns [:source_text :list_id :list_index]
@@ -39,9 +45,10 @@
 
 
 ; ADD cljc validation
-(defn create! [name source target file user_id]
-  (let [sentences (-> file slurp str/split-lines)]
-    (create-list name source target (java.util.UUID/fromString user_id) sentences)))
+(defn create! [name source target has_latin_script file user_id]
+  (let [sentences (-> file slurp str/split-lines)
+        has_latin_script (boolean (Boolean/valueOf has_latin_script))]
+    (create-list name source target has_latin_script (java.util.UUID/fromString user_id) sentences)))
 
 (defn comma-list-users-sql [matcher]
   {:select [[[:string_agg :username ","]]]
@@ -75,6 +82,7 @@
      {:select [:*
                [:t.id :translation_id]
                [:l.id :list_id]
+               [:l.has_latin_script :has_latin_script]
                [:u.username :creator]
                [{:select :username
                  :from :users
@@ -100,38 +108,4 @@
                                                          :from :delete_list}]
                                    :returning :translations.list_id}]]
      :delete-from :list_users
-     :where [:in :list_id {:select [:*] :from :delete_translations}]}))
-  )
-
-(defn list-errors [tried actual]
-  (reduce
-   (fn [es elem]
-     (if (or (contains? actual elem) (= "" elem))
-       es
-       (conj es elem)))
-   []
-   tried))
-
-(defn get-users-by-name [users]
-  (db/execute
-   (sql/format
-    {:select [:id :username]
-     :from :users
-     :where [:in :username users]})))
-
-(defn update-users [id users]
-  (let [id (java.util.UUID/fromString id)
-        new (get-users-by-name users)
-        new-names (set (map #(:username %) new))
-        new-ids (set (map #(:id %) new))
-        errors (list-errors users new-names)]
-    (if (seq errors)
-      {:error {:message (str "The following users could not be found: " (str/join ", " errors))}}
-      (db/execute-one
-       (sql/format
-        {:with [[:noop {:delete-from :list_users
-                        :where [:= :list_id id]}]]
-         :insert-into :list_users
-         :columns [:user_id :list_id]
-         :values (map (fn [e] [e id]) new-ids)
-         :returning :*})))))
+     :where [:in :list_id {:select [:*] :from :delete_translations}]})))

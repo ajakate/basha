@@ -21,6 +21,7 @@
    ["/lists" {:post {:middleware [wrap-jwt-authentication auth-middleware wrap-params wrap-multipart-params]
                      :parameters {:multipart {:file multipart/temp-file-part
                                               :name s/Str
+                                              :has_latin_script s/Bool
                                               :source_language s/Str
                                               :target_language s/Str}}
                      :handler handle/create-list}
@@ -36,11 +37,13 @@
                                 :handler handle/edit-translation}}]
    ["/delete_translation" {:post {:middleware [wrap-jwt-authentication auth-middleware]
                            :handler handle/delete-translation}}]
-   ["/assignees/:id" {:post {:middleware [wrap-jwt-authentication auth-middleware]
-                             :handler handle/update-users}}]
    ["/delete_audio/:id" {:post {:middleware [wrap-jwt-authentication auth-middleware]
                                 :handler handle/delete-audio}}]
    ["/decks/:id" {:post {:middleware [wrap-jwt-authentication auth-middleware]
                      :handler handle/create-deck}
                   :get {:middleware [wrap-jwt-authentication auth-middleware]
-                        :handler handle/fetch-deck}}]])
+                        :handler handle/fetch-deck}}]
+   ["/invite" {:post {:middleware [wrap-jwt-authentication auth-middleware]
+                      :handler handle/create-share}}]
+   ["/invite/:code" {:get {:handler handle/fetch-invite}}]
+   ["/info" {:get {:handler handle/fetch-info}}]])

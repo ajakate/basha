@@ -54,9 +54,9 @@
   (let [user (get-user-from-db username)
         authenticated (hashers/check password (:password user))]
     (if authenticated
-      (assoc (new-tokens (dissoc user :password)) :username username)
+      (assoc (new-tokens (dissoc user :password)) :username username :id (:id user))
       (throw (ex-info "Wrong username or password entered" {:type :bad-request})))))
 
 (defn refresh [username]
   (let [user (get-user-from-db username)]
-    (assoc (new-tokens (dissoc user :password)) :username username)))
+    (assoc (new-tokens (dissoc user :password)) :username username :id (:id user))))

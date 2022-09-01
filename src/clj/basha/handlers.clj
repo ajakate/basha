@@ -5,6 +5,8 @@
    [basha.translations :as translation]
    [ring.util.http-response :as response]
    [basha.auth :as auth]
+   [basha.invites :as invite]
+   [basha.info :as info]
    [basha.config :refer [env]]))
 
 ; AUTH
@@ -34,11 +36,12 @@
 
 ; LISTS
 
-(defn create-list [{{:keys [id]} :identity {:keys [file name source_language target_language]} :params}]
+(defn create-list [{{:keys [id]} :identity {:keys [file name source_language target_language has_latin_script]} :params}]
   (with-handle (list/create!
                 name
                 source_language
                 target_language
+                has_latin_script
                 (:tempfile file) id)))
 
 (defn get-lists [{{:keys [id]} :identity}]
@@ -60,13 +63,6 @@
   (let [t-id (:id path-params)]
     (with-handle (translation/update-translation t-id id body-params))))
 
-; TODO: why does with-handle not work here?
-(defn update-users [{{:keys [id]} :path-params body-params :params}]
-  (let [resp (list/update-users id (:users body-params))]
-    (if-let [error (:error resp)]
-      (response/bad-request error)
-      (response/ok resp))))
-
 (defn delete-audio [{{:keys [id]} :path-params}]
   (with-handle (translation/delete-audio id)))
 
@@ -77,3 +73,14 @@
 
 (defn fetch-deck [{{:keys [id]} :path-params}]
   (with-handle (deck/fetch id)))
+
+(defn fetch-invite [{{:keys [code]} :path-params}]
+  (with-handle
+    (let [response (invite/fetch code)]
+      (assoc response :code code))))
+
+(defn create-share [{{:keys [list_id user_id]} :body-params}]
+  (with-handle (invite/create-share user_id list_id)))
+
+(defn fetch-info [_]
+  (with-handle (info/fetch)))

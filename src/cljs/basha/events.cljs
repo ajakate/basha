@@ -8,6 +8,19 @@
    [basha.audio :as baudio]
    [akiroz.re-frame.storage :refer [persist-db-keys]]))
 
+(def simple-states
+  [:create-deck-modal-visible])
+
+(doseq [event simple-states]
+  (rf/reg-event-db
+   event
+   (fn [db [_ val]]
+     (assoc db event val)))
+  (rf/reg-sub
+   event
+   (fn [db _]
+     (-> db event))))
+
 (def with-auth
   (rf/->interceptor
    :id      :with-auth
@@ -34,11 +47,15 @@
  (fn [db [_ state-var event _]]
    (assoc db state-var event)))
 
+(rf/reg-event-db
+ :set-unloading
+ (fn [db [_ state-var]]
+   (assoc db state-var nil)))
+
 (rf/reg-event-fx
  :with-loading-false
  (fn [{:keys [db]} [_ state-var orig resp]]
-   {:db (assoc db state-var nil)
-    :fx [[:dispatch (conj orig resp)]]}))
+   {:fx [[:dispatch (conj orig resp)] [:dispatch [:set-unloading state-var]]]}))
 
 (rf/reg-event-fx
  :with-auth-failure
@@ -131,12 +148,16 @@
   (fn [db [_ error]]
     (assoc db :common/error error)))
 
+(def log (.-log js/console))
+
 (rf/reg-event-fx
  :page/init-home
  (fn [{:keys [db]} _]
    (if (seq (:user db))
-     {:dispatch [:fetch-list-summary]}
-     {:dispatch [:fetch-docs]})))
+     {:dispatch [:fetch-list-summary]
+      :db (assoc db :invite nil)}
+     {:dispatch [:set-login-state]
+      :db (assoc db :invite nil)})))
 
 (rf/reg-event-fx
  :signup
@@ -169,7 +190,7 @@
                  :body (generate-form-data params)
                  :format          (ajax/json-request-format)
                  :response-format  (ajax/json-response-format {:keywords? true})
-                 :on-success       [:redirect-home]
+                 :on-success       [:on-create-list-success]
                  :on-failure [:set-create-list-error]}}))
 
 (rf/reg-event-fx
@@ -251,18 +272,6 @@
                  :on-success       [:set-active-list]}}))
 
 (rf/reg-event-fx
- :edit-users
- [with-auth]
- (fn [_ [_ params]]
-   {:http-xhrio {:method          :post
-                 :uri             (str "/api/assignees/" (:list_id params))
-                 :params {:users (:users params)}
-                 :format          (ajax/json-request-format)
-                 :response-format  (ajax/json-response-format {:keywords? true})
-                 :on-success       [:reset-list-page (:list_id params)]
-                 :on-failure [:set-users-error]}}))
-
-(rf/reg-event-fx
  :delete-list
  [with-auth]
  (fn [_ [_ id]]
@@ -294,6 +303,64 @@
                  :response-format  (ajax/json-response-format {:keywords? true})
                  :on-success       [:refresh-success original]
                  :on-failure [:logout]}}))
+
+(rf/reg-event-fx
+ :fetch-invite
+ (fn [_ [_ code]]
+   {:http-xhrio {:method          :get
+                 :uri             (str "/api/invite/" code)
+                 :format          (ajax/json-request-format)
+                 :response-format  (ajax/json-response-format {:keywords? true})
+                 :on-success       [:set-invite]
+                ;;  :on-failure [:kill-download-modal]
+                 }}))
+
+(rf/reg-event-fx
+ :add-share
+ [with-auth]
+ (fn [_ [_ params]]
+   {:http-xhrio {:method          :post
+                 :uri             "/api/invite"
+                 :params params
+                 :format          (ajax/json-request-format)
+                 :response-format  (ajax/json-response-format {:keywords? true})
+                 :on-success       [:redirect-home]
+                 }}))
+
+(rf/reg-event-fx
+ :fetch-info
+ [(with-loading-state :loading-info)]
+ (fn [_ [_ _]]
+   {:http-xhrio {:method          :get
+                 :uri             "/api/info"
+                 :format          (ajax/json-request-format)
+                 :response-format  (ajax/json-response-format {:keywords? true})
+                 :on-success       [:set-info]}}))
+
+(rf/reg-event-db
+ :set-info
+ (fn [db [_ resp]]
+   (assoc db :info resp)))
+
+(rf/reg-event-fx
+ :set-login-state
+ (fn [_ [_]]
+   (rfe/push-state :login)))
+
+(rf/reg-event-fx
+ :set-invite
+ (fn [{:keys [db]} [_ resp]]
+   (let [user (:user db)]
+     (if (seq user)
+       {:db (assoc db :invite resp)}
+       {:db (assoc db :invite resp)
+        :fx [[:dispatch [:set-login-state]]]}))))
+
+(rf/reg-event-fx
+ :on-create-list-success
+ (fn [{:keys [db]} [_]]
+   {:db (assoc db :create-deck-modal-visible false)
+    :fx [[:dispatch [:redirect-home]]]}))
 
 (rf/reg-event-fx
  :refresh-success
@@ -335,10 +402,11 @@
  (fn [{:keys [db]} [_]]
    {:fx [[:dispatch [:clear-delete-translation-id]] [:dispatch [:load-list-page (-> db :active-list :id)]]]}))
 
-(rf/reg-event-db
- :set-users-error
- (fn [db [_ resp]]
-   (assoc db :users-error (-> resp :response :message))))
+(rf/reg-event-fx
+ :on-create-list-success
+ (fn [{:keys [db]} [_]]
+   {:db (assoc db :create-deck-modal-visible false)
+    :fx [[:dispatch [:redirect-home]]]}))
 
 (rf/reg-event-fx
  :set-home-state
@@ -346,9 +414,20 @@
    (rfe/push-state :home)))
 
 (rf/reg-event-fx
+ :set-invite-state
+ (fn [{:keys [db]} [_]]
+   (rfe/push-state :invite {:code (-> db :invite :code)})))
+
+(rf/reg-event-fx
  :redirect-home
- (fn [{:keys [_]} [_]]
-   {:fx [[:dispatch [:set-home-state]] [:dispatch [:page/init-home]]]}))
+ (fn [{:keys [db]} [_]]
+   {:db (assoc db :invite nil)
+    :fx [[:dispatch [:set-home-state]] [:dispatch [:page/init-home]]]}))
+
+(rf/reg-event-fx
+ :redirect-invite
+ (fn [_ [_]]
+   {:fx [[:dispatch [:set-invite-state]]]}))
 
 (rf/reg-event-fx
  :load-list-page
@@ -376,9 +455,7 @@
  :handle-deck-failure
  (fn [_ [_ id name resp]]
    (if (= 404 (:status resp))
-     (do
-       (js/setTimeout (fn []) 1000)
-       {:dispatch [:fetch-deck id name]})
+     {:fx [[:dispatch-later {:ms 2000 :dispatch [:fetch-deck id name]}]]}
      {:dispatch [:set-download-error resp]})))
 
 ; TODO: what's wrong with resp/json
@@ -471,16 +548,6 @@
  (fn [db [_ response]]
    (assoc db :active-list response)))
 
-(rf/reg-event-db
- :open-login-modal
- (fn [db [_]]
-   (assoc db :login-modal/visible true)))
-
-(rf/reg-event-db
- :close-login-modal
- (fn [db [_]]
-   (assoc db :login-modal/visible false :login-modal/signup false :login-modal/errors nil)))
-
 (rf/reg-event-fx
  :close-translate-modal
  (fn [{:keys [db]} _]
@@ -495,18 +562,19 @@
          next-id (next-id-in-list list id)]
      {:db (assoc db
                  :active-translation (assoc response :next_id next-id)
-                 :translate-modal/visible true)
+                 :translate-modal/visible true
+                 :temp-recording nil)
       :dispatch [:arm-recording]})))
 
 (rf/reg-event-db
  :set-signup-error
  (fn [db [_ response]]
-   (assoc db :login-modal/errors (-> response :response :message))))
+   (assoc db :login-errors (-> response :response :message))))
 
 (rf/reg-event-db
  :set-signup
  (fn [db [_ val]]
-   (assoc db :login-modal/signup val :login-modal/errors nil)))
+   (assoc db :login-modal/signup val :login-errors nil)))
 
 (rf/reg-event-db
  :open-users-modal
@@ -521,7 +589,7 @@
 (persisted-reg-event-db
  :set-login-user
  (fn [db [_ user]]
-   (assoc db :user user :login-modal/visible false)))
+   (assoc db :user user)))
 
 (persisted-reg-event-db
  :swap-hide-native
@@ -530,8 +598,22 @@
 
 (rf/reg-event-fx
  :set-login
- (fn [_ [_ user]]
-   {:fx [[:dispatch [:close-login-modal]] [:dispatch [:set-login-user user]] [:dispatch [:redirect-home]]]}))
+ (fn [{:keys [db]} [_ user]]
+   (if (seq (:invite db))
+     {:fx [[:dispatch [:set-login-user user]] [:dispatch [:redirect-invite]]]}
+     {:fx [[:dispatch [:set-login-user user]] [:dispatch [:redirect-home]]]})))
+
+(rf/reg-event-fx
+ :login-controller
+ (fn [{:keys [db]} [_]]
+   {:db (assoc db :login-errors nil)
+    :fx [[:dispatch [:fetch-info]] [:dispatch [:redirect-if-logged-in]]]}))
+
+(rf/reg-event-fx
+ :redirect-if-logged-in
+ (fn [{:keys [db]} [_]]
+   (when (seq (:user db))
+     {:fx [[:dispatch [:redirect-home]]]})))
 
 (persisted-reg-event-db
  :clear-login-user
@@ -540,8 +622,8 @@
 
 (rf/reg-event-fx
  :logout
- (fn [_ [_]]
-   {:db {}
+ (fn [{:keys [db]} [_]]
+   {:db (assoc db :info (:info db))
     :fx [[:dispatch [:clear-login-user]] [:dispatch [:redirect-home]]]}))
 
 ;;subscriptions
@@ -557,9 +639,19 @@
    (-> db :download-error)))
 
 (rf/reg-sub
+ :invite
+ (fn [db _]
+   (-> db :invite)))
+
+(rf/reg-sub
  :delete-list-id
  (fn [db _]
    (-> db :delete-list-id)))
+
+(rf/reg-sub
+ :info
+ (fn [db _]
+   (-> db :info)))
 
 (rf/reg-sub
  :delete-translation-id
@@ -637,11 +729,6 @@
    (-> db :list-summary)))
 
 (rf/reg-sub
- :login-modal-visible
- (fn [db _]
-   (-> db :login-modal/visible)))
-
-(rf/reg-sub
  :translate-modal-visible
  (fn [db _]
    (-> db :translate-modal/visible)))
@@ -654,7 +741,12 @@
 (rf/reg-sub
  :login-errors
  (fn [db _]
-   (-> db :login-modal/errors)))
+   (-> db :login-errors)))
+
+(rf/reg-sub
+ :loading-info
+ (fn [db _]
+   (-> db :loading-info)))
 
 (rf/reg-sub
  :user
