@@ -40,4 +40,4 @@ COPY . /usr/src/app
 
 RUN lein uberjar
 
-CMD ["java", "-Xmx250m", "-Dclojure.main.report=stderr", "-cp", "target/uberjar/basha.jar", "clojure.main", "-m", "basha.core"]
+CMD ["java", "-Xmx150m", "-Dclojure.main.report=stderr", "-cp", "target/uberjar/basha.jar", "clojure.main", "-m", "basha.core"]
