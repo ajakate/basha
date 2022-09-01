@@ -17,7 +17,10 @@
 (defn db-connection-string-for-migrations [original-arg]
   (let [con-string (:database-url original-arg)
         new-string (string/replace con-string  #":(\d+)\/" ":5432/")]
-    {:database-url new-string}))
+    ;; TODOO: figure out what to do with this
+    ;; {:database-url new-string}
+    original-arg
+    ))
 
 ;; log uncaught exceptions in threads
 (Thread/setDefaultUncaughtExceptionHandler
