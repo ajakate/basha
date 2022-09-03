@@ -80,6 +80,6 @@
                 [:div.has-text-danger.is-italic.mb-3
                  [:p.mb-2 "Your sentence list failed to create..."]
                  [:p "Please make sure you are uploading"]
-                 [:p.bold "a plain text file between 1 and 500 lines"]]])
+                 [:p.bold "a plain text file between 1 and 600 lines"]]])
              [:button.modal-close.is-large
               {:aria-label "close" :on-click #(rf/dispatch [:create-deck-modal-visible false])} "close"]]]])))))
