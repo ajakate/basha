@@ -7,19 +7,22 @@ import os
 import sys
 import re
 import traceback
+from urllib.parse import urlparse
 
 try:
   list_id = sys.argv[1]
   db_url = sys.argv[2]
 
   if db_url.startswith("postgres"):
-    matches = re.search(r'postgres:\/\/(.*):(.*)@(.*):(\d+)\/(.*)', db_url)
-
-    user = matches[1]
-    password = matches[2]
-    host = matches[3]
-    port = matches[4]
-    database = matches[5]
+    dbc = urlparse(db_url)
+    host = dbc.hostname
+    user = dbc.username
+    password = dbc.password
+    database = dbc.path[1:]
+    if dbc.port:
+      port = dbc.port
+    else:
+      port = 5432
   else:
     matches = re.search(r'jdbc:postgresql:\/\/(.*):(\d+)\/(.*)\?user=(.*)&password=(.*)', db_url)
 
@@ -104,8 +107,18 @@ try:
   my_package.media_files = media_ids
   my_package.write_to_file(f'temp_decks/{list_id}.apkg')
 except Exception as err:
-  os.system(f"echo {err.__traceback__} > temp_decks/{list_id}.fail")
+  with open(f'temp_decks/{list_id}.fail', 'w') as f:
+    traceback.print_exc(file=f)
 finally:
-  os.system(f"rm temp_decks/{list_id}.pending")
-  os.system("rm temp_media/*.mp3")
-  os.system("rm temp_media/*.ogg")
+  try:
+    os.system(f"rm temp_decks/{list_id}.pending")
+  except:
+    None
+  try:
+    os.system("rm temp_media/*.mp3")
+  except:
+    None
+  try:
+    os.system("rm temp_media/*.ogg")
+  except:
+    None
