@@ -6,5 +6,5 @@
 (defn fetch []
   (db/execute-one
    (sql/format
-    {:select [[{:select :username :from :users :order-by [[:created_at :asc]] :limit 1} :username]
+    {:select [[{:select :username :from :users :order-by [[:created_at :asc]] :limit 1} :admin]
               [{:select [[[:count :*]]] :from :users} :total_users]]})))

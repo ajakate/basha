@@ -1,7 +1,7 @@
 (ns basha.pages.dashboard
   (:require 
    [re-frame.core :as rf]
-   [basha.components.shared :refer [is-admin]]))
+   [basha.components.shared :refer [is-admin loading-screen]]))
 
 ;; TODOO:
 ;; add logged out CTA
@@ -51,10 +51,9 @@
                "Delete"]])]]]))]])
 
 (defn dashboard-page []
-  (let [lists @(rf/subscribe [:list-summary])
-        user @(rf/subscribe [:user])
-        info  @(rf/subscribe [:info])]
+  (let [lists @(rf/subscribe [:list-summary])]
     [:div.px-6>div.basha-panel.mx-auto.background-semi-faded.p-5
+     [loading-screen :loading-list-summary]
      [:div.is-flex.is-justify-content-space-between
       [:div.is-size-3.bold.mb-3 "My Dashboard"]
       (when (is-admin)

@@ -10,7 +10,8 @@
 
 (def simple-states
   [:create-deck-modal-visible
-   :is-signup])
+   :is-signup
+   :loading-list-summary])
 
 (doseq [event simple-states]
   (rf/reg-event-db
@@ -247,7 +248,7 @@
 
 (rf/reg-event-fx
  :fetch-list-summary
- [with-auth]
+ [(with-loading-state :loading-list-summary) with-auth]
  (fn [_ [_ _]]
    {:http-xhrio {:method          :get
                  :uri             "/api/lists"
