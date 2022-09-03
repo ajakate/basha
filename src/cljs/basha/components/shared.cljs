@@ -24,3 +24,10 @@
   (let [user @(rf/subscribe [:user])
         info  @(rf/subscribe [:info])]
     (= (:admin info) (:username user))))
+
+(defn loading-screen [sub]
+  (let [is-loading @(rf/subscribe [sub])]
+    (when is-loading
+      [:div.modal-background.loading-screen.flex.centered-text
+       [:div [:p.mb-5.is-size-3 "Loading..."]
+        [:div.flex.centered-text>div.is-size-1.loader-mixin]]])))

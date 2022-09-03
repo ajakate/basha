@@ -25,13 +25,13 @@
     [:div.modal
      {:class (if is-active "is-active" nil)}
      [:div.modal-background]
-     [:div.model-content>div.card.has-background-white.has-text-centered.p-5
+     [:div.modal-content>div.card.has-background-white.has-text-centered.p-5
       [:img.my-3.image.is-64x64.mx-auto {:src "img/translate_icon.png"}]
       [:p.has-text-blue.is-size-3.mb-4 "Translate Phrase"]
       (if loading-translation
         [:section.section
-         [:div.has-text-centered.is-size-3.m-6>p.has-text-info "Loading Next Translation..."]
-         [:progress.progress.is-info]]
+         [:div.has-text-centered.is-size-4.m-5>p.has-text-info "Loading Next Translation..."]
+         [:div.flex.centered-text>div.is-size-1.loader-mixin]]
         (r/with-let [draft_target (r/atom (:target_text translation))
                      draft_target_rom (r/atom (:target_text_roman translation))
                      draft_source (r/atom (:source_text translation))

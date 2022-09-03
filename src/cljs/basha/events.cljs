@@ -9,7 +9,9 @@
    [akiroz.re-frame.storage :refer [persist-db-keys]]))
 
 (def simple-states
-  [:create-deck-modal-visible])
+  [:create-deck-modal-visible
+   :is-signup
+   :loading-list-summary])
 
 (doseq [event simple-states]
   (rf/reg-event-db
@@ -161,6 +163,7 @@
 
 (rf/reg-event-fx
  :signup
+ [(with-loading-state :loading-login)]
  (fn [_ [_ user]]
    {:http-xhrio {:method          :post
                  :uri             "/api/signup"
@@ -172,6 +175,7 @@
 
 (rf/reg-event-fx
  :login
+ [(with-loading-state :loading-login)]
  (fn [_ [_ user]]
    {:http-xhrio {:method          :post
                  :uri             "/api/login"
@@ -244,7 +248,7 @@
 
 (rf/reg-event-fx
  :fetch-list-summary
- [with-auth]
+ [(with-loading-state :loading-list-summary) with-auth]
  (fn [_ [_ _]]
    {:http-xhrio {:method          :get
                  :uri             "/api/lists"
@@ -340,7 +344,8 @@
 (rf/reg-event-db
  :set-info
  (fn [db [_ resp]]
-   (assoc db :info resp)))
+   (let [should-signup (= 0 (:total_users resp))]
+     (assoc db :info resp :is-signup should-signup))))
 
 (rf/reg-event-fx
  :set-login-state
@@ -639,6 +644,11 @@
    (-> db :download-error)))
 
 (rf/reg-sub
+ :loading-login
+ (fn [db _]
+   (-> db :loading-login)))
+
+(rf/reg-sub
  :invite
  (fn [db _]
    (-> db :invite)))
@@ -732,11 +742,6 @@
  :translate-modal-visible
  (fn [db _]
    (-> db :translate-modal/visible)))
-
-(rf/reg-sub
- :is-signup
- (fn [db _]
-   (-> db :login-modal/signup)))
 
 (rf/reg-sub
  :login-errors

@@ -3,12 +3,18 @@ services:
     name: basha
     env: docker
     repo: https://github.com/ajakate/basha.git
-    branch: style
+    branch: render
     plan: free
+    region: oregon
     numInstances: 1
-    healthCheckPath: /
+    healthCheckPath: /api/info
     envVars:
       - key: TOKEN_SECRET
         generateValue: true
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: app-db
+          property: connectionString
+databases:
+  - name: app-db
+    region: oregon

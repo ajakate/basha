@@ -4,13 +4,7 @@
    [honey.sql :as sql]))
 
 (defn fetch []
-  (let [response (db/execute-one
-                  (sql/format
-                   {:select [[:username :admin]
-                             [{:select [[[:count :*]]] :from :users} :total_users]]
-                    :from :users
-                    :order-by [[:created_at :asc]]
-                    :limit 1}))]
-    (if (seq response)
-      response
-      {:total_users 0})))
+  (db/execute-one
+   (sql/format
+    {:select [[{:select :username :from :users :order-by [[:created_at :asc]] :limit 1} :admin]
+              [{:select [[[:count :*]]] :from :users} :total_users]]})))
