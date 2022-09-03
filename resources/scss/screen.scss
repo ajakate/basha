@@ -168,4 +168,14 @@ $panel-width: 1300px;
   color: white;
 }
 
+.loading-screen {
+  z-index: 999;
+}
+
+@import "../../node_modules/bulma/sass/utilities/mixins.sass";
+
+.loader-mixin {
+  @include loader;
+}
+
 @import '../../node_modules/bulma/bulma.sass';
