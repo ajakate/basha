@@ -8,8 +8,22 @@
    [clojure.tools.cli :refer [parse-opts]]
    [clojure.tools.logging :as log]
    [clojure.string :as string]
-   [mount.core :as mount])
+   [mount.core :as mount]
+   [clojure.java.shell :as shell])
   (:gen-class))
+
+(defn shell-cmd [cmd]
+  (apply shell/sh (string/split cmd #" ")))
+
+;; For applications deployed on render.com,
+;; register cronjob to prevent them from
+;; falling asleep
+(defn register-keepalive-cronjob []
+  (let [render-url (:render-external-url env)
+        ping-url (str render-url "/api/info")]
+    (when render-url
+      (shell-cmd
+       (str "bash bin/set_keepalive.sh " ping-url)))))
 
 ;; Hacky workaround for running deployed envs in supabase...
 ;; needs the direct 5432 connection for migrations, but
@@ -68,6 +82,7 @@
     (log/info component "started"))
   (migrations/migrate ["migrate"]
                       (db-connection-string-for-migrations (select-keys env [:database-url])))
+  (register-keepalive-cronjob)
   (.addShutdownHook (Runtime/getRuntime) (Thread. stop-app)))
 
 (defn -main [& args]

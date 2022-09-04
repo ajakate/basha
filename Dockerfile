@@ -19,6 +19,9 @@ RUN npm install -g sass
 # pg_config
 RUN apt install -y libpq-dev
 
+# cron
+RUN apt install -y cron
+
 # dir setup
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
