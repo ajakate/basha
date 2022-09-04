@@ -25,17 +25,6 @@
       (shell-cmd
        (str "bash bin/set_keepalive.sh " ping-url)))))
 
-;; Hacky workaround for running deployed envs in supabase...
-;; needs the direct 5432 connection for migrations, but
-;; needs 6543 for normal app (connection pooling)
-(defn db-connection-string-for-migrations [original-arg]
-  (let [con-string (:database-url original-arg)
-        new-string (string/replace con-string  #":(\d+)\/" ":5432/")]
-    ;; TODOO: figure out what to do with this
-    ;; {:database-url new-string}
-    original-arg
-    ))
-
 ;; log uncaught exceptions in threads
 (Thread/setDefaultUncaughtExceptionHandler
   (reify Thread$UncaughtExceptionHandler
@@ -80,8 +69,7 @@
                         mount/start-with-args
                         :started)]
     (log/info component "started"))
-  (migrations/migrate ["migrate"]
-                      (db-connection-string-for-migrations (select-keys env [:database-url])))
+  (migrations/migrate ["migrate"] (select-keys env [:database-url]))
   (register-keepalive-cronjob)
   (.addShutdownHook (Runtime/getRuntime) (Thread. stop-app)))
 
