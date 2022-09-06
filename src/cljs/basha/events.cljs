@@ -11,7 +11,8 @@
 (def simple-states
   [:create-deck-modal-visible
    :is-signup
-   :loading-list-summary])
+   :loading-list-summary
+   :loading-backup])
 
 (doseq [event simple-states]
   (rf/reg-event-db
@@ -198,6 +199,18 @@
                  :on-failure [:set-create-list-error]}}))
 
 (rf/reg-event-fx
+ :restore
+ [(with-loading-state :loading-backup)]
+ (fn [_ [_ params]]
+   {:http-xhrio {:method          :post
+                 :uri             "/api/restore"
+                 :body (generate-form-data params)
+                 :format          (ajax/json-request-format)
+                 :response-format  (ajax/json-response-format {:keywords? true})
+                 :on-success       [:redirect-home]
+                 }}))
+
+(rf/reg-event-fx
  :export-list
  [with-auth]
  (fn [_ [_ id name]]
@@ -218,8 +231,31 @@
                                     :content-type "*/*"
                                     :type :blob
                                     :read protocols/-body}
-                 :on-success       [:download-file name]
+                 :on-success       [:download-file (str "Basha - " name ".apkg") "application/apkg"]
                  :on-failure [:handle-deck-failure id name]}}))
+
+(defn format-archive-file []
+  (let [now (js/Date.)
+        isodate (.toISOString
+                 (js/Date. (-
+                            (.getTime now)
+                            (* 60000 (.getTimezoneOffset now)))))]
+    (str "Basha_backup_" (subs isodate 0 10) ".archive")))
+
+(rf/reg-event-fx
+ :fetch-backup
+ [(with-loading-state :loading-backup) with-auth]
+ (fn [_ [_]]
+   {:http-xhrio {:method          :get
+                 :uri             "/api/backup"
+                 :response-format  {:description "file-download"
+                                    :content-type "*/*"
+                                    :type :blob
+                                    :read protocols/-body}
+                 :on-success       [:download-file (format-archive-file) "application/archive"]
+                ;; TODOO: delete me!!!
+                 ;;  :on-failure [:handle-deck-failure id name]
+                 }}))
 
 (rf/reg-event-fx
  :delete-audio
@@ -446,8 +482,8 @@
 
 (rf/reg-event-fx
  :download-file
- (fn [_ [_ name resp]]
-   (download-file! resp "application/apkg" (str "Basha - " name ".apkg"))
+ (fn [_ [_ name type resp]]
+   (download-file! resp type name)
    {:dispatch [:kill-download-modal]}))
 
 (rf/reg-event-fx

@@ -6,8 +6,8 @@
    [ring.util.http-response :as response]
    [basha.auth :as auth]
    [basha.invites :as invite]
-   [basha.info :as info]
-   [basha.config :refer [env]]))
+   [basha.info :as info] 
+   [basha.backup :as backup]))
 
 ; AUTH
 
@@ -84,3 +84,9 @@
 
 (defn fetch-info [_]
   (with-handle (info/fetch)))
+
+(defn backup [_]
+  (with-handle (backup/backup)))
+
+(defn restore [{{:keys [file]} :params}]
+  (with-handle (backup/restore (:tempfile file))))
