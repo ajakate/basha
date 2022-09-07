@@ -1,7 +1,6 @@
 (ns basha.routes.services
   (:require
    [basha.middleware :as middleware]
-   [ring.util.http-response :as response]
    [basha.auth :refer [wrap-jwt-authentication auth-middleware]]
    [reitit.ring.middleware.multipart :as multipart]
    [basha.handlers :as handle]
@@ -46,4 +45,6 @@
    ["/invite" {:post {:middleware [wrap-jwt-authentication auth-middleware]
                       :handler handle/create-share}}]
    ["/invite/:code" {:get {:handler handle/fetch-invite}}]
-   ["/info" {:get {:handler handle/fetch-info}}]])
+   ["/info" {:get {:handler handle/fetch-info}}]
+   ["/backup" {:get {:handler handle/backup}}]
+   ["/restore" {:post {:handler handle/restore}}]])
