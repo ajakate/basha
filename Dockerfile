@@ -17,7 +17,7 @@ RUN apt install -y nodejs npm ffmpeg
 RUN npm install -g sass
 
 # pg_config
-RUN apt install -y gnupg lsb-release
+RUN apt install -y libpq-dev gnupg lsb-release
 RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 RUN apt update
