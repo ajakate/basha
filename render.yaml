@@ -3,7 +3,7 @@ services:
     name: basha
     env: docker
     repo: https://github.com/ajakate/basha.git
-    branch: render-update
+    branch: master
     plan: free
     region: oregon
     numInstances: 1
