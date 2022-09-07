@@ -43,12 +43,13 @@
      :values (map-indexed (fn [idx s] [s {:select :id :from :created_list} idx]) sentences)
      :returning :*})))
 
-
-; ADD cljc validation
 (defn create! [name source target has_latin_script file user_id]
   (let [sentences (-> file slurp str/split-lines)
+        file-length (count sentences)
         has_latin_script (boolean (Boolean/valueOf has_latin_script))]
-    (create-list name source target has_latin_script (java.util.UUID/fromString user_id) sentences)))
+    (if (and (< 0 file-length) (> 601 file-length))
+      (create-list name source target has_latin_script (java.util.UUID/fromString user_id) sentences)
+      (throw (ex-info "File must be between 1-600 lines" {:type :bad-request})))))
 
 (defn comma-list-users-sql [matcher]
   {:select [[[:string_agg :username ","]]]

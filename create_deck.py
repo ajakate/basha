@@ -13,25 +13,15 @@ try:
   list_id = sys.argv[1]
   db_url = sys.argv[2]
 
-  if db_url.startswith("postgres"):
-    dbc = urlparse(db_url)
-    host = dbc.hostname
-    user = dbc.username
-    password = dbc.password
-    database = dbc.path[1:]
-    if dbc.port:
-      port = dbc.port
-    else:
-      port = 5432
+  dbc = urlparse(db_url)
+  host = dbc.hostname
+  user = dbc.username
+  password = dbc.password
+  database = dbc.path[1:]
+  if dbc.port:
+    port = dbc.port
   else:
-    matches = re.search(r'jdbc:postgresql:\/\/(.*):(\d+)\/(.*)\?user=(.*)&password=(.*)', db_url)
-
-    user = matches[4]
-    password = matches[5]
-    host = matches[1]
-    port = matches[2]
-    database = matches[3]
-
+    port = 5432
 
   query = f"""
   select
