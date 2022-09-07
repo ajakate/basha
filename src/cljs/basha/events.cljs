@@ -12,7 +12,8 @@
   [:create-deck-modal-visible
    :is-signup
    :loading-list-summary
-   :loading-backup])
+   :loading-backup
+   :banner-info])
 
 (doseq [event simple-states]
   (rf/reg-event-db
@@ -377,11 +378,19 @@
                  :response-format  (ajax/json-response-format {:keywords? true})
                  :on-success       [:set-info]}}))
 
+(defn db-warning-type [resp]
+  (if (and
+       (:db_uptime_days resp)
+       (> (:db_uptime_days resp) 69))
+    :db-warning
+    nil))
+
 (rf/reg-event-db
  :set-info
  (fn [db [_ resp]]
-   (let [should-signup (= 0 (:total_users resp))]
-     (assoc db :info resp :is-signup should-signup))))
+   (let [should-signup (= 0 (:total_users resp))
+         db-warning (db-warning-type resp)]
+     (assoc db :info resp :is-signup should-signup :banner-info db-warning))))
 
 (rf/reg-event-fx
  :set-login-state

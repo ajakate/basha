@@ -11,6 +11,7 @@
    [basha.modals.create-deck :refer [create-deck-modal]]
    [basha.layout.navbar :refer [navbar]]
    [basha.layout.footer :refer [footer]]
+   [basha.layout.banner :refer [banner]]
    [basha.pages.login :refer [login-page]]
    [basha.pages.dashboard :refer [dashboard-page]]
    [basha.pages.edit-list :refer [edit-list]]
@@ -24,6 +25,7 @@
   (when-let [page @(rf/subscribe [:common/page])]
     [:div
      [navbar]
+     [banner]
      [page]
      [translate-modal]
      [share-modal]

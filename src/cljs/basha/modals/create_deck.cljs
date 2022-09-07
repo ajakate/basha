@@ -28,7 +28,7 @@
             [:div.p-6
              [:div.is-flex.is-justify-content-center>img.my-3.image.is-96x96 {:src "img/deck_icon.png"}]
              [:h2.has-text-orange.is-size-3.mb-4 "Create a New Deck"]
-             [:p.pb-4 "Upload your deck as a plain-text (.txt) file"]
+             [:p.pb-4 "Upload your deck as a plain-text (.txt) file TODOO: add link to sentence lists"]
              [:div.has-text-left
               [:p.py-2.bold "Name"]
               [:input.input

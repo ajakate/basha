@@ -64,6 +64,11 @@
                            (string/blank? @draft_pass))
              :class (when loading :is-loading)} "Login"]
            (when (show-signup-option info invite)
-             [:div [:span "Need an account? "] [:a.link {:on-click #(rf/dispatch [:is-signup true])} "Sign up"]])])]
+             [:div [:span "Need an account? "] [:a.link {:on-click #(rf/dispatch [:is-signup true])} "Sign up"]])
+           ])
+        (when (= 0 (:total_users info))
+          [:div.bold.mt-5
+           "You can also "
+           [:a {:href "/#/backup"} "click here"] " to restore an archived Basha site."])]
        [:div.login-half.login-image
         [:img {:src "img/splash_v2.png"}]]])))
