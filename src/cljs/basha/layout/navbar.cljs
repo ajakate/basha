@@ -16,7 +16,7 @@
       (if user-exists
         [:a.link.centered-text.color-turq.bold {:href "/#/"} "Dashboard"]
         [:div])
-      [:a.link.centered-text.color-turq.bold {:href "https://www.bashalang.org" :target "_blank"} "Resources"]
+      [:a.link.centered-text.color-turq.bold {:href "https://www.bashalang.org/resources.html" :target "_blank"} "Resources"]
       (if user-exists
         [:a.link.centered-text.color-turq.bold {:on-click #(rf/dispatch [:logout])} "Logout"]
         [:a.link.centered-text.color-turq.bold {:href "/#/login"} "Login"])]]))
