@@ -3,18 +3,30 @@
    [re-frame.core :as rf]
    [basha.events]))
 
-;; TODOO: success banner on archive
+(defn common-notification [color-class children]
+  [:div.notification.is-light
+   {:class color-class}
+   [:button.delete
+    {:on-click #(rf/dispatch [:banner-info nil])}]
+   children])
+
 (defn db-warning []
-  (let [info @(rf/subscribe [:info])]
-    [:div.notification.is-danger.is-light
-     [:button.delete
-      {:on-click #(rf/dispatch [:banner-info nil])}]
-     [:span (str "Your Basha instance will be terminated in " (- 90 (:db-uptime-days info)) " days. ")]
-     [:span "Please contact " (:admin info) " or "
-      [:a {:href "/#/backup"} "click here"]
-      " to do a backup and restore."]]))
+  [common-notification
+   "is-danger"
+   (let [info @(rf/subscribe [:info])]
+     [:div [:span (str "Your Basha instance will be terminated in " (- 90 (:db-uptime-days info)) " days. ")]
+      [:span "Please contact " (:admin info) " or "
+       [:a {:href "/#/backup"} "click here"]
+       " to do a backup and restore."]])])
+
+(defn restore-success []
+  [common-notification
+   "is-success"
+   [:span (str "Congratulations! You've restored your Basha instance. Feel free to login with your old account info.")]])
 
 (defn banner []
   (let [banner-info @(rf/subscribe [:banner-info])]
-    (when (= banner-info :db-warning)
-      [db-warning])))
+    (case banner-info
+      :db-warning [db-warning]
+      :restore-success [restore-success]
+      nil)))

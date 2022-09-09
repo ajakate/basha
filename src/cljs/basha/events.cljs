@@ -208,7 +208,7 @@
                  :body (generate-form-data params)
                  :format          (ajax/json-request-format)
                  :response-format  (ajax/json-response-format {:keywords? true})
-                 :on-success       [:redirect-home]
+                 :on-success       [:set-restore]
                  }}))
 
 (rf/reg-event-fx
@@ -378,18 +378,26 @@
                  :response-format  (ajax/json-response-format {:keywords? true})
                  :on-success       [:set-info]}}))
 
-(defn db-warning-type [resp]
+(rf/reg-event-fx
+ :set-restore
+ (fn [{:keys [db]} [_]]
+   {:db (assoc db :banner-info :restore-success)
+    :dispatch [:redirect-home]}))
+
+(defn db-warning-type [resp db]
   (if (and
        (:db_uptime_days resp)
        (> (:db_uptime_days resp) 69))
     :db-warning
-    nil))
+    (if (= (:banner-info db) :restore-success)
+      :restore-success
+      nil)))
 
 (rf/reg-event-fx
  :set-info
  (fn [{:keys [db]} [_ resp]]
    (let [is-no-users (= 0 (:total_users resp))
-         db-warning (db-warning-type resp)]
+         db-warning (db-warning-type resp db)]
      (if (and (seq (:user db)) is-no-users)
        {:dispatch [:logout]}
        {:db (assoc db :info resp :is-signup is-no-users :banner-info db-warning)}))))
