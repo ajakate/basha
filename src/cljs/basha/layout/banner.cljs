@@ -14,7 +14,7 @@
   [common-notification
    "is-danger"
    (let [info @(rf/subscribe [:info])]
-     [:div [:span (str "Your Basha instance will be terminated in " (- 90 (:db-uptime-days info)) " days. ")]
+     [:div [:span (str "Your Basha instance will be terminated in " (- 90 (:db_uptime_days info)) " days. ")]
       [:span "Please contact " (:admin info) " or "
        [:a {:href "/#/backup"} "click here"]
        " to do a backup and restore."]])])
