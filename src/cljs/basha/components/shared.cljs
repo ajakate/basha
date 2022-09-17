@@ -3,7 +3,6 @@
    [clojure.string :as string]
    [re-frame.core :as rf]))
 
-;; TODOO: fix formatting bold
 (defn logo []
   [:div.logo
    [:a {:href "https://www.bashalang.org" :target "_blank"}

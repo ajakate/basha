@@ -12,13 +12,16 @@
      [loading-screen :loading-info]
      [:div.is-flex.is-justify-content-space-between
       [:div.is-size-3.bold.mb-3 "Backup and Restore"]]
-     [:p.my-3 "Use this hub to upload your files, manage translations, and export decks. TODOO: explain beta"]
      (if (= (:total_users info) 0)
        (r/with-let
          [draft_file (r/atom nil)]
          [:<>
-          [:p.my-3 "Or down here you can restore a site into Basha"]
-          [:div.file.has-name
+          [:p.my-3 "If you have an archived Basha site, you can use the form below to upload it here and restore all your data from a previous Basha installation."]
+          [:div.my-3.mb-5
+           [:span "Click "]
+           [:a.link {:href "https://www.bashalang.org/guide.html#restore" :target "_blank"} "here"]
+           [:span " for more info."]]
+          [:div.file.has-name.mb-3
            [:label.file-label
             [:input.file-input {:type "file" :name "list" :on-change #(reset! draft_file (-> % .-target .-files (aget 0)))}]
             [:span.file-cta
@@ -29,7 +32,15 @@
            {:class (when loading-backup :is-loading)
             :on-click #(rf/dispatch [:restore {:file  @draft_file}])
             :disabled (nil? @draft_file)} "Restore"]])
-       [:a.button.is-orange.bold
-        {:on-click #(rf/dispatch [:fetch-backup])
-         :class (when loading-backup :is-loading)}
-        "Download Backup of Site"])]))
+       [:<>
+        [:p.my-5.mb-4
+         [:div "Download an archive of your site here. "
+          "Your entire site will be saved in this archive, including users, lists, and translations."]
+         [:div.mt-3
+          [:span "Click "]
+          [:a.link {:href "https://www.bashalang.org/guide.html#restore" :target "_blank"} "here"]
+          [:span " for more info."]]]
+        [:a.button.is-orange.bold
+         {:on-click #(rf/dispatch [:fetch-backup])
+          :class (when loading-backup :is-loading)}
+         "Download Backup of Site"]])]))

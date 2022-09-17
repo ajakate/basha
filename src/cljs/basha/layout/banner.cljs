@@ -17,7 +17,10 @@
      [:div [:span (str "Your Basha instance will be terminated in " (- 90 (:db_uptime_days info)) " days. ")]
       [:span "Please contact " (:admin info) " or "
        [:a {:href "/#/backup"} "click here"]
-       " to do a backup and restore."]])])
+       " to do a backup and restore -- "]
+      [:span.is-italic "See our "
+       [:a {:href "https://www.bashalang.org/guide.html#restore" :target "_blank"} "user guide"]
+       " for more info."]])])
 
 (defn restore-success []
   [common-notification

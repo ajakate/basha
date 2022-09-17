@@ -3,7 +3,6 @@
    [re-frame.core :as rf]
    [basha.components.shared :refer [logo]]))
 
-;; TODOO: fix links
 (defn navbar []
   (let [user @(rf/subscribe [:user])
         user-exists (seq user)]

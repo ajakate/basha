@@ -28,9 +28,9 @@
              [:div.is-flex.is-justify-content-center>img.my-3.image.is-96x96 {:src "img/deck_icon.png"}]
              [:h2.has-text-orange.is-size-3.mb-4 "Create a New Deck"]
              [:p.pb-4 "Upload your deck as a plain-text (.txt) file"]
-             [:a.link {:href "https://www.bashalang.org/resources.html#sentence_lists" :target "_blank"}
-              "→ Try our sample lists here"]
-             [:div.has-text-left
+             [:a.link.bold {:href "https://www.bashalang.org/resources.html#sentence_lists" :target "_blank"}
+              "→ Check out our premade lists here"]
+             [:div.has-text-left.mt-2
               [:p.py-2.bold "Name"]
               [:input.input
                {:type "text"
