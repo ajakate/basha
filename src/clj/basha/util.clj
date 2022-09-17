@@ -12,7 +12,7 @@
              result))
    str-orig chunks-orig []))
 
-(def hashids-opts {:salt "TODOO: change this?"})
+(def hashids-opts {:salt "TODO: change this?"})
 
 (defn encode-uuid [uuid]
   (let [hexval (clojure.string/replace uuid "-" "")]

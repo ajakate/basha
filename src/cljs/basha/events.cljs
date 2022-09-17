@@ -208,7 +208,7 @@
                  :body (generate-form-data params)
                  :format          (ajax/json-request-format)
                  :response-format  (ajax/json-response-format {:keywords? true})
-                 :on-success       [:redirect-home]
+                 :on-success       [:set-restore]
                  }}))
 
 (rf/reg-event-fx
@@ -378,19 +378,29 @@
                  :response-format  (ajax/json-response-format {:keywords? true})
                  :on-success       [:set-info]}}))
 
-(defn db-warning-type [resp]
+(rf/reg-event-fx
+ :set-restore
+ (fn [{:keys [db]} [_]]
+   {:db (assoc db :banner-info :restore-success)
+    :dispatch [:redirect-home]}))
+
+(defn db-warning-type [resp db]
   (if (and
        (:db_uptime_days resp)
        (> (:db_uptime_days resp) 69))
     :db-warning
-    nil))
+    (if (= (:banner-info db) :restore-success)
+      :restore-success
+      nil)))
 
-(rf/reg-event-db
+(rf/reg-event-fx
  :set-info
- (fn [db [_ resp]]
-   (let [should-signup (= 0 (:total_users resp))
-         db-warning (db-warning-type resp)]
-     (assoc db :info resp :is-signup should-signup :banner-info db-warning))))
+ (fn [{:keys [db]} [_ resp]]
+   (let [is-no-users (= 0 (:total_users resp))
+         db-warning (db-warning-type resp db)]
+     (if (and (seq (:user db)) is-no-users)
+       {:dispatch [:logout]}
+       {:db (assoc db :info resp :is-signup is-no-users :banner-info db-warning)}))))
 
 (rf/reg-event-fx
  :set-login-state
@@ -649,9 +659,12 @@
 (rf/reg-event-fx
  :set-login
  (fn [{:keys [db]} [_ user]]
-   (if (seq (:invite db))
-     {:fx [[:dispatch [:set-login-user user]] [:dispatch [:redirect-invite]]]}
-     {:fx [[:dispatch [:set-login-user user]] [:dispatch [:redirect-home]]]})))
+   (let [redirect-event (if (seq (:invite db))
+                          :redirect-invite
+                          :redirect-home)]
+     {:fx [[:dispatch [:fetch-info]]
+           [:dispatch [:set-login-user user]]
+           [:dispatch [redirect-event]]]})))
 
 (rf/reg-event-fx
  :login-controller

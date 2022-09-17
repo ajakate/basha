@@ -3,8 +3,6 @@
    [re-frame.core :as rf]
    [basha.components.shared :refer [is-admin loading-screen]]))
 
-;; TODOO:
-;; add logged out CTA
 (defn no-lists []
   [:div.has-text-centered
    [:img.py-6 {:src "/img/empty_state_graphic.png"}]

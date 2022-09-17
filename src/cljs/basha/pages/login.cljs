@@ -30,11 +30,11 @@
            [:p.is-italic "Login below first and then we'll take you back to your new list..."]])
         (if is-signup
           [:<>
-           [:h1.ftitle.bold "Welcome to Basha"]
-           [:p.description "We're glad you decided to join our community. Let's make an account so you can get started."]]
+           [:h1.is-size-5.mb-4.bold "Welcome to Basha"]
+           [:p.mb-4 "We're glad you decided to join our community. Let's make an account so you can get started."]]
           [:<>
-           [:h1.ftitle.bold "Nice to See You Again"]
-           [:p.description "Let's get signed back in so you can continue learning."]])
+           [:h1.is-size-5.mb-4.bold "Nice to See You Again"]
+           [:p.mb-4 "Let's get signed back in so you can continue learning."]])
         [:p.bold "Username"]
         [:input.finput
          {:type "text"
