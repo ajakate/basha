@@ -1,0 +1,9 @@
+version: "3.9"
+services:
+  app_test:
+    build: .
+    ports:
+      - 3000:3000
+    env_file:
+      - .env
+    command: ["java", "-Xmx100m", "-Dclojure.main.report=stderr", "-cp", "target/uberjar/basha.jar", "clojure.main", "-m", "basha.core"]

@@ -2,6 +2,7 @@
 
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
+  ;; :jvm-opts ["-XX:MaxPermSize=200m"]
 
   :dependencies [[buddy/buddy-auth "3.0.1"]
                  [buddy/buddy-core "1.10.1"]
@@ -58,7 +59,15 @@
   :target-path "target/%s/"
   :main ^:skip-aot basha.core
 
-  :plugins [[lein-scss "0.3.0"]]
+  :plugins [[lein-scss "0.3.0"]
+            [io.taylorwood/lein-native-image "0.3.1"]]
+  
+  :native-image {:name "basha-native"                 ;; name of output image, optional
+                 :graal-bin "/Library/Java/JavaVirtualMachines/graalvm-ce-java17-22.2.0/Contents/Home/" ;; path to GraalVM home, optional
+                 :opts ["--verbose"
+                        "--initialize-at-build-time"
+                        "--initialize-at-run-time=org.postgresql.sspi.SSPIClient"
+                        "--no-fallback"]}           ;; pass-thru args to GraalVM native-image, optional
 
   :clean-targets ^{:protect false}
   [:target-path "target/cljsbuild"]
