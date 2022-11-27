@@ -15,13 +15,13 @@
 (defn shell-cmd [cmd]
   (apply shell/sh (string/split cmd #" ")))
 
-;; For applications deployed on render.com,
+;; For applications deployed on fly.io,
 ;; register cronjob to prevent them from
 ;; falling asleep
 (defn register-keepalive-cronjob []
-  (let [render-url (:render-external-url env)
-        ping-url (str render-url "/api/info")]
-    (when render-url
+  (let [fly-app-name (:fly-app-name env)
+        ping-url (str "https://" fly-app-name ".fly.dev/api/info")]
+    (when fly-app-name
       (shell-cmd
        (str "bash bin/set_keepalive.sh " ping-url)))))
 
