@@ -1,16 +1,16 @@
 #! /bin/bash
-docker exec -it basha_db_1 psql -U postgres -c 'drop database if exists dev'
-docker exec -it basha_db_1 psql -U postgres -c 'drop database if exists test'
-docker exec -it basha_db_1 psql -U postgres -c 'create database test'
-docker exec -it basha_db_1 psql -U postgres -c 'create database dev'
+docker exec -it basha-db psql -U postgres -c 'drop database if exists dev'
+docker exec -it basha-db psql -U postgres -c 'drop database if exists test'
+docker exec -it basha-db psql -U postgres -c 'create database test'
+docker exec -it basha-db psql -U postgres -c 'create database dev'
 
-docker exec -it basha_db_1 psql -U postgres -c 'DROP user IF EXISTS basha_user'
-docker exec -it basha_db_1 psql -U postgres -c "create user basha_user with password 'basha_password'"
+docker exec -it basha-db psql -U postgres -c 'DROP user IF EXISTS basha_user'
+docker exec -it basha-db psql -U postgres -c "create user basha_user with password 'basha_password'"
 
-docker exec -it basha_db_1 psql -U postgres -c 'grant all privileges on database dev to basha_user'
-docker exec -it basha_db_1 psql -U postgres -c 'grant all privileges on database test to basha_user'
-docker exec -it basha_db_1 psql -U postgres -c 'grant basha_user to postgres'
-docker exec -it basha_db_1 psql -U postgres -d dev -c 'DROP EXTENSION IF EXISTS "uuid-ossp" CASCADE;'
-docker exec -it basha_db_1 psql -U postgres -d test -c 'DROP EXTENSION IF EXISTS "uuid-ossp" CASCADE;'
-docker exec -it basha_db_1 psql -U postgres -d dev -c 'CREATE EXTENSION "uuid-ossp";'
-docker exec -it basha_db_1 psql -U postgres -d test -c 'CREATE EXTENSION "uuid-ossp";'
+docker exec -it basha-db psql -U postgres -c 'grant all privileges on database dev to basha_user'
+docker exec -it basha-db psql -U postgres -c 'grant all privileges on database test to basha_user'
+docker exec -it basha-db psql -U postgres -c 'grant basha_user to postgres'
+docker exec -it basha-db psql -U postgres -d dev -c 'DROP EXTENSION IF EXISTS "uuid-ossp" CASCADE;'
+docker exec -it basha-db psql -U postgres -d test -c 'DROP EXTENSION IF EXISTS "uuid-ossp" CASCADE;'
+docker exec -it basha-db psql -U postgres -d dev -c 'CREATE EXTENSION "uuid-ossp";'
+docker exec -it basha-db psql -U postgres -d test -c 'CREATE EXTENSION "uuid-ossp";'
