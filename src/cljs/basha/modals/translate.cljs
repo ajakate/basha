@@ -60,14 +60,23 @@
               :value @draft_target_rom}]]
            (when-not (:has_latin_script list)
              [:<>
-              [:div.column.is-half.bold "Translate Text - Native Script (Optional)"]
+              [:div.column.is-half.bold
+               [:span.mr-3 "Notes / Context"]
+               [:div.tooltip
+                [:i.fa.fa-question-circle.tooltip]
+                [:div.tooltiptext
+                 [:p.mb-3 "Is there more than one way to translate this sentence?"]
+                 [:p.mb-3 "Ex:"]
+                 [:p.mb-3 "Speaking formally vs. informally"]
+                 [:p.mb-3 "Male vs. female speaker"]
+                 [:p.mb-3 "Speaking to a male vs. female person"]]]]
               [:div.column.is-half
                [:input.input
                 {:type "text"
-                 :placeholder "मार्टिन फॉलर "
+                 :placeholder "male speaker, formal, etc."
                  :on-change #(reset! draft_target (.. % -target -value))
                  :value @draft_target}]]])
-           [:div.column.is-half.bold "Record Audio Translation "]
+           [:div.column.is-half.bold "Record Audio Translation"]
            (if media-error
              [:div.column.is-half.is-italic.has-text-danger media-error]
              [:div.column.is-half
