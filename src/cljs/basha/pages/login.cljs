@@ -70,5 +70,5 @@
           [:div.bold.mt-5
            "You can also "
            [:a {:href "/#/backup"} "click here"] " to restore an archived Basha site."])]
-       [:div.login-half.login-image
+       [:div.login-half.login-image.is-hidden-mobile
         [:img {:src "img/splash_v2.png"}]]])))
