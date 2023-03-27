@@ -10,7 +10,7 @@
         user-exists (seq user)]
     (r/with-let [expanded? (r/atom false)]
       [:nav.navbar
-       [:div.navbar-brand.m-4
+       [:div.navbar-brand.mt-4.mx-4
         [logo]
         [:a.navbar-burger
          {:role "button"

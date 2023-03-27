@@ -22,7 +22,7 @@
     (r/with-let [draft_user (r/atom nil)
                  draft_pass (r/atom nil)
                  show_pass (r/atom false)]
-      [:div.px-6>div.basha-panel.mx-auto.is-flex.is-justify-content-center
+      [:div>div.basha-panel.mx-auto.is-flex.is-justify-content-center
        [loading-screen :loading-info]
        [:div.login-half.has-background-white.login-form.px-6.py-5
         (when (seq invite)
