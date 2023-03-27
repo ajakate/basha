@@ -63,9 +63,7 @@
          [:div.column.is-justify-content-flex-start.is-flex.is-hidden-tablet
           [:a.button.is-orange.bold
            {:on-click #(rf/dispatch [:create-deck-modal-visible true])}
-           "Add New Deck"]]]
-        )
-      ]
+           "Add New Deck"]]])]
      [:p "Use this hub to upload your files, manage translations, and export decks."]
      (if (seq lists)
        [list-summary-table lists]
