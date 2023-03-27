@@ -24,6 +24,8 @@ $basha-yellow: #f3dc44;
 $basha-green: #94e681;
 $basha-red: #ff2020;
 
+$navbar-item-color: $basha-turq;
+
 $orange: $basha-bold-orange;
 $orange-invert: findColorInvert($orange);
 
@@ -40,13 +42,6 @@ $custom-colors: ("blue": ($blue, $blue-invert),"orange": ($orange, $orange-inver
 
 body {
   background-image: linear-gradient(to top right, $basha-yellow, $basha-turq);
-}
-
-.nav-container {
-  background-color: white;
-  padding: 15px 24px;
-  display: flex;
-  justify-content: space-between;
 }
 
 .foot-container {
