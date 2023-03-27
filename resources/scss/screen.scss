@@ -55,7 +55,7 @@ $panel-width: 1300px;
   max-width: calc($panel-width / 2);
 }
 
-@media screen and (min-width: 769px) {
+@media screen and (min-width: 1024px) {
   .basha-panel {
     max-width: $panel-width;
     margin: 48px;

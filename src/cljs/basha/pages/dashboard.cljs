@@ -50,14 +50,22 @@
 
 (defn dashboard-page []
   (let [lists @(rf/subscribe [:list-summary])]
-    [:div.px-6>div.basha-panel.mx-auto.background-semi-faded.p-5
+    [:div>div.basha-panel.mx-auto.background-semi-faded.p-5
      [loading-screen :loading-list-summary]
-     [:div.is-flex.is-justify-content-space-between
-      [:div.is-size-3.bold.mb-3 "My Dashboard"]
+     [:div.columns
+      [:div.is-size-3.bold.mb-3.column "My Dashboard"]
       (when (is-admin)
-        [:a.button.is-orange.bold
-         {:on-click #(rf/dispatch [:create-deck-modal-visible true])}
-         "Add New Deck"])]
+        [:div
+         [:div.column.is-justify-content-flex-end.is-flex.is-hidden-mobile
+          [:a.button.is-orange.bold
+           {:on-click #(rf/dispatch [:create-deck-modal-visible true])}
+           "Add New Deck"]]
+         [:div.column.is-justify-content-flex-start.is-flex.is-hidden-tablet
+          [:a.button.is-orange.bold
+           {:on-click #(rf/dispatch [:create-deck-modal-visible true])}
+           "Add New Deck"]]]
+        )
+      ]
      [:p "Use this hub to upload your files, manage translations, and export decks."]
      (if (seq lists)
        [list-summary-table lists]
