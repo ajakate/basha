@@ -4,10 +4,10 @@
    [re-frame.core :as rf]))
 
 (defn logo []
-  [:div.logo
-   [:a {:href "https://www.bashalang.org" :target "_blank"}
-    [:img {:src "/img/logo.png" :alt "logo"}]
-    [:p "Basha"]]])
+  [:div.logo.m-3
+   [:a.columns.is-mobile {:href "https://www.bashalang.org" :target "_blank"}
+    [:img.is-inline {:src "/img/logo.png" :alt "logo"}]
+    [:p.is-inline "Basha"]]])
 
 (defn format-string [st]
   (let [words (map #(str % \space) (string/split st #" "))]
