@@ -12,7 +12,7 @@
       [:div.modal
        {:class (if active "is-active" nil)}
        [:div.modal-background]
-       [:div.model-content>div.card.has-background-white.has-text-centered.p-4
+       [:div.model-content>div.card.has-background-white.has-text-centered.p-4.mx-4
         [:div.is-flex.is-justify-content-center>img.my-3.image.is-96x96 {:src "img/delete_icon.png"}]
         [:h2.has-text-red.is-size-3.mb-4 "Confirm Delete"]
         [:div
