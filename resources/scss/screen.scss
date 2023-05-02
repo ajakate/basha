@@ -24,6 +24,8 @@ $basha-yellow: #f3dc44;
 $basha-green: #94e681;
 $basha-red: #ff2020;
 
+$navbar-item-color: $basha-turq;
+
 $orange: $basha-bold-orange;
 $orange-invert: findColorInvert($orange);
 
@@ -42,18 +44,9 @@ body {
   background-image: linear-gradient(to top right, $basha-yellow, $basha-turq);
 }
 
-.nav-container {
-  background-color: white;
-  padding: 15px 24px;
-  display: flex;
-  justify-content: space-between;
-}
-
 .foot-container {
   background-color: white;
   padding: 15px 24px;
-  display: flex;
-  justify-content: space-between;
 }
 
 $panel-width: 1300px;
@@ -62,9 +55,13 @@ $panel-width: 1300px;
   max-width: calc($panel-width / 2);
 }
 
-.basha-panel {
-  max-width: $panel-width;
-  margin: 48px;
+@media screen and (min-width: 1024px) {
+  .basha-panel {
+    max-width: $panel-width;
+    margin: 48px;
+    padding-right: 3rem;
+    padding-left: 3rem;
+  }
 }
 
 .logo {
