@@ -78,7 +78,7 @@
                 :display-existing-audio
                 [:div
                  [:audio {:controls "controls" :autoplay "autoplay" :src (str "data:audio/ogg;base64," (:audio translation))}]
-                 [:div.is-pulled-right
+                 [:div.is-pulled-right.mt-3
                   [:button.button.is-outlined.is-blue.is-small.mr-2
                    {:on-click #(rf/dispatch [:start-recording])}
                    "redo audio"]
@@ -111,7 +111,7 @@
                               :id (:id translation)
                               :list_id (:id list)
                               :audio (:data temp-recording)}]
-             [:<>
+             [:div.column.is-full.columns.mobile-reverse
               [:div.column.is-one-third.has-text-centered>button.button.bold
                {:on-click #(rf/dispatch [:close-translate-modal])
                 :class (if loading-translation :is-loading nil)}

@@ -159,6 +159,17 @@ $panel-width: 1300px;
   z-index: 999;
 }
 
+@media(max-width: $tablet) { /* <== You can change this break point as per your  needs */
+  .mobile-reverse {
+    flex-direction: row-reverse;
+    display: flex;
+  }
+
+  .mobile-extra-margin {
+    margin-top: 20px;
+  }
+}
+
 @import "../../node_modules/bulma/sass/utilities/mixins.sass";
 
 .loader-mixin {
