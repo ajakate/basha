@@ -1,48 +1,60 @@
-# fly.toml file generated for basha on 2022-11-26T20:35:46-06:00
+# fly.toml app configuration file generated for basha on 2024-11-03T17:28:31-06:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
 
-app = "basha"
-kill_signal = "SIGINT"
-kill_timeout = 5
-processes = []
-
-[env]
+app = 'basha'
+primary_region = 'ord'
+kill_signal = 'SIGINT'
+kill_timeout = '5s'
 
 [experimental]
-allowed_public_ports = []
-auto_rollback = true
+  auto_rollback = true
+
+[build]
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
 
 [[services]]
-internal_port = 3000
-processes = ["app"]
-protocol = "tcp"
-script_checks = []
-[services.concurrency]
-hard_limit = 25
-soft_limit = 20
-type = "connections"
+  protocol = 'tcp'
+  internal_port = 3000
+  processes = ['app']
 
-[[services.ports]]
-force_https = true
-handlers = ["http"]
-port = 80
+  [[services.ports]]
+    port = 80
+    handlers = ['http']
+    force_https = true
 
-[[services.ports]]
-handlers = ["tls", "http"]
-port = 443
+  [[services.ports]]
+    port = 443
+    handlers = ['tls', 'http']
 
-[[services.tcp_checks]]
-grace_period = "1s"
-interval = "15s"
-restart_limit = 0
-timeout = "2s"
+  [services.concurrency]
+    type = 'connections'
+    hard_limit = 25
+    soft_limit = 20
 
-[[services.http_checks]]
-interval = 10000
-grace_period = "5s"
-method = "get"
-path = "/api/info"
-protocol = "http"
-restart_limit = 0
-timeout = 5000
-tls_skip_verify = true
-[services.http_checks.headers]
+  [[services.tcp_checks]]
+    interval = '15s'
+    timeout = '2s'
+    grace_period = '1s'
+
+  [[services.http_checks]]
+    interval = '10s'
+    timeout = '5s'
+    grace_period = '5s'
+    method = 'get'
+    path = '/api/info'
+    protocol = 'http'
+    tls_skip_verify = true
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1

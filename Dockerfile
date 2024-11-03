@@ -1,4 +1,4 @@
-FROM clojure:openjdk-8-lein-slim-buster
+FROM clojure:tools-deps-bullseye
 
 RUN apt update
 
@@ -18,11 +18,11 @@ RUN npm install -g sass
 
 # pg_config
 RUN apt install -y libpq-dev gnupg lsb-release
-RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN apt update
-RUN apt -y upgrade
-RUN apt -y install postgresql-client-14
+# RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+# RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+# RUN apt update
+# RUN apt -y upgrade
+RUN apt -y install postgresql-client
 
 # cron
 RUN apt install -y cron
