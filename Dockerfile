@@ -1,6 +1,8 @@
-FROM clojure:openjdk-8-lein-slim-buster
+FROM clojure:tools-deps-bullseye
 
 RUN apt update
+
+RUN apt install -y leiningen
 
 # install Python
 RUN apt-get install -y --no-install-recommends make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget ca-certificates curl llvm libncurses5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev mecab-ipadic-utf8 git
