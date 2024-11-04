@@ -1,4 +1,4 @@
-FROM clojure:tools-deps-bullseye
+FROM ubuntu:oracular
 
 RUN apt update
 
@@ -47,10 +47,10 @@ COPY package.json /usr/src/app/
 COPY package-lock.json /usr/src/app/
 
 COPY . /usr/src/app
-
 RUN npm install
 RUN npm run release
 
 RUN lein uberjar
 
 CMD ["java", "-Dclojure.main.report=stderr", "-cp", "target/uberjar/basha.jar", "clojure.main", "-m", "basha.core"]
+#  java -Dclojure.main.report=stderr -cp target/uberjar/basha.jar clojure.main -m basha.core
