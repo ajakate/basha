@@ -1,4 +1,4 @@
-FROM clojure:tools-deps-bullseye
+FROM clojure:openjdk-8-lein-slim-buster
 
 RUN apt update
 
