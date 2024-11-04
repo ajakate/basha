@@ -39,6 +39,7 @@ RUN lein deps
 
 # py deps
 COPY requirements.txt /usr/src/app/
+RUN python -m pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 # js deps
