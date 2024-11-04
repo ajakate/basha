@@ -20,10 +20,6 @@ RUN npm install -g sass
 
 # pg_config
 RUN apt install -y libpq-dev gnupg lsb-release
-# RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-# RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-# RUN apt update
-# RUN apt -y upgrade
 RUN apt -y install postgresql-client
 
 # cron
@@ -53,4 +49,3 @@ RUN npm run release
 RUN lein uberjar
 
 CMD ["java", "-Dclojure.main.report=stderr", "-cp", "target/uberjar/basha.jar", "clojure.main", "-m", "basha.core"]
-#  java -Dclojure.main.report=stderr -cp target/uberjar/basha.jar clojure.main -m basha.core

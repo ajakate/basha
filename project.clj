@@ -79,7 +79,6 @@
   :profiles
   {:uberjar {:omit-source true
 
-             ;; TODON: fix release
              :prep-tasks ["compile" ["run" "-m" "shadow.cljs.devtools.cli" "release" "app"]]
              :aot :all
              :uberjar-name "basha.jar"
