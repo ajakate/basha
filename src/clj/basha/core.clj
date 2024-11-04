@@ -41,7 +41,8 @@
   :start
   (http/start
     (-> env
-        (update :io-threads #(or % (* 2 (.availableProcessors (Runtime/getRuntime))))) 
+        ;; (update :io-threads #(or % (* 2 (.availableProcessors (Runtime/getRuntime))))) 
+        (update :io-threads (constantly 2)) 
         (assoc  :handler (handler/app))
         (update :port #(or (-> env :options :port) %))
         (select-keys [:handler :host :port])))
@@ -69,7 +70,7 @@
                         mount/start-with-args
                         :started)]
     (log/info component "started"))
-  (migrations/migrate ["migrate"] (select-keys env [:database-url]))
+  ;; (migrations/migrate ["migrate"] (select-keys env [:database-url]))
   (register-keepalive-cronjob)
   (.addShutdownHook (Runtime/getRuntime) (Thread. stop-app)))
 
