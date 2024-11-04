@@ -49,6 +49,7 @@ COPY package-lock.json /usr/src/app/
 COPY . /usr/src/app
 
 RUN npm install
+RUN npm run release
 
 RUN lein uberjar
 
