@@ -45,9 +45,10 @@ RUN pip install -r requirements.txt
 # js deps
 COPY package.json /usr/src/app/
 COPY package-lock.json /usr/src/app/
-RUN npm install
 
 COPY . /usr/src/app
+
+RUN npm install
 
 RUN lein uberjar
 
